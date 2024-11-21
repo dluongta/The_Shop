@@ -7,18 +7,22 @@ import CheckoutSteps from '../components/CheckoutSteps'
 import { createOrder } from '../actions/orderActions'
 import { ORDER_CREATE_RESET } from '../constants/orderConstants'
 import { USER_DETAILS_RESET } from '../constants/userConstants'
+import { useNavigate } from 'react-router-dom' // Import useNavigate
 
-const PlaceOrderScreen = ({ history }) => {
+const PlaceOrderScreen = () => {
   const dispatch = useDispatch()
 
   const cart = useSelector((state) => state.cart)
 
+  const navigate = useNavigate() // Initialize useNavigate
+
   if (!cart.shippingAddress.address) {
-    history.push('/shipping')
+    navigate('/shipping') // Redirect using navigate if no shipping address
   } else if (!cart.paymentMethod) {
-    history.push('/payment')
+    navigate('/payment') // Redirect to payment if no payment method
   }
-  //   Calculate prices
+
+  // Calculate prices
   const addDecimals = (num) => {
     return (Math.round(num * 100) / 100).toFixed(2)
   }
@@ -39,12 +43,12 @@ const PlaceOrderScreen = ({ history }) => {
 
   useEffect(() => {
     if (success) {
-      history.push(`/order/${order._id}`)
+      navigate(`/order/${order._id}`) // Navigate to the order details page after success
       dispatch({ type: USER_DETAILS_RESET })
       dispatch({ type: ORDER_CREATE_RESET })
     }
     // eslint-disable-next-line
-  }, [history, success])
+  }, [success, dispatch, navigate])
 
   const placeOrderHandler = () => {
     dispatch(

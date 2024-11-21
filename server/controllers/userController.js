@@ -9,13 +9,13 @@ const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body
 
   const user = await User.findOne({ email })
-
   if (user && (await user.matchPassword(password))) {
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      role: user.role,
       token: generateToken(user._id),
     })
   } else {
@@ -28,7 +28,7 @@ const authUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, password, role } = req.body
 
   const userExists = await User.findOne({ email })
 
@@ -41,6 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    role,
   })
 
   if (user) {
@@ -49,6 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      role: user.role,
       token: generateToken(user._id),
     })
   } else {
@@ -69,6 +71,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      role: user.role,
     })
   } else {
     res.status(404)
@@ -96,6 +99,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
+      role: user.role,
       token: generateToken(updatedUser._id),
     })
   } else {

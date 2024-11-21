@@ -5,9 +5,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import { listUsers, deleteUser } from '../actions/userActions'
+import { useNavigate } from 'react-router-dom' // Import useNavigate
 
-const UserListScreen = ({ history }) => {
+const UserListScreen = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate() // Initialize useNavigate
 
   const userList = useSelector((state) => state.userList)
   const { loading, error, users } = userList
@@ -22,12 +24,12 @@ const UserListScreen = ({ history }) => {
     if (userInfo && userInfo.isAdmin) {
       dispatch(listUsers())
     } else {
-      history.push('/login')
+      navigate('/login') // Use navigate for redirect in React Router v6
     }
-  }, [dispatch, history, successDelete, userInfo])
+  }, [dispatch, navigate, successDelete, userInfo])
 
   const deleteHandler = (id) => {
-    if (window.confirm('Are you sure')) {
+    if (window.confirm('Are you sure you want to delete this user?')) {
       dispatch(deleteUser(id))
     }
   }

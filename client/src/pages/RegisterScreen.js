@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom' // Import useNavigate and useLocation
 import { Form, Button, Row, Col } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
@@ -7,32 +7,36 @@ import Loader from '../components/Loader'
 import FormContainer from '../components/FormContainer'
 import { register } from '../actions/userActions'
 
-const RegisterScreen = ({ location, history }) => {
+const RegisterScreen = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [role, setRole] = useState('buyer') // New state for role
   const [message, setMessage] = useState(null)
 
   const dispatch = useDispatch()
+  const navigate = useNavigate() // Initialize useNavigate
+  const location = useLocation() // Initialize useLocation
 
   const userRegister = useSelector((state) => state.userRegister)
   const { loading, error, userInfo } = userRegister
 
-  const redirect = location.search ? location.search.split('=')[1] : '/'
+  // Get redirect from location.search query parameter
+  const redirect = new URLSearchParams(location.search).get('redirect') || '/'
 
   useEffect(() => {
     if (userInfo) {
-      history.push(redirect)
+      navigate(redirect) // Use navigate to redirect if user is already logged in
     }
-  }, [history, userInfo, redirect])
+  }, [userInfo, redirect, navigate]) // Include navigate in dependency array
 
   const submitHandler = (e) => {
     e.preventDefault()
     if (password !== confirmPassword) {
       setMessage('Passwords do not match')
     } else {
-      dispatch(register(name, email, password))
+      dispatch(register(name, email, password, role)) // Pass the role
     }
   }
 
@@ -81,6 +85,19 @@ const RegisterScreen = ({ location, history }) => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           ></Form.Control>
+        </Form.Group>
+
+        {/* Add Role Dropdown */}
+        <Form.Group controlId='role'>
+          <Form.Label>Role</Form.Label>
+          <Form.Control
+            as='select'
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <option value='buyer'>Buyer</option>
+            <option value='seller'>Seller</option>
+          </Form.Control>
         </Form.Group>
 
         <Button type='submit' variant='primary' className='mt-3'>

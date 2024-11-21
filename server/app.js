@@ -82,7 +82,7 @@ const server = app.listen(
 // Set up Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5000",  // Adjust this if needed
+    origin: "http://localhost:3000",  // Adjust this if needed
     credentials: true,
   },
 });

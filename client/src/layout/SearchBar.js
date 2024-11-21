@@ -1,17 +1,20 @@
 import { Form, FormControl, Container, Button } from 'react-bootstrap'
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-const SearchBar = ({ history }) => {
+const SearchBar = () => {
   const [keyword, setKeyword] = useState('')
+  const navigate = useNavigate()  // Using useNavigate for navigation
 
   const submitHandler = (e) => {
     e.preventDefault()
     if (keyword.trim()) {
-      history.push(`/search/${keyword}`)
+      navigate(`/search/${keyword}`)  // Use navigate for routing in React Router v6
     } else {
-      history.push('/')
+      navigate('/')  // Redirect to home page if no keyword
     }
   }
+
   return (
     <Container className='mb-3 mt-3'>
       <Form onSubmit={submitHandler} className='d-flex'>

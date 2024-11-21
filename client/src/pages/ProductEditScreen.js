@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Form, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
@@ -9,8 +9,9 @@ import FormContainer from '../components/FormContainer'
 import { listProductDetails, updateProduct } from '../actions/productActions'
 import { PRODUCT_UPDATE_RESET } from '../constants/productConstants'
 
-const ProductEditScreen = ({ match, history }) => {
-  const productId = match.params.id
+const ProductEditScreen = () => {
+  const { id: productId } = useParams()  // Use `useParams` to get productId
+  const navigate = useNavigate()  // Use `useNavigate` for navigation
 
   const [name, setName] = useState('')
   const [price, setPrice] = useState(0)
@@ -36,7 +37,7 @@ const ProductEditScreen = ({ match, history }) => {
   useEffect(() => {
     if (successUpdate) {
       dispatch({ type: PRODUCT_UPDATE_RESET })
-      history.push('/admin/productlist')
+      navigate('/seller/products') 
     } else {
       if (!product.name || product._id !== productId) {
         dispatch(listProductDetails(productId))
@@ -50,7 +51,7 @@ const ProductEditScreen = ({ match, history }) => {
         setDescription(product.description)
       }
     }
-  }, [dispatch, history, productId, product, successUpdate])
+  }, [dispatch, navigate, productId, product, successUpdate])
 
   const uploadFileHandler = async (e) => {
     const file = e.target.files[0]
@@ -66,7 +67,7 @@ const ProductEditScreen = ({ match, history }) => {
       }
 
       const { data } = await axios.post('/api/upload', formData, config)
-      const new_data = data.replace(/\\/g, "/");      
+      const new_data = data.replace(/\\/g, "/");  // Normalize file path if necessary
 
       setImage(new_data)
       setUploading(false)
@@ -94,7 +95,7 @@ const ProductEditScreen = ({ match, history }) => {
 
   return (
     <>
-      <Link to='/admin/productlist' className='btn btn-light my-3'>
+      <Link to='/seller/products' className='btn btn-light my-3'>
         Go Back
       </Link>
       <FormContainer>

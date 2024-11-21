@@ -1,19 +1,17 @@
 import React, { useEffect } from 'react'
-import { LinkContainer } from 'react-router-bootstrap'
-import { Table, Button, Row, Col, Container } from 'react-bootstrap'
+import { Button, Row, Col, Container, Table } from 'react-bootstrap' // Added Table import here
 import { useDispatch, useSelector } from 'react-redux'
+import { listProducts, deleteProduct, createProduct } from '../actions/productActions'
+import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
+import { useNavigate, useParams } from 'react-router-dom' // Added useParams here
+import { LinkContainer } from 'react-router-bootstrap' // Added LinkContainer import here
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import Paginate from '../components/Paginate'
-import {
-  listProducts,
-  deleteProduct,
-  createProduct,
-} from '../actions/productActions'
-import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
 
-const ProductListScreen = ({ history, match }) => {
-  const pageNumber = match.params.pageNumber || 1
+const ProductListScreen = () => {
+  const { pageNumber = 1 } = useParams()  // Get page number from URL
+  const navigate = useNavigate()
 
   const dispatch = useDispatch()
 
@@ -21,19 +19,10 @@ const ProductListScreen = ({ history, match }) => {
   const { loading, error, products, page, pages } = productList
 
   const productDelete = useSelector((state) => state.productDelete)
-  const {
-    loading: loadingDelete,
-    error: errorDelete,
-    success: successDelete,
-  } = productDelete
+  const { loading: loadingDelete, error: errorDelete, success: successDelete } = productDelete
 
   const productCreate = useSelector((state) => state.productCreate)
-  const {
-    loading: loadingCreate,
-    error: errorCreate,
-    success: successCreate,
-    product: createdProduct,
-  } = productCreate
+  const { loading: loadingCreate, error: errorCreate, success: successCreate, product: createdProduct } = productCreate
 
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
@@ -41,24 +30,16 @@ const ProductListScreen = ({ history, match }) => {
   useEffect(() => {
     dispatch({ type: PRODUCT_CREATE_RESET })
 
-    if (!userInfo || !userInfo.isAdmin) {
-      history.push('/login')
+    if (!userInfo) {
+      navigate('/login')
     }
 
     if (successCreate) {
-      history.push(`/admin/product/${createdProduct._id}/edit`)
+      navigate(`/seller/products/${createdProduct._id}/edit`)
     } else {
-      dispatch(listProducts('', pageNumber))
+      dispatch(listProducts({ userId: userInfo._id }, pageNumber))  // Fetch products for the current user
     }
-  }, [
-    dispatch,
-    history,
-    userInfo,
-    successDelete,
-    successCreate,
-    createdProduct,
-    pageNumber,
-  ])
+  }, [dispatch, navigate, userInfo, successDelete, successCreate, createdProduct, pageNumber])
 
   const deleteHandler = (id) => {
     if (window.confirm('Are you sure')) {
@@ -74,11 +55,11 @@ const ProductListScreen = ({ history, match }) => {
     <Container>
       <Row className='align-items-center'>
         <Col>
-          <h1>Products</h1>
+          <h1>Your Products</h1>
         </Col>
         <Col className='text-right'>
           <Button className='my-3' onClick={createProductHandler}>
-            <i className='fas fa-plus'></i> Create Product
+            <i className='fas fa-plus'></i> Add Product
           </Button>
         </Col>
       </Row>
@@ -112,7 +93,7 @@ const ProductListScreen = ({ history, match }) => {
                   <td>{product.category}</td>
                   <td>{product.brand}</td>
                   <td>
-                    <LinkContainer to={`/admin/product/${product._id}/edit`}>
+                    <LinkContainer to={`/seller/products/${product._id}/edit`}>
                       <Button variant='light' className='btn-sm'>
                         <i className='fas fa-edit'></i>
                       </Button>
@@ -129,7 +110,7 @@ const ProductListScreen = ({ history, match }) => {
               ))}
             </tbody>
           </Table>
-          <Paginate pages={pages} page={page} isAdmin={true} />
+          <Paginate pages={pages} page={page} isAdmin={false} />
         </>
       )}
     </Container>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Row,
@@ -14,12 +14,16 @@ import {
 import Message from '../components/Message'
 import { addToCart, removeFromCart } from '../actions/cartActions'
 
-const CartScreen = ({ match, location, history }) => {
-  const productId = match.params.id
+const CartScreen = () => {
+  // Use useParams to get the productId
+  const { id: productId } = useParams()
 
+  // Get qty from query string using useLocation
+  const location = useLocation()
   const qty = location.search ? Number(location.search.split('=')[1]) : 1
 
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const cart = useSelector((state) => state.cart)
   const { cartItems } = cart
@@ -35,7 +39,7 @@ const CartScreen = ({ match, location, history }) => {
   }
 
   const checkoutHandler = () => {
-    history.push('/login?redirect=shipping')
+    navigate('/login?redirect=shipping')
   }
 
   return (
@@ -99,7 +103,7 @@ const CartScreen = ({ match, location, history }) => {
                   Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)}
                   ) items
                 </h2>
-                $
+                $ 
                 {cartItems
                   .reduce((acc, item) => acc + item.qty * item.price, 0)
                   .toFixed(2)}

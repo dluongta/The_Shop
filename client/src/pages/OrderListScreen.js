@@ -5,9 +5,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import { listOrders } from '../actions/orderActions'
+import { useNavigate } from 'react-router-dom'
 
-const OrderListScreen = ({ history }) => {
+const OrderListScreen = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate() // Use useNavigate hook for navigation
 
   const orderList = useSelector((state) => state.orderList)
   const { loading, error, orders } = orderList
@@ -19,9 +21,9 @@ const OrderListScreen = ({ history }) => {
     if (userInfo && userInfo.isAdmin) {
       dispatch(listOrders())
     } else {
-      history.push('/login')
+      navigate('/login') // Redirect using navigate in React Router v6
     }
-  }, [dispatch, history, userInfo])
+  }, [dispatch, userInfo, navigate]) // Add navigate to the dependency array
 
   return (
     <>
@@ -53,14 +55,14 @@ const OrderListScreen = ({ history }) => {
                 <td>
                   {order.isPaid ? (
                     <i className='fas fa-check' style={{ color: 'green' }}></i>
-                    ) : (
+                  ) : (
                     <i className='fas fa-times' style={{ color: 'red' }}></i>
                   )}
                 </td>
                 <td>
                   {order.isDelivered ? (
                     <i className='fas fa-check' style={{ color: 'green' }}></i>
-                    ) : (
+                  ) : (
                     <i className='fas fa-times' style={{ color: 'red' }}></i>
                   )}
                 </td>

@@ -4,22 +4,27 @@ import { useDispatch, useSelector } from 'react-redux'
 import FormContainer from '../components/FormContainer'
 import CheckoutSteps from '../components/CheckoutSteps'
 import { saveShippingAddress } from '../actions/cartActions'
+import { useNavigate } from 'react-router-dom' // Import useNavigate
 
-const ShippingScreen = ({ history }) => {
+const ShippingScreen = () => {
   const cart = useSelector((state) => state.cart)
   const { shippingAddress } = cart
 
-  const [address, setAddress] = useState(shippingAddress.address)
-  const [city, setCity] = useState(shippingAddress.city)
-  const [postalCode, setPostalCode] = useState(shippingAddress.postalCode)
-  const [country, setCountry] = useState(shippingAddress.country)
+  // Initialize state with values from the Redux store (if available)
+  const [address, setAddress] = useState(shippingAddress.address || '')
+  const [city, setCity] = useState(shippingAddress.city || '')
+  const [postalCode, setPostalCode] = useState(shippingAddress.postalCode || '')
+  const [country, setCountry] = useState(shippingAddress.country || '')
 
   const dispatch = useDispatch()
+  const navigate = useNavigate() // Initialize useNavigate
 
   const submitHandler = (e) => {
     e.preventDefault()
+    // Dispatch the action to save the shipping address
     dispatch(saveShippingAddress({ address, city, postalCode, country }))
-    history.push('/payment')
+    // Use navigate to redirect to the next step
+    navigate('/payment')
   }
 
   return (

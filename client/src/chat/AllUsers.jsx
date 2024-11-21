@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 import { useApi } from "../services/ChatService";
 import Contact from "./Contact";
 import UserLayout from "../layouts/UserLayout";
@@ -31,19 +30,23 @@ export default function AllUsers({
   } = useApi();
 
   useEffect(() => {
-    const Ids = chatRooms.map((chatRoom) => {
-      return chatRoom.members.find((member) => member !== currentUser._id);
-    });
-    setContactIds(Ids);
-  }, [chatRooms, currentUser._id]);
+    if (chatRooms && currentUser) {
+      const Ids = chatRooms.map((chatRoom) => {
+        return chatRoom.members.find((member) => member !== currentUser._id);
+      });
+      setContactIds(Ids);
+    }
+  }, [chatRooms, currentUser]);
 
   useEffect(() => {
-    setNonContacts(
-      users.filter(
-        (f) => f._id !== currentUser._id && !contactIds.includes(f._id)
-      )
-    );
-  }, [contactIds, users, currentUser._id]);
+    if (users && users.length > 0 && currentUser) {
+      setNonContacts(
+        users.filter(
+          (f) => f._id !== currentUser._id && !contactIds.includes(f._id)
+        )
+      );
+    }
+  }, [contactIds, users, currentUser]);
 
   const changeCurrentChat = (index, chat) => {
     setSelectedChat(index);
@@ -88,7 +91,7 @@ export default function AllUsers({
           Other Users
         </h2>
         <li>
-          {nonContacts.map((nonContact, index) => (
+          {nonContacts?.map((nonContact, index) => (
             <div
               key={index}
               className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer"
