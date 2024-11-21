@@ -17,14 +17,18 @@ const getProducts = asyncHandler(async (req, res) => {
       }
     : {}
 
-  const count = await Product.countDocuments({ ...keyword })
-  const products = await Product.find({ ...keyword })
+  // Filter by userId if provided in the query
+  const userFilter = req.query.userId ? { user: req.query.userId } : {}
+
+  const count = await Product.countDocuments({ ...keyword, ...userFilter })  // Include userFilter in the count query
+  const products = await Product.find({ ...keyword, ...userFilter })  // Include userFilter in the products query
     .limit(pageSize)
     .skip(pageSize * (page - 1))
-    .sort('-updatedAt')
+    .sort('-updatedAt')  // Sorting by the most recently updated product
 
   res.json({ products, page, pages: Math.ceil(count / pageSize) })
 })
+
 
 // @desc    Fetch single product
 // @route   GET /api/products/:id

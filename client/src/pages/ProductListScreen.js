@@ -28,19 +28,20 @@ const ProductListScreen = () => {
   const { userInfo } = userLogin
 
   useEffect(() => {
-    dispatch({ type: PRODUCT_CREATE_RESET })
-
+    dispatch({ type: PRODUCT_CREATE_RESET });
+  
     if (!userInfo) {
-      navigate('/login')
+      navigate('/login');
     }
-
+  
     if (successCreate) {
-      navigate(`/seller/products/${createdProduct._id}/edit`)
+      navigate(`/seller/products/${createdProduct._id}/edit`);
     } else {
-      dispatch(listProducts({ userId: userInfo._id }, pageNumber))  // Fetch products for the current user
+      // Pass the userInfo._id to the listProducts action to fetch products for the current user
+      dispatch(listProducts('', pageNumber, userInfo._id)); // User ID added here
     }
-  }, [dispatch, navigate, userInfo, successDelete, successCreate, createdProduct, pageNumber])
-
+  }, [dispatch, navigate, userInfo, successDelete, successCreate, createdProduct, pageNumber]);
+  
   const deleteHandler = (id) => {
     if (window.confirm('Are you sure')) {
       dispatch(deleteProduct(id))

@@ -24,20 +24,19 @@ import {
 } from '../constants/productConstants'
 import { logout } from './userActions'
 
-export const listProducts = (keyword = '', pageNumber = '') => async (
-  dispatch
-) => {
+export const listProducts = (keyword = '', pageNumber = '', userId = '') => async (dispatch) => {
   try {
-    dispatch({ type: PRODUCT_LIST_REQUEST })
+    dispatch({ type: PRODUCT_LIST_REQUEST });
 
+    // Update the API request to include the userId if provided
     const { data } = await axios.get(
-      `/api/products?keyword=${keyword}&pageNumber=${pageNumber}`
-    )
+      `/api/products?keyword=${keyword}&pageNumber=${pageNumber}&userId=${userId}`  // Added userId parameter here
+    );
 
     dispatch({
       type: PRODUCT_LIST_SUCCESS,
       payload: data,
-    })
+    });
   } catch (error) {
     dispatch({
       type: PRODUCT_LIST_FAIL,
@@ -45,9 +44,10 @@ export const listProducts = (keyword = '', pageNumber = '') => async (
         error.response && error.response.data.message
           ? error.response.data.message
           : error.message,
-    })
+    });
   }
-}
+};
+
 
 export const listProductDetails = (id) => async (dispatch) => {
   try {
