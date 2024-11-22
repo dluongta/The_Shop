@@ -13,6 +13,7 @@ import productRoutes from './routes/productRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import discountRoutes from './routes/discountRoutes.js'
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/room', chatRoomRoutes);
 app.use('/api/message', chatMessageRoutes);
+app.use('/api/discounts', discountRoutes);  // Make sure this line is correctly configured
 
 // PayPal configuration
 app.get('/api/config/paypal', (req, res) =>

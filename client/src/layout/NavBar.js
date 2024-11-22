@@ -7,11 +7,16 @@ import { logout } from '../actions/userActions'
 export const NavBar = () => {
   const dispatch = useDispatch()
 
+  // Get user login status
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
+  
+  // Handle logout
   const logoutHandler = () => {
     dispatch(logout())
   }
+
+  // Get cart items
   const cart = useSelector((state) => state.cart)
   const { cartItems } = cart
 
@@ -19,11 +24,11 @@ export const NavBar = () => {
     <nav className='navbar navbar-expand-lg navbar-dark bg-dark fixed-top mb-5'>
       <div className='container'>
         <LinkContainer to='/'>
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <a className='navbar-brand'>The Shop</a>
         </LinkContainer>
 
         <ul className='navbar-nav ms-auto d-flex flex-row'>
+          {/* Chat link */}
           <li>
             <LinkContainer to='/chat'>
               <a className='nav-link text-white'>
@@ -31,9 +36,10 @@ export const NavBar = () => {
               </a>
             </LinkContainer>
           </li>
+
+          {/* Cart link with item count */}
           <li>
             <LinkContainer to='/cart'>
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a className='nav-link text-white'>
                 {userInfo ? (
                   <>
@@ -49,6 +55,16 @@ export const NavBar = () => {
             </LinkContainer>
           </li>
 
+          {/* Discount link */}
+          <li>
+            <LinkContainer to='/discounts'>
+              <a className='nav-link text-white'>
+                <i className='fas fa-tag'></i> Discounts
+              </a>
+            </LinkContainer>
+          </li>
+
+          {/* User Profile and Logout */}
           {userInfo ? (
             <>
               <li>
@@ -60,7 +76,6 @@ export const NavBar = () => {
               </li>
               <li>
                 <a className='nav-link text-white'>
-
                   <LinkContainer to='/'>
                     <a className='dropdown-item bg-dark text-white' onClick={logoutHandler}>
                       Logout
@@ -79,11 +94,11 @@ export const NavBar = () => {
             </li>
           )}
 
+          {/* Admin Links */}
           {userInfo && userInfo.isAdmin && (
             <>
               <li>
                 <a className='nav-link text-white'>
-
                   <LinkContainer to='/admin/userlist'>
                     <a className='dropdown-item bg-dark text-white'>Shoppers</a>
                   </LinkContainer>
@@ -91,7 +106,6 @@ export const NavBar = () => {
               </li>
               <li>
                 <a className='nav-link text-white'>
-
                   <LinkContainer to='/admin/productlist'>
                     <a className='dropdown-item bg-dark text-white'>Products</a>
                   </LinkContainer>
@@ -99,24 +113,21 @@ export const NavBar = () => {
               </li>
               <li>
                 <a className='nav-link text-white'>
-
                   <LinkContainer to='/admin/orderlist'>
                     <a className='dropdown-item bg-dark text-white'>Orders</a>
                   </LinkContainer>
                 </a>
               </li>
-
             </>
           )}
 
-
-          {userInfo && userInfo.role == "seller" && (
+          {/* Seller Links */}
+          {userInfo && userInfo.role === 'seller' && (
             <>
               <li>
                 <a className='nav-link text-white'>
-
-                  <LinkContainer to="/seller/products">
-                    <a className="dropdown-item bg-dark text-white">My Products</a>
+                  <LinkContainer to='/seller/products'>
+                    <a className='dropdown-item bg-dark text-white'>My Products</a>
                   </LinkContainer>
                 </a>
               </li>

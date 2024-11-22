@@ -18,6 +18,7 @@ import ProductEditScreen from './pages/ProductEditScreen';
 import OrderListScreen from './pages/OrderListScreen';
 import { AuthProvider } from './contexts/AuthContext';
 import ChatLayout from './components/ChatLayout';
+import DiscountListScreen from './pages/DiscountListScreen';
 
 // PAGE LAYOUTS
 import { NavBar } from './layout/NavBar';
@@ -71,6 +72,8 @@ const App = () => {
               path="/chat"
               element={userInfo ? <ChatLayout /> : <Navigate to="/login" />}
             />
+            <Route path='/discounts' element={<DiscountListScreen />} />
+
           </Routes>
         </main>
         <Footer />

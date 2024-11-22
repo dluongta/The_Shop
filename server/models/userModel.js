@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = mongoose.Schema(
   {
@@ -27,25 +27,30 @@ const userSchema = mongoose.Schema(
       enum: ['buyer', 'seller'],  // Only buyer or seller can be set
       default: 'buyer',  // Default role is buyer
     },
+    // Default discounts for a new user
+    discounts: {
+      type: [String],  // An array of discount codes
+      default: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'], // Default discount codes
+    },
   },
   {
     timestamps: true,
   }
-)
+);
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next()
+    next();
   }
 
-  const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
-})
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model('User', userSchema);
 
-export default User
+export default User;

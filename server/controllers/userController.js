@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler'
 import generateToken from '../utils/generateToken.js'
 import User from '../models/userModel.js'
+import Discount from '../models/discountModel.js';  // Assuming Discount model exists
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -28,22 +29,60 @@ const authUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body
+  const { name, email, password, role } = req.body;
 
-  const userExists = await User.findOne({ email })
+  // Check if the user already exists
+  const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400)
-    throw new Error('User already exists')
+    res.status(400);
+    throw new Error('User already exists');
   }
 
+  // Create the new user
   const user = await User.create({
     name,
     email,
     password,
     role,
-  })
+    discount: [],  // Initialize an empty array to hold references to discount documents
+  });
 
+  // Default discount codes to add
+  const defaultDiscounts = [
+    { code: 'DISCOUNT10', description: '10% off your order', amount: 10 },
+    { code: 'DISCOUNT20', description: '20% off your order', amount: 20 },
+    { code: 'SALE10', description: '10% off sale items', amount: 10 },
+  ];
+
+  // Check if discounts already exist in the database
+  const existingDiscounts = await Discount.find({
+    code: { $in: defaultDiscounts.map(d => d.code) }  // Check if any of the discount codes already exist
+  });
+
+  // Filter out existing discounts from the new discounts list
+  const newDiscounts = defaultDiscounts.filter(discount => 
+    !existingDiscounts.some(existing => existing.code === discount.code)
+  );
+
+  // Create discount documents for the new discounts and add to the database
+  const createdDiscounts = await Promise.all(
+    newDiscounts.map((discountData) => {
+      const discount = new Discount({
+        ...discountData,
+        userId: user._id,  // Associate discount with the user
+      });
+      return discount.save();  // Save each discount to the database
+    })
+  );
+
+  // Assign the created discount documents to the user's discount field
+  user.discount = createdDiscounts.map((discount) => discount._id);  // Store the references to discount documents
+
+  // Save the user with the associated discount references
+  await user.save();
+
+  // Return the user data along with the token
   if (user) {
     res.status(201).json({
       _id: user._id,
@@ -51,13 +90,14 @@ const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       role: user.role,
+      discount: user.discount,  // Send the discount IDs back in the response
       token: generateToken(user._id),
-    })
+    });
   } else {
-    res.status(400)
-    throw new Error('Invalid user data')
+    res.status(400);
+    throw new Error('Invalid user data');
   }
-})
+});
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
