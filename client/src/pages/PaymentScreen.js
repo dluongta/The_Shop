@@ -4,16 +4,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import FormContainer from '../components/FormContainer'
 import CheckoutSteps from '../components/CheckoutSteps'
 import { savePaymentMethod } from '../actions/cartActions'
-import { useNavigate } from 'react-router-dom' // Import useNavigate
+import { useNavigate } from 'react-router-dom'
 
 const PaymentScreen = () => {
   const cart = useSelector((state) => state.cart)
   const { shippingAddress } = cart
 
-  const navigate = useNavigate() // Initialize useNavigate
+  const navigate = useNavigate()
 
   if (!shippingAddress.address) {
-    navigate('/shipping') // Redirect using navigate
+    navigate('/shipping')
   }
 
   const [paymentMethod, setPaymentMethod] = useState('PayPal')
@@ -23,7 +23,7 @@ const PaymentScreen = () => {
   const submitHandler = (e) => {
     e.preventDefault()
     dispatch(savePaymentMethod(paymentMethod))
-    navigate('/placeorder') // Navigate to placeorder after saving payment method
+    navigate('/placeorder')
   }
 
   return (
@@ -40,17 +40,18 @@ const PaymentScreen = () => {
               id='PayPal'
               name='paymentMethod'
               value='PayPal'
-              checked
+              checked={paymentMethod === 'PayPal'}
               onChange={(e) => setPaymentMethod(e.target.value)}
             ></Form.Check>
-            {/* <Form.Check
+            <Form.Check
               type='radio'
-              label='Stripe'
-              id='Stripe'
+              label='In Cash'
+              id='InCash'
               name='paymentMethod'
-              value='Stripe'
+              value='InCash'
+              checked={paymentMethod === 'InCash'}
               onChange={(e) => setPaymentMethod(e.target.value)}
-            ></Form.Check> */}
+            ></Form.Check>
           </Col>
         </Form.Group>
 

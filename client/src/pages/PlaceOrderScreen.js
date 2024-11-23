@@ -1,54 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button, Row, Col, ListGroup, Image, Card, Form } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import CheckoutSteps from '../components/CheckoutSteps';
-import { createOrder } from '../actions/orderActions';
-import { ORDER_CREATE_RESET } from '../constants/orderConstants';
-import { USER_DETAILS_RESET } from '../constants/userConstants';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { applyDiscount, removeDiscount } from '../actions/discountActions'; // Import discount actions
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Button, Row, Col, ListGroup, Image, Card, Form } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import Message from '../components/Message'
+import CheckoutSteps from '../components/CheckoutSteps'
+import { createOrder } from '../actions/orderActions'
+import { ORDER_CREATE_RESET } from '../constants/orderConstants'
+import { USER_DETAILS_RESET } from '../constants/userConstants'
 
 const PlaceOrderScreen = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const cart = useSelector((state) => state.cart);
-  const discount = useSelector((state) => state.discount.discount); // Get discount state from Redux
-
-  const [discountCode, setDiscountCode] = useState('');
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const cart = useSelector((state) => state.cart)
 
   if (!cart.shippingAddress.address) {
-    navigate('/shipping');
+    navigate('/shipping')
   } else if (!cart.paymentMethod) {
-    navigate('/payment');
+    navigate('/payment')
   }
 
-  const addDecimals = (num) => (Math.round(num * 100) / 100).toFixed(2);
+  const addDecimals = (num) => (Math.round(num * 100) / 100).toFixed(2)
 
-  cart.itemsPrice = addDecimals(cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0));
-  cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100);
-  cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)));
+  cart.itemsPrice = addDecimals(cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0))
+  cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100)
+  cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)))
 
-  // Apply discount to total price, check if discount exists
-  const discountAmount = discount ? discount.amount : 0;
   cart.totalPrice = (
     Number(cart.itemsPrice) +
     Number(cart.shippingPrice) +
-    Number(cart.taxPrice) -
-    discountAmount
-  ).toFixed(2);
+    Number(cart.taxPrice)
+  ).toFixed(2)
 
-  const orderCreate = useSelector((state) => state.orderCreate);
-  const { order, success, error } = orderCreate;
+  const orderCreate = useSelector((state) => state.orderCreate)
+  const { order, success, error } = orderCreate
 
   useEffect(() => {
     if (success) {
-      navigate(`/order/${order._id}`);
-      dispatch({ type: USER_DETAILS_RESET });
-      dispatch({ type: ORDER_CREATE_RESET });
+      navigate(`/order/${order._id}`)
+      dispatch({ type: USER_DETAILS_RESET })
+      dispatch({ type: ORDER_CREATE_RESET })
     }
-  }, [success, dispatch, navigate]);
+  }, [success, dispatch, navigate])
 
   const placeOrderHandler = () => {
     dispatch(
@@ -61,17 +53,8 @@ const PlaceOrderScreen = () => {
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
       })
-    );
-  };
-
-  const handleDiscountSubmit = (e) => {
-    e.preventDefault();
-    dispatch(applyDiscount(discountCode)); // Dispatch discount action to apply code
-  };
-
-  const handleRemoveDiscount = () => {
-    dispatch(removeDiscount()); // Dispatch remove discount action
-  };
+    )
+  }
 
   return (
     <>
@@ -152,39 +135,13 @@ const PlaceOrderScreen = () => {
                   <Col>${cart.taxPrice}</Col>
                 </Row>
               </ListGroup.Item>
-
-              {/* Apply Discount Section */}
-              <ListGroup.Item>
-                <Form onSubmit={handleDiscountSubmit}>
-                  <Form.Group controlId='discountCode'>
-                    <Form.Label>Discount Code</Form.Label>
-                    <Form.Control
-                      type='text'
-                      placeholder='Enter discount code'
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value)}
-                    />
-                  </Form.Group>
-                  <Button type='submit' variant='primary'>
-                    Apply Discount
-                  </Button>
-                  {discountAmount > 0 && (
-                    <Button variant='danger' onClick={handleRemoveDiscount}>
-                      Remove Discount
-                    </Button>
-                  )}
-                </Form>
-              </ListGroup.Item>
-
               <ListGroup.Item>
                 <Row>
                   <Col>Total</Col>
                   <Col>${cart.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-
               {error && <Message variant='danger'>{error}</Message>}
-
               <ListGroup.Item>
                 <Button
                   type='button'
@@ -200,7 +157,7 @@ const PlaceOrderScreen = () => {
         </Col>
       </Row>
     </>
-  );
-};
+  )
+}
 
-export default PlaceOrderScreen;
+export default PlaceOrderScreen

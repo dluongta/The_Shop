@@ -17,8 +17,8 @@ import {
 } from '../constants/orderConstants'
 
 const OrderScreen = () => {
-  const { id: orderId } = useParams() 
-  const navigate = useNavigate()  
+  const { id: orderId } = useParams()
+  const navigate = useNavigate()
 
   const [sdkReady, setSdkReady] = useState(false)
 
@@ -49,7 +49,7 @@ const OrderScreen = () => {
 
   useEffect(() => {
     if (!userInfo) {
-      navigate('/login') 
+      navigate('/login')
     }
 
     const addPayPalScript = async () => {
@@ -68,7 +68,7 @@ const OrderScreen = () => {
       dispatch({ type: ORDER_PAY_RESET })
       dispatch({ type: ORDER_DELIVER_RESET })
       dispatch(getOrderDetails(orderId))
-    } else if (!order.isPaid) {
+    } else if (!order.isPaid && order.paymentMethod === 'PayPal') {
       if (!window.paypal) {
         addPayPalScript()
       } else {
@@ -87,16 +87,43 @@ const OrderScreen = () => {
     dispatch(deliverOrder(order))
   }
 
+  // Render logic for different payment methods
+  const renderPaymentSection = () => {
+    if (order.paymentMethod === 'InCash') {
+      return (
+        <Message variant="success">
+          Your order has been placed successfully. Payment will be made in cash upon delivery.
+        </Message>
+      )
+    } else if (!order.isPaid) {
+      return (
+        <>
+          {loadingPay && <Loader />}
+          {!sdkReady ? (
+            <Loader />
+          ) : (
+            <PayPalButton
+              amount={order.totalPrice}
+              onSuccess={successPaymentHandler}
+            />
+          )}
+        </>
+      )
+    } else {
+      return <Message variant="success">Paid on {order.paidAt}</Message>
+    }
+  }
+
   return loading ? (
     <Loader />
   ) : error ? (
-    <Message variant='danger'>{error}</Message>
+    <Message variant="danger">{error}</Message>
   ) : (
     <>
       <h1>Order {order._id}</h1>
       <Row>
         <Col md={8}>
-          <ListGroup variant='flush'>
+          <ListGroup variant="flush">
             <ListGroup.Item>
               <h2>Shipping</h2>
               <p>
@@ -113,11 +140,11 @@ const OrderScreen = () => {
                 {order.shippingAddress.country}
               </p>
               {order.isDelivered ? (
-                <Message variant='success'>
+                <Message variant="success">
                   Delivered on {order.deliveredAt}
                 </Message>
               ) : (
-                <Message variant='danger'>Not Delivered</Message>
+                <Message variant="danger">Not Delivered</Message>
               )}
             </ListGroup.Item>
 
@@ -127,11 +154,7 @@ const OrderScreen = () => {
                 <strong>Method: </strong>
                 {order.paymentMethod}
               </p>
-              {order.isPaid ? (
-                <Message variant='success'>Paid on {order.paidAt}</Message>
-              ) : (
-                <Message variant='danger'>Not Paid</Message>
-              )}
+              {renderPaymentSection()}
             </ListGroup.Item>
 
             <ListGroup.Item>
@@ -139,7 +162,7 @@ const OrderScreen = () => {
               {order.orderItems.length === 0 ? (
                 <Message>Order is empty</Message>
               ) : (
-                <ListGroup variant='flush'>
+                <ListGroup variant="flush">
                   {order.orderItems.map((item, index) => (
                     <ListGroup.Item key={index}>
                       <Row>
@@ -169,7 +192,7 @@ const OrderScreen = () => {
         </Col>
         <Col md={4}>
           <Card>
-            <ListGroup variant='flush'>
+            <ListGroup variant="flush">
               <ListGroup.Item>
                 <h2>Order Summary</h2>
               </ListGroup.Item>
@@ -197,28 +220,16 @@ const OrderScreen = () => {
                   <Col>${order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              {!order.isPaid && (
-                <ListGroup.Item>
-                  {loadingPay && <Loader />}
-                  {!sdkReady ? (
-                    <Loader />
-                  ) : (
-                    <PayPalButton
-                      amount={order.totalPrice}
-                      onSuccess={successPaymentHandler}
-                    />
-                  )}
-                </ListGroup.Item>
-              )}
-              {loadingDeliver && <Loader />}
+
               {userInfo &&
                 userInfo.isAdmin &&
                 order.isPaid &&
                 !order.isDelivered && (
                   <ListGroup.Item>
+                    {loadingDeliver && <Loader />}
                     <Button
-                      type='button'
-                      className='btn btn-block'
+                      type="button"
+                      className="btn btn-block"
                       onClick={deliverHandler}
                     >
                       Mark As Delivered
