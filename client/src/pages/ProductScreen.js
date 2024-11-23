@@ -20,7 +20,6 @@ const ProductScreen = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  // Get the product ID from URL parameters
   const { id } = useParams()
 
   const productDetails = useSelector((state) => state.productDetails)
@@ -45,7 +44,6 @@ const ProductScreen = () => {
       dispatch(listProductDetails(id))
       dispatch({ type: PRODUCT_CREATE_REVIEW_RESET })
     }
-    // eslint-disable-next-line
   }, [dispatch, id, successProductReview])
 
   const addToCartHandler = () => {
@@ -92,6 +90,10 @@ const ProductScreen = () => {
                 <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
                 <ListGroup.Item>
                   Description: {product.description}
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <strong>Seller: </strong>
+                  {product.user ? product.user.name : 'Not available'}
                 </ListGroup.Item>
               </ListGroup>
             </Col>
