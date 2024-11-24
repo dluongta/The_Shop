@@ -63,14 +63,14 @@ export const NavBar = () => {
               </a>
             </LinkContainer>
           </li>
-          {userInfo.role === "seller" && (
-          <li className="nav-item">
-                    <LinkContainer to="/seller/products">
-                      <a className="nav-link text-white">
-                        My Products
-                      </a>
-                    </LinkContainer>
-          </li>)}
+          {userInfo && userInfo.role === "seller" && (
+            <li className="nav-item">
+              <LinkContainer to="/seller/products">
+                <a className="nav-link text-white">
+                  My Products
+                </a>
+              </LinkContainer>
+            </li>)}
 
           {/* Orders Dropdown */}
           {userInfo && (
