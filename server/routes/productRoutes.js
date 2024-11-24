@@ -10,7 +10,16 @@ import {
   getTopProducts,
 } from '../controllers/productController.js'
 import { protect, admin, isSeller } from '../middleware/authMiddleware.js'
+import Product from '../models/productModel.js'
 
+router.get('/admin/productlist', protect, admin, async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 // Route for getting products and creating products (admin or seller)
 router.route('/')
   .get(getProducts)

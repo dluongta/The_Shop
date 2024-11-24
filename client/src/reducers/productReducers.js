@@ -23,7 +23,28 @@ import {
   PRODUCT_TOP_REQUEST,
   PRODUCT_TOP_SUCCESS,
   PRODUCT_TOP_FAIL,
+  PRODUCT_LIST_ADMIN_REQUEST,
+  PRODUCT_LIST_ADMIN_SUCCESS,
+  PRODUCT_LIST_ADMIN_FAIL,
 } from '../constants/productConstants'
+
+
+export const productAdminListReducer = (state = { products: [] }, action) => {
+  switch (action.type) {
+    case PRODUCT_LIST_ADMIN_REQUEST:
+      return { loading: true, products: [] };
+    case PRODUCT_LIST_ADMIN_SUCCESS:
+      return {
+        loading: false,
+        products: action.payload,
+      };
+    case PRODUCT_LIST_ADMIN_FAIL:
+      return { loading: false, error: action.payload };
+    default:
+      return state;
+  }
+};
+
 
 export const productListReducer = (state = { products: [] }, action) => {
   switch (action.type) {

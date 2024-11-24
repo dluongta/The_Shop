@@ -21,8 +21,41 @@ import {
   PRODUCT_TOP_REQUEST,
   PRODUCT_TOP_SUCCESS,
   PRODUCT_TOP_FAIL,
+  PRODUCT_LIST_ADMIN_REQUEST,
+  PRODUCT_LIST_ADMIN_SUCCESS,
+  PRODUCT_LIST_ADMIN_FAIL,
 } from '../constants/productConstants'
 import { logout } from './userActions'
+
+
+export const listAdminProducts = () => async (dispatch, getState) => {
+  try {
+    dispatch({ type: PRODUCT_LIST_ADMIN_REQUEST });
+
+    // Get user token from state
+    const {
+      userLogin: { userInfo },
+    } = getState();
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`, // Send token for authentication
+      },
+    };
+
+    const { data } = await axios.get('/api/products/admin/productlist', config); // Use the admin-specific route
+
+    dispatch({
+      type: PRODUCT_LIST_ADMIN_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: PRODUCT_LIST_ADMIN_FAIL,
+      payload: error.response && error.response.data.message ? error.response.data.message : error.message,
+    });
+  }
+};
 
 export const listProducts = (keyword = '', pageNumber = '', userId = '') => async (dispatch) => {
   try {

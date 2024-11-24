@@ -26,6 +26,7 @@ import SearchBar from './layout/SearchBar';
 import Footer from './layout/Footer';
 import BuyOrdersScreen from './pages/BuyOrdersScreen';
 import SellOrdersScreen from './pages/SellOrdersScreen';
+import AdminProductList from './pages/AdminProductList';
 // Create a custom component to conditionally render the header
 const Header = () => {
   const location = useLocation();
@@ -68,6 +69,7 @@ const App = () => {
             <Route path="/" element={<HomeScreen />} />
             <Route path="/orders" element={<BuyOrdersScreen />} />
             <Route path="/seller/orders" element={<SellOrdersScreen />} />
+            <Route path="/admin/productlist" element={<AdminProductList />} />
 
             <Route path='/page/:pageNumber' element={<HomeScreen />} exact />
             
