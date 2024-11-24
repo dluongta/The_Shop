@@ -24,7 +24,8 @@ import DiscountListScreen from './pages/DiscountListScreen';
 import { NavBar } from './layout/NavBar';
 import SearchBar from './layout/SearchBar';
 import Footer from './layout/Footer';
-
+import BuyOrdersScreen from './pages/BuyOrdersScreen';
+import SellOrdersScreen from './pages/SellOrdersScreen';
 // Create a custom component to conditionally render the header
 const Header = () => {
   const location = useLocation();
@@ -65,8 +66,11 @@ const App = () => {
             <Route path="/search/:keyword" element={<HomeScreen />} />
             <Route path="/search/:keyword/page/:pageNumber" element={<HomeScreen />} />
             <Route path="/" element={<HomeScreen />} />
-            <Route path='/page/:pageNumber' element={<HomeScreen />} exact />
+            <Route path="/orders" element={<BuyOrdersScreen />} />
+            <Route path="/seller/orders" element={<SellOrdersScreen />} />
 
+            <Route path='/page/:pageNumber' element={<HomeScreen />} exact />
+            
             {/* Redirect to /login if the user is not logged in */}
             <Route
               path="/chat"

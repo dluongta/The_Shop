@@ -1,6 +1,7 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
+
 import {
   productListReducer,
   productDetailsReducer,
@@ -10,7 +11,9 @@ import {
   productReviewCreateReducer,
   productTopRatedReducer,
 } from './reducers/productReducers'
+
 import { cartReducer } from './reducers/cartReducers'
+
 import {
   userLoginReducer,
   userRegisterReducer,
@@ -20,6 +23,7 @@ import {
   userDeleteReducer,
   userUpdateReducer,
 } from './reducers/userReducers'
+
 import {
   orderCreateReducer,
   orderDetailsReducer,
@@ -27,8 +31,10 @@ import {
   orderDeliverReducer,
   orderListMyReducer,
   orderListReducer,
+  orderListMySellReducer
 } from './reducers/orderReducers'
-import { discountReducer,discountListReducer } from './reducers/discountReducers';
+
+import { discountReducer, discountListReducer } from './reducers/discountReducers'
 
 const reducer = combineReducers({
   productList: productListReducer,
@@ -52,21 +58,14 @@ const reducer = combineReducers({
   orderDeliver: orderDeliverReducer,
   orderListMy: orderListMyReducer,
   orderList: orderListReducer,
+  orderListMySell: orderListMySellReducer,
   discount: discountReducer,
   discountList: discountListReducer,
 })
 
-const cartItemsFromStorage = localStorage.getItem('cartItems')
-  ? JSON.parse(localStorage.getItem('cartItems'))
-  : []
-
-const userInfoFromStorage = localStorage.getItem('userInfo')
-  ? JSON.parse(localStorage.getItem('userInfo'))
-  : null
-
-const shippingAddressFromStorage = localStorage.getItem('shippingAddress')
-  ? JSON.parse(localStorage.getItem('shippingAddress'))
-  : {}
+const cartItemsFromStorage = localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems')) : []
+const userInfoFromStorage = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null
+const shippingAddressFromStorage = localStorage.getItem('shippingAddress') ? JSON.parse(localStorage.getItem('shippingAddress')) : {}
 
 const initialState = {
   cart: {

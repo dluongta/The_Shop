@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button, Row, Col, ListGroup, Image, Card, Form } from 'react-bootstrap'
+import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import CheckoutSteps from '../components/CheckoutSteps'
@@ -13,6 +13,7 @@ const PlaceOrderScreen = () => {
   const navigate = useNavigate()
   const cart = useSelector((state) => state.cart)
 
+  // Redirect if no shipping address or payment method
   if (!cart.shippingAddress.address) {
     navigate('/shipping')
   } else if (!cart.paymentMethod) {
@@ -43,9 +44,15 @@ const PlaceOrderScreen = () => {
   }, [success, dispatch, navigate])
 
   const placeOrderHandler = () => {
+    // Ensure each item has the seller field
+    const orderItems = cart.cartItems.map(item => ({
+      ...item,
+      seller: item.product.seller || item.user // assuming each product has a seller reference
+    }));
+
     dispatch(
       createOrder({
-        orderItems: cart.cartItems,
+        orderItems,
         shippingAddress: cart.shippingAddress,
         paymentMethod: cart.paymentMethod,
         itemsPrice: cart.itemsPrice,
@@ -53,7 +60,7 @@ const PlaceOrderScreen = () => {
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
       })
-    )
+    );
   }
 
   return (

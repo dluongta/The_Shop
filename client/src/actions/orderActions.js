@@ -19,18 +19,18 @@ import {
   ORDER_DELIVER_FAIL,
   ORDER_DELIVER_SUCCESS,
   ORDER_DELIVER_REQUEST,
+  ORDER_LIST_SELL_REQUEST,
+  ORDER_LIST_SELL_SUCCESS,
+  ORDER_LIST_SELL_FAIL,
 } from '../constants/orderConstants'
+
 import { logout } from './userActions'
 
 export const createOrder = (order) => async (dispatch, getState) => {
   try {
-    dispatch({
-      type: ORDER_CREATE_REQUEST,
-    })
+    dispatch({ type: ORDER_CREATE_REQUEST })
 
-    const {
-      userLogin: { userInfo },
-    } = getState()
+    const { userLogin: { userInfo } } = getState()
 
     const config = {
       headers: {
@@ -39,22 +39,22 @@ export const createOrder = (order) => async (dispatch, getState) => {
       },
     }
 
-    const { data } = await axios.post(`/api/orders`, order, config)
+    const { data } = await axios.post('/api/orders', order, config)
 
     dispatch({
       type: ORDER_CREATE_SUCCESS,
       payload: data,
     })
+
     dispatch({
       type: CART_CLEAR_ITEMS,
       payload: data,
     })
+
     localStorage.removeItem('cartItems')
   } catch (error) {
     const message =
-      error.response && error.response.data.message
-        ? error.response.data.message
-        : error.message
+      error.response && error.response.data.message ? error.response.data.message : error.message
     if (message === 'Not authorized, token failed') {
       dispatch(logout())
     }
@@ -258,6 +258,62 @@ export const listOrders = () => async (dispatch, getState) => {
     dispatch({
       type: ORDER_LIST_FAIL,
       payload: message,
+    })
+  }
+}
+export const getMyOrders = () => async (dispatch, getState) => {
+  try {
+    dispatch({ type: ORDER_LIST_MY_REQUEST })
+
+    const { userLogin: { userInfo } } = getState()
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    }
+
+    const { data } = await axios.get('/api/orders/myorders', config)
+
+    dispatch({
+      type: ORDER_LIST_MY_SUCCESS,
+      payload: data,
+    })
+  } catch (error) {
+    dispatch({
+      type: ORDER_LIST_MY_FAIL,
+      payload: error.response && error.response.data.message ? error.response.data.message : error.message,
+    })
+  }
+}
+
+export const getSellerOrders = () => async (dispatch, getState) => {
+  try {
+    dispatch({ type: ORDER_LIST_SELL_REQUEST })
+
+    const { userLogin: { userInfo } } = getState()
+
+    if (userInfo.role !== 'seller') {
+      // Ensure that only sellers can access this
+      throw new Error('Access Denied. You must be a seller to view these orders.')
+    }
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    }
+
+    const { data } = await axios.get('/api/orders/sellerorders', config)
+
+    dispatch({
+      type: ORDER_LIST_SELL_SUCCESS,
+      payload: data,
+    })
+  } catch (error) {
+    dispatch({
+      type: ORDER_LIST_SELL_FAIL,
+      payload: error.response && error.response.data.message ? error.response.data.message : error.message,
     })
   }
 }

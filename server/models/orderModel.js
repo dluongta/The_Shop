@@ -1,7 +1,8 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const orderSchema = mongoose.Schema(
   {
+    // Reference to the user who created the order (customer)
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -13,10 +14,17 @@ const orderSchema = mongoose.Schema(
         qty: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
+        // Product reference for each item
         product: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
           ref: 'Product',
+        },
+        // Seller reference for each item
+        seller: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: 'User', // This references the seller (User model)
         },
       },
     ],
@@ -71,8 +79,9 @@ const orderSchema = mongoose.Schema(
   {
     timestamps: true,
   }
-)
+);
 
-const Order = mongoose.model('Order', orderSchema)
+// Create the Order model
+const Order = mongoose.model('Order', orderSchema);
 
-export default Order
+export default Order;

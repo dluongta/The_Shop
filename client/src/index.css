@@ -85,3 +85,10 @@ h2 {
 }
 
 li::marker{font-size:0;}
+
+#orders-dropdown {
+  background-color: transparent !important; /* Set background to black */
+  color: white !important; /* Set text color to white */
+  border: none; /* Remove border */
+  box-shadow: none; /* Remove box shadow */
+}

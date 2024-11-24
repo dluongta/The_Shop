@@ -1,7 +1,7 @@
 import React from 'react'
 import { LinkContainer } from 'react-router-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
-import { Nav } from 'react-bootstrap'
+import { Nav, Dropdown, DropdownButton } from 'react-bootstrap'
 import { logout } from '../actions/userActions'
 
 export const NavBar = () => {
@@ -10,7 +10,7 @@ export const NavBar = () => {
   // Get user login status
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
-  
+
   // Handle logout
   const logoutHandler = () => {
     dispatch(logout())
@@ -29,7 +29,7 @@ export const NavBar = () => {
 
         <ul className='navbar-nav ms-auto d-flex flex-row'>
           {/* Chat link */}
-          <li>
+          <li className='nav-item'>
             <LinkContainer to='/chat'>
               <a className='nav-link text-white'>
                 <i className='fas fa-comment'></i> Chat
@@ -38,13 +38,13 @@ export const NavBar = () => {
           </li>
 
           {/* Cart link with item count */}
-          <li>
+          <li className='nav-item'>
             <LinkContainer to='/cart'>
               <a className='nav-link text-white'>
                 {userInfo ? (
                   <>
                     <i className='fas fa-shopping-cart'></i> Cart (
-                    {cartItems.reduce((acc, item) => acc + item.qty, 0)})
+                    {cartItems.reduce((acc, item) => acc + item.qty, 0)} )
                   </>
                 ) : (
                   <>
@@ -56,7 +56,7 @@ export const NavBar = () => {
           </li>
 
           {/* Discount link */}
-          <li>
+          <li className='nav-item'>
             <LinkContainer to='/discounts'>
               <a className='nav-link text-white'>
                 <i className='fas fa-tag'></i> Discounts
@@ -64,29 +64,57 @@ export const NavBar = () => {
             </LinkContainer>
           </li>
 
+          {/* Orders Dropdown */}
+          {userInfo && (
+            <li className='nav-item'>
+              <DropdownButton
+                drop='down'
+                id='orders-dropdown'
+                title='Orders'
+                className='text-white' // Keeps text white for the dropdown button
+                style={{
+                  color: 'white', // White text
+                  border: 'none', // Remove border
+                  boxShadow: 'none', // Remove box shadow on focus
+                }}
+              >
+                <Dropdown.Item>
+                  <LinkContainer to='/orders'>
+                    <a className='dropdown-item bg-dark text-white' style={{ textDecoration: 'none' }}>
+                      My Orders
+                    </a>
+                  </LinkContainer>
+                </Dropdown.Item>
+                {userInfo.role === 'seller' && (
+                  <Dropdown.Item>
+                    <LinkContainer to='/seller/orders'>
+                      <a className='dropdown-item bg-dark text-white' style={{ textDecoration: 'none' }}>
+                        My Sales
+                      </a>
+                    </LinkContainer>
+                  </Dropdown.Item>
+                )}
+              </DropdownButton>
+            </li>
+          )}
+
           {/* User Profile and Logout */}
           {userInfo ? (
             <>
-              <li>
-                <a className='nav-link text-white'>
-                  <LinkContainer to='/profile'>
-                    <a className='dropdown-item bg-dark text-white'>{userInfo.name}</a>
-                  </LinkContainer>
-                </a>
+              <li className='nav-item'>
+                <LinkContainer to='/profile'>
+                  <a className='nav-link text-white'>{userInfo.name}</a>
+                </LinkContainer>
               </li>
-              <li>
-                <a className='nav-link text-white'>
-                  <LinkContainer to='/'>
-                    <a className='dropdown-item bg-dark text-white' onClick={logoutHandler}>
-                      Logout
-                    </a>
-                  </LinkContainer>
-                </a>
+              <li className='nav-item'>
+                <LinkContainer to='/' onClick={logoutHandler}>
+                  <a className='nav-link text-white'>Logout</a>
+                </LinkContainer>
               </li>
             </>
           ) : (
-            <li>
-              <LinkContainer to='/chat'>
+            <li className='nav-item'>
+              <LinkContainer to='/login'>
                 <a className='nav-link text-white'>
                   <i className='fas fa-user'></i> Sign In
                 </a>
@@ -97,39 +125,20 @@ export const NavBar = () => {
           {/* Admin Links */}
           {userInfo && userInfo.isAdmin && (
             <>
-              <li>
-                <a className='nav-link text-white'>
-                  <LinkContainer to='/admin/userlist'>
-                    <a className='dropdown-item bg-dark text-white'>Shoppers</a>
-                  </LinkContainer>
-                </a>
+              <li className='nav-item'>
+                <LinkContainer to='/admin/userlist'>
+                  <a className='nav-link text-white'>Shoppers</a>
+                </LinkContainer>
               </li>
-              <li>
-                <a className='nav-link text-white'>
-                  <LinkContainer to='/admin/productlist'>
-                    <a className='dropdown-item bg-dark text-white'>Products</a>
-                  </LinkContainer>
-                </a>
+              <li className='nav-item'>
+                <LinkContainer to='/admin/productlist'>
+                  <a className='nav-link text-white'>Products</a>
+                </LinkContainer>
               </li>
-              <li>
-                <a className='nav-link text-white'>
-                  <LinkContainer to='/admin/orderlist'>
-                    <a className='dropdown-item bg-dark text-white'>Orders</a>
-                  </LinkContainer>
-                </a>
-              </li>
-            </>
-          )}
-
-          {/* Seller Links */}
-          {userInfo && userInfo.role === 'seller' && (
-            <>
-              <li>
-                <a className='nav-link text-white'>
-                  <LinkContainer to='/seller/products'>
-                    <a className='dropdown-item bg-dark text-white'>My Products</a>
-                  </LinkContainer>
-                </a>
+              <li className='nav-item'>
+                <LinkContainer to='/admin/orderlist'>
+                  <a className='nav-link text-white'>All Orders</a>
+                </LinkContainer>
               </li>
             </>
           )}

@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.c386f356.css",
-    "main.js": "/static/js/main.5d8aab8a.js",
+    "main.css": "/static/css/main.92728e77.css",
+    "main.js": "/static/js/main.9d293939.js",
     "static/media/dinosaur.png": "/static/media/dinosaur.2df0c0a19bb305827f50.png",
     "index.html": "/index.html",
-    "main.c386f356.css.map": "/static/css/main.c386f356.css.map",
-    "main.5d8aab8a.js.map": "/static/js/main.5d8aab8a.js.map"
+    "main.92728e77.css.map": "/static/css/main.92728e77.css.map",
+    "main.9d293939.js.map": "/static/js/main.9d293939.js.map"
   },
   "entrypoints": [
-    "static/css/main.c386f356.css",
-    "static/js/main.5d8aab8a.js"
+    "static/css/main.92728e77.css",
+    "static/js/main.9d293939.js"
   ]
 }
