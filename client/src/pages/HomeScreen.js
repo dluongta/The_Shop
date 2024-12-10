@@ -10,6 +10,7 @@ import { listProducts } from '../actions/productActions'
 //import Carousel from '../components/homePage/Carousel'
 import LatestProducts from '../components/homePage/LatestProducts'
 import ProductCarousel from '../components/ProductCarousel'
+import SearchBar from '../layout/SearchBar';
 
 const HomeScreen = () => {
   // Use useParams to access the route parameters in v6
@@ -27,6 +28,7 @@ const HomeScreen = () => {
   return (
     <>
       <Meta />
+      <SearchBar/>
       {!keyword ? (
         <>
           <Container>
