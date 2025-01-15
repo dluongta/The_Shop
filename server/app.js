@@ -42,11 +42,6 @@ app.use('/api/room', chatRoomRoutes);
 app.use('/api/message', chatMessageRoutes);
 app.use('/api/discounts', discountRoutes);  // Make sure this line is correctly configured
 
-// PayPal configuration
-app.get('/api/config/paypal', (req, res) =>
-  res.send(process.env.PAYPAL_CLIENT_ID)
-);
-
 // Static file serving
 const __dirname = path.resolve();
 app.use('/client/public/images', express.static(path.join(__dirname, '/client/public/images')));

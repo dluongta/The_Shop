@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler'
 import generateToken from '../utils/generateToken.js'
 import User from '../models/userModel.js'
-import Discount from '../models/discountModel.js';  // Assuming Discount model exists
+import Discount from '../models/discountModel.js'  // Assuming Discount model exists
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -45,7 +45,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     role,
-    discount: [],  // Initialize an empty array to hold references to discount documents
+    discounts: [],  // Initialize an empty array to hold references to discount documents
   });
 
   // Default discount codes to add
@@ -77,7 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 
   // Assign the created discount documents to the user's discount field
-  user.discount = createdDiscounts.map((discount) => discount._id);  // Store the references to discount documents
+  user.discounts = createdDiscounts.map((discount) => discount._id);  // Store the references to discount documents
 
   // Save the user with the associated discount references
   await user.save();
@@ -90,7 +90,7 @@ const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       role: user.role,
-      discount: user.discount,  // Send the discount IDs back in the response
+      discounts: user.discounts,  // Send the discount IDs back in the response
       token: generateToken(user._id),
     });
   } else {
@@ -99,11 +99,11 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get user profile
+// @desc    Get user profile (including PayPal Client ID)
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id)
+  const user = await User.findById(req.user._id);
 
   if (user) {
     res.json({
@@ -112,45 +112,67 @@ const getUserProfile = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       role: user.role,
-    })
+      paypalClientId: user.paypalClientId,  // Include PayPal Client ID
+    });
   } else {
-    res.status(404)
-    throw new Error('User not found')
+    res.status(404);
+    throw new Error('User not found');
   }
-})
+});
 
-// @desc    Update user profile
+// @desc    Update user profile (including PayPal Client ID for admin users)
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id)
+  const { name, email, password, paypalClientId } = req.body;
+
+  const user = await User.findById(req.user._id);
 
   if (user) {
-    user.name = req.body.name || user.name
-    user.email = req.body.email || user.email
-    if (req.body.password) {
-      user.password = req.body.password
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.paypalClientId = paypalClientId || user.paypalClientId;  // Update PayPal client ID
+
+    if (password) {
+      user.password = password;
     }
 
-    const updatedUser = await user.save()
+    const updatedUser = await user.save();
 
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
-      role: user.role,
+      paypalClientId: updatedUser.paypalClientId,  // Return updated PayPal client ID
       token: generateToken(updatedUser._id),
-    })
+    });
   } else {
-    res.status(404)
-    throw new Error('User not found')
+    res.status(404);
+    throw new Error('User not found');
   }
-})
+});
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Private/Admin
+// @desc    Get PayPal Client ID for the authenticated user
+// @route   GET /api/users/paypal-client-id
+// @access  Private (auth middleware required)
+const getPayPalClientId = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
+
+  if (!user.paypalClientId) {
+    res.status(404).json({ message: 'PayPal Client ID not set for this user' });
+    return;
+  }
+
+  res.json({ clientId: user.paypalClientId });
+});
+
+
 const getUsers = asyncHandler(async (req, res) => {
   const users = await User.find({})
   res.json(users)
@@ -215,8 +237,9 @@ export {
   registerUser,
   getUserProfile,
   updateUserProfile,
-  getUsers,
-  deleteUser,
-  getUserById,
+  getPayPalClientId,
   updateUser,
-}
+  getUserById,
+  deleteUser,
+  getUsers
+};

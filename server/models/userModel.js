@@ -32,6 +32,10 @@ const userSchema = mongoose.Schema(
       type: [String],  // An array of discount codes
       default: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'], // Default discount codes
     },
+    paypalClientId: {
+      type: String,  // New field for PayPal Client ID
+      required: false,  // Optionally required, depending on your logic
+    },
   },
   {
     timestamps: true,
