@@ -92,3 +92,43 @@ li::marker{font-size:0;}
   border: none; /* Remove border */
   box-shadow: none; /* Remove box shadow */
 }
+
+
+.navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 1);
+  transition: color 0.3s ease;
+}
+
+
+.navbar-nav .nav-link:hover {
+  color: white; 
+}
+
+.navbar-nav .nav-link.active {
+  color: white; 
+}
+
+.dropdown-menu {
+  background-color: #343a40; 
+  border: none; 
+}
+
+.dropdown-item {
+  color: white; 
+  transition: background-color 0.3s ease; 
+}
+
+.dropdown-item:hover {
+  background-color: #007bff; 
+  color: white; 
+}
+
+
+.dropdown-item .nav-link {
+  color: white;
+  text-decoration: none;
+}
+
+.dropdown-item .nav-link:hover {
+  color: white;
+}
