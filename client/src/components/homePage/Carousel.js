@@ -39,9 +39,9 @@ const Carousel = () => {
             }}
           >
             <div className='carousel-caption'>
-              <h5>MERN SHOP</h5>
+              <h5>THE SHOP</h5>
               <p>
-                The MERN Shop, but Online
+                The Shop, but Online
               </p>
             </div>
           </div>

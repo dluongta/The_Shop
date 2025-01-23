@@ -1,7 +1,7 @@
 {
-  "name": "MERN_SHOP",
+  "name": "THE_SHOP",
   "version": "2.0.0",
-  "description": "MERN shopping app",
+  "description": "The shopping app",
   "main": "server.js",
   "type": "module",
   "scripts": {

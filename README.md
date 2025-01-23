@@ -1,4 +1,4 @@
-# MERN SHOP
+# THE SHOP
 
 ## Features
 

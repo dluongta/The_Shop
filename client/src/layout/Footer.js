@@ -29,7 +29,7 @@ const Footer = () => {
             </a>
           </li>
         </ul>
-        <p className="text-center text-body-secondary">© {year} MERN SHOP, E-COMMERCE</p>
+        <p className="text-center text-body-secondary">© {year} THE SHOP, E-COMMERCE</p>
       </footer>
     </div>
   );
