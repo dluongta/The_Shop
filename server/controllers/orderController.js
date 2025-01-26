@@ -77,38 +77,49 @@ const getOrderById = asyncHandler(async (req, res) => {
   }
 })
 
-// @desc    Update order to paid
-// @route   GET /api/orders/:id/pay
-// @access  Private
 const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
 
   if (order) {
-    order.isPaid = true
-    order.paidAt = Date.now()
-    order.paymentResult = {
-      id: req.body.id,
-      status: req.body.status,
-      update_time: req.body.update_time,
-      email_address: req.body.payer.email_address,
+    // Check access rights (Admin or Seller)
+    if (!(req.user.isAdmin || order.orderItems.some(item => item.seller.toString() === req.user._id.toString()))) {
+      res.status(403)
+      throw new Error('Not authorized to mark this order as paid')
     }
 
-    const updatedOrder = await order.save()
+    // Update order status to paid
+    order.isPaid = true
+    order.paidAt = Date.now()  // Update the payment timestamp
 
-    res.json(updatedOrder)
+    // Save the updated order
+    try {
+      const updatedOrder = await order.save()
+      res.json(updatedOrder)
+    } catch (error) {
+      console.error('Error saving the updated order:', error)
+      res.status(500)
+      throw new Error('Unable to update payment status for the order')
+    }
   } else {
     res.status(404)
     throw new Error('Order not found')
   }
 })
 
+
 // @desc    Update order to delivered
-// @route   GET /api/orders/:id/deliver
-// @access  Private/Admin
+// @route   PUT /api/orders/:id/deliver
+// @access  Private
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
 
   if (order) {
+    // Ensure user is admin or seller
+    if (!(req.user.isAdmin || order.orderItems.some(item => item.seller.toString() === req.user._id.toString()))) {
+      res.status(403)
+      throw new Error('Not authorized to mark this order as delivered')
+    }
+
     order.isDelivered = true
     order.deliveredAt = Date.now()
 
@@ -120,13 +131,11 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
     throw new Error('Order not found')
   }
 })
-
-
 // @desc    Get all orders
 // @route   GET /api/orders
 // @access  Private/Admin
 const getOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({})
+  const orders = await Order.find({}) 
     .populate('user', '_id name') // Populate user details (customer)
     .populate({
       path: 'orderItems.seller', // Populate seller for each order item
@@ -136,12 +145,13 @@ const getOrders = asyncHandler(async (req, res) => {
   res.json(orders)
 })
 
+// Get Orders for the logged-in user
 const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id })
   res.json(orders);
 });
 
-
+// Get orders for the logged-in seller
 const getMySellOrders = asyncHandler(async (req, res) => {
   try {
     // Ensure the user is a seller
@@ -149,10 +159,10 @@ const getMySellOrders = asyncHandler(async (req, res) => {
       return res.status(403).json({ message: 'Access Denied. You must be a seller to view these orders.' })
     }
 
-    // Lấy tất cả đơn hàng có chứa item bán
+    // Get all orders
     const orders = await Order.find();
 
-    // Sử dụng filter để lọc các đơn hàng bán cho seller hiện tại
+    // Filter orders that belong to the seller
     const filteredOrders = orders.filter(order => 
       order.orderItems.some(item => item.seller._id.toString() === req.user._id.toString())
     );
@@ -161,15 +171,12 @@ const getMySellOrders = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'No orders found for this seller.' });
     }
 
-    // Trả về danh sách đơn hàng đã lọc
+    // Return the filtered list of orders
     res.json(filteredOrders);
-
   } catch (err) {
     res.status(500).json({ message: 'Error fetching seller orders', error: err });
   }
 });
-
-
 
 export {
   addOrderItems,

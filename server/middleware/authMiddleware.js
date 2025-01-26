@@ -46,4 +46,13 @@ const isSeller = (req, res, next) => {
   }
 }
 
-export { protect, admin,isSeller }
+const isSellerOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.isAdmin || req.user.role === 'seller')) {
+    next()
+  } else {
+    res.status(401)
+    throw new Error('Not authorized as an admin or seller')
+  }
+}
+
+export { protect, admin, isSeller, isSellerOrAdmin }

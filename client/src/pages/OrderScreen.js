@@ -1,86 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { PayPalButton } from 'react-paypal-button-v2';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
-import { getOrderDetails, payOrder, deliverOrder } from '../actions/orderActions';
-import { ORDER_PAY_RESET, ORDER_DELIVER_RESET } from '../constants/orderConstants';
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { PayPalButton } from 'react-paypal-button-v2'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import Message from '../components/Message'
+import Loader from '../components/Loader'
+import { getOrderDetails, payOrder, deliverOrder } from '../actions/orderActions'
+import { ORDER_PAY_RESET, ORDER_DELIVER_RESET } from '../constants/orderConstants'
 
 const OrderScreen = () => {
-  const { id: orderId } = useParams();
-  const navigate = useNavigate();
+  const { id: orderId } = useParams()
+  const navigate = useNavigate()
 
-  const [sdkReady, setSdkReady] = useState(false);
-  const [paypalClientId, setPaypalClientId] = useState('');
+  const [sdkReady, setSdkReady] = useState(false)
+  const [paypalClientId, setPaypalClientId] = useState('')
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const orderDetails = useSelector((state) => state.orderDetails);
-  const { order, loading, error } = orderDetails;
+  const orderDetails = useSelector((state) => state.orderDetails)
+  const { order, loading, error } = orderDetails
 
-  const orderPay = useSelector((state) => state.orderPay);
-  const { loading: loadingPay, success: successPay } = orderPay;
+  const orderPay = useSelector((state) => state.orderPay)
+  const { loading: loadingPay, success: successPay } = orderPay
 
-  const orderDeliver = useSelector((state) => state.orderDeliver);
-  const { loading: loadingDeliver, success: successDeliver } = orderDeliver;
+  const orderDeliver = useSelector((state) => state.orderDeliver)
+  const { loading: loadingDeliver, success: successDeliver } = orderDeliver
 
-  const userLogin = useSelector((state) => state.userLogin);
-  const { userInfo } = userLogin;
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin
 
   if (!loading) {
-    // Calculate prices
     const addDecimals = (num) => {
-      return (Math.round(num * 100) / 100).toFixed(2);
-    };
+      return (Math.round(num * 100) / 100).toFixed(2)
+    }
     order.itemsPrice = addDecimals(
       order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
-    );
+    )
   }
 
   useEffect(() => {
     if (!userInfo) {
-      navigate('/login');
+      navigate('/login')
     }
 
-    // Fetch PayPal Client ID for the logged-in user
     const fetchPaypalClientId = async () => {
       try {
         const { data } = await axios.get('/api/users/paypal-client-id', {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },
-        });
-        setPaypalClientId(data.clientId);
-        setSdkReady(true);
+        })
+        setPaypalClientId(data.clientId)
+        setSdkReady(true)
       } catch (error) {
-        console.error('Failed to load PayPal client ID', error);
-      }
-    };
-
-    if (!order || successPay || successDeliver || order._id !== orderId) {
-      dispatch({ type: ORDER_PAY_RESET });
-      dispatch({ type: ORDER_DELIVER_RESET });
-      dispatch(getOrderDetails(orderId));
-    } else if (!order.isPaid && order.paymentMethod === 'PayPal') {
-      if (paypalClientId) {
-        setSdkReady(true);
-      } else {
-        fetchPaypalClientId();
+        console.error('Failed to load PayPal client ID', error)
       }
     }
-  }, [dispatch, orderId, successPay, successDeliver, order, userInfo, navigate, paypalClientId]);
+
+    if (!order || successPay || successDeliver || order._id !== orderId) {
+      dispatch({ type: ORDER_PAY_RESET })
+      dispatch({ type: ORDER_DELIVER_RESET })
+      dispatch(getOrderDetails(orderId))
+    } else if (!order.isPaid && order.paymentMethod === 'PayPal') {
+      if (paypalClientId) {
+        setSdkReady(true)
+      } else {
+        fetchPaypalClientId()
+      }
+    }
+  }, [dispatch, orderId, successPay, successDeliver, order, userInfo, navigate, paypalClientId])
 
   const successPaymentHandler = (paymentResult) => {
-    console.log(paymentResult);
-    dispatch(payOrder(orderId, paymentResult));
-  };
+    console.log(paymentResult)
+    dispatch(payOrder(orderId, paymentResult))
+  }
 
   const deliverHandler = () => {
-    dispatch(deliverOrder(order));
-  };
+    dispatch(deliverOrder(order))
+  }
+
+  const markAsPaidHandler = () => {
+    dispatch(payOrder(orderId, {})) // Call payOrder with empty object since no payment result is needed for manual marking as paid
+  }
 
   return loading ? (
     <Loader />
@@ -108,9 +110,7 @@ const OrderScreen = () => {
                 {order.shippingAddress.country}
               </p>
               {order.isDelivered ? (
-                <Message variant="success">
-                  Delivered on {order.deliveredAt}
-                </Message>
+                <Message variant="success">Delivered on {order.deliveredAt}</Message>
               ) : (
                 <Message variant="danger">Not Delivered</Message>
               )}
@@ -130,8 +130,10 @@ const OrderScreen = () => {
                     clientId: paypalClientId,
                   }}
                 />
-              ) : (
+              ) : order.isPaid ? (
                 <Message variant="success">Paid on {order.paidAt}</Message>
+              ) : (
+                <Message variant="danger">Payment Pending</Message>
               )}
             </ListGroup.Item>
 
@@ -145,17 +147,10 @@ const OrderScreen = () => {
                     <ListGroup.Item key={index}>
                       <Row>
                         <Col md={1}>
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fluid
-                            rounded
-                          />
+                          <Image src={item.image} alt={item.name} fluid rounded />
                         </Col>
                         <Col>
-                          <Link to={`/product/${item.product}`}>
-                            {item.name}
-                          </Link>
+                          <Link to={`/product/${item.product}`}>{item.name}</Link>
                         </Col>
                         <Col md={4}>
                           {item.qty} x ${item.price} = ${item.qty * item.price}
@@ -200,8 +195,7 @@ const OrderScreen = () => {
               </ListGroup.Item>
 
               {userInfo &&
-                userInfo.isAdmin &&
-                order.isPaid &&
+                (userInfo.isAdmin || userInfo.role === 'seller') &&
                 !order.isDelivered && (
                   <ListGroup.Item>
                     {loadingDeliver && <Loader />}
@@ -214,12 +208,26 @@ const OrderScreen = () => {
                     </Button>
                   </ListGroup.Item>
                 )}
+
+              {userInfo &&
+                (userInfo.isAdmin || userInfo.role === 'seller') &&
+                !order.isPaid && (
+                  <ListGroup.Item>
+                    <Button
+                      type="button"
+                      className="btn btn-block"
+                      onClick={markAsPaidHandler}
+                    >
+                      Mark As Paid
+                    </Button>
+                  </ListGroup.Item>
+                )}
             </ListGroup>
           </Card>
         </Col>
       </Row>
     </>
-  );
-};
+  )
+}
 
-export default OrderScreen;
+export default OrderScreen
