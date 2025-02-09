@@ -38,7 +38,13 @@ export const NavBar = () => {
                 </Nav.Link>
               </LinkContainer>
             </Nav.Item>
-
+            <Nav.Item>
+              <LinkContainer to="/chatbot">
+                <Nav.Link>
+                  <i className="fas fa-message"></i> Chatbot
+                </Nav.Link>
+              </LinkContainer>
+            </Nav.Item>
             {/* Cart link with item count */}
             <Nav.Item>
               <LinkContainer to="/cart">

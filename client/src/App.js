@@ -19,6 +19,7 @@ import OrderListScreen from './pages/OrderListScreen';
 import { AuthProvider } from './contexts/AuthContext';
 import ChatLayout from './components/ChatLayout';
 import DiscountListScreen from './pages/DiscountListScreen';
+import Chatbot from './Chatbot';
 
 // PAGE LAYOUTS
 import { NavBar } from './layout/NavBar';
@@ -70,6 +71,7 @@ const App = () => {
             <Route path="/orders" element={<BuyOrdersScreen />} />
             <Route path="/seller/orders" element={<SellOrdersScreen />} />
             <Route path="/admin/productlist" element={<AdminProductList />} />
+            <Route path="/chatbot" element={<Chatbot />} />
 
             <Route path='/page/:pageNumber' element={<HomeScreen />} exact />
             
