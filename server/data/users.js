@@ -4,7 +4,7 @@ const users = [
   {
     name: 'Admin User',
     email: 'admin@example.com',
-    password: bcrypt.hashSync('123456', 10),
+    password: '123456',
     role: 'seller',
     isAdmin: true,
     // Add default discount codes
@@ -15,7 +15,7 @@ const users = [
     name: 'John Street',
     email: 'john@example.com',
     role: 'buyer',
-    password: bcrypt.hashSync('123456', 10),
+    password: '123456',
     // Add default discount codes
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
@@ -25,7 +25,7 @@ const users = [
     name: 'Jane Street',
     email: 'jane@example.com',
     role: 'seller',
-    password: bcrypt.hashSync('123456', 10),
+    password: '123456',
     // Add default discount codes
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
