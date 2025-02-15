@@ -232,6 +232,25 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 })
 
+// @desc    Get user's hashed password by email (for login validation)
+// @route   GET /api/users/password/:email
+// @access  Public
+// @desc    Get user's hashed password by email (for login validation)
+// @route   GET /api/users/password/:email
+// @access  Public
+const getUserPassword = asyncHandler(async (req, res) => {
+  const email  = req.params.email;
+  const user = await User.findOne({ email });
+  if (user) {
+    res.json({ password: user.password }); // Return the hashed password (for validation only)
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+
+
 export {
   authUser,
   registerUser,
@@ -241,5 +260,6 @@ export {
   updateUser,
   getUserById,
   deleteUser,
-  getUsers
+  getUsers,
+  getUserPassword
 };

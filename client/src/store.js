@@ -1,6 +1,6 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux'
-import thunk from 'redux-thunk'
-import { composeWithDevTools } from 'redux-devtools-extension'
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import { composeWithDevTools } from 'redux-devtools-extension';
 
 import {
   productListReducer,
@@ -11,9 +11,9 @@ import {
   productReviewCreateReducer,
   productTopRatedReducer,
   productAdminListReducer,
-} from './reducers/productReducers'
+} from './reducers/productReducers';
 
-import { cartReducer } from './reducers/cartReducers'
+import { cartReducer } from './reducers/cartReducers';
 
 import {
   userLoginReducer,
@@ -23,7 +23,9 @@ import {
   userListReducer,
   userDeleteReducer,
   userUpdateReducer,
-} from './reducers/userReducers'
+  userCheckEmailReducer,  // Added email check reducer
+  userGetPasswordReducer, // Added get password reducer
+} from './reducers/userReducers';
 
 import {
   orderCreateReducer,
@@ -33,9 +35,9 @@ import {
   orderListMyReducer,
   orderListReducer,
   orderListMySellReducer
-} from './reducers/orderReducers'
+} from './reducers/orderReducers';
 
-import { discountReducer, discountListReducer } from './reducers/discountReducers'
+import { discountReducer, discountListReducer } from './reducers/discountReducers';
 
 const reducer = combineReducers({
   productList: productListReducer,
@@ -54,6 +56,8 @@ const reducer = combineReducers({
   userList: userListReducer,
   userDelete: userDeleteReducer,
   userUpdate: userUpdateReducer,
+  userCheckEmail: userCheckEmailReducer,  // Add this line for email check
+  userGetPassword: userGetPasswordReducer,  // Add this line for get password
   orderCreate: orderCreateReducer,
   orderDetails: orderDetailsReducer,
   orderPay: orderPayReducer,
@@ -63,11 +67,11 @@ const reducer = combineReducers({
   orderListMySell: orderListMySellReducer,
   discount: discountReducer,
   discountList: discountListReducer,
-})
+});
 
-const cartItemsFromStorage = localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems')) : []
-const userInfoFromStorage = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null
-const shippingAddressFromStorage = localStorage.getItem('shippingAddress') ? JSON.parse(localStorage.getItem('shippingAddress')) : {}
+const cartItemsFromStorage = localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems')) : [];
+const userInfoFromStorage = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null;
+const shippingAddressFromStorage = localStorage.getItem('shippingAddress') ? JSON.parse(localStorage.getItem('shippingAddress')) : {};
 
 const initialState = {
   cart: {
@@ -75,14 +79,16 @@ const initialState = {
     shippingAddress: shippingAddressFromStorage,
   },
   userLogin: { userInfo: userInfoFromStorage },
-}
+  userCheckEmail: { exists: false },  // Initial state for email check
+  userGetPassword: { password: '' },  // Initial state for password retrieval
+};
 
-const middleware = [thunk]
+const middleware = [thunk];
 
 const store = createStore(
   reducer,
   initialState,
   composeWithDevTools(applyMiddleware(...middleware))
-)
+);
 
-export default store
+export default store;

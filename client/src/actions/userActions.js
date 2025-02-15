@@ -24,6 +24,12 @@ import {
   USER_UPDATE_FAIL,
   USER_UPDATE_SUCCESS,
   USER_UPDATE_REQUEST,
+  USER_CHECK_EMAIL_REQUEST,
+  USER_CHECK_EMAIL_SUCCESS,
+  USER_CHECK_EMAIL_FAIL,
+  USER_GET_PASSWORD_REQUEST,
+  USER_GET_PASSWORD_SUCCESS,
+  USER_GET_PASSWORD_FAIL,
 } from '../constants/userConstants'
 import { ORDER_LIST_MY_RESET } from '../constants/orderConstants'
 
@@ -287,3 +293,46 @@ export const updateUser = (user) => async (dispatch, getState) => {
     })
   }
 }
+// Action to check if email exists
+export const checkEmailExists = (email) => async (dispatch) => {
+  try {
+    const { data } = await axios.get(`/api/users/exists/${email}`);
+    dispatch({ type: 'USER_CHECK_EMAIL_EXISTS_SUCCESS', payload: data }); // Ensure the response is correctly handled
+    return data; // Return the response to use in the component
+  } catch (error) {
+    dispatch({
+      type: 'USER_CHECK_EMAIL_EXISTS_FAIL',
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+};
+
+
+
+
+
+
+// Action to get password by email (hashed)
+export const getPasswordByEmail = (email) => async (dispatch) => {
+  try {
+    dispatch({ type: USER_GET_PASSWORD_REQUEST });
+
+    const { data } = await axios.get(`/api/users/password/${email}`);
+
+    dispatch({
+      type: USER_GET_PASSWORD_SUCCESS,
+      payload: data.password, // Returning the hashed password
+    });
+  } catch (error) {
+    dispatch({
+      type: USER_GET_PASSWORD_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+};
