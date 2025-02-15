@@ -142,8 +142,11 @@ const LoginScreen = () => {
             onChange={(e) => setPassword(e.target.value)}
           ></Form.Control>
         </Form.Group>
-      </Form>
 
+        <Button type="submit" variant="primary" className="mt-3">
+          Sign In
+        </Button>
+      </Form>
       {/* New Customer Link */}
       <Row className="py-3">
         <Col>
@@ -153,11 +156,6 @@ const LoginScreen = () => {
           </Link>
         </Col>
       </Row>
-
-      {/* Move the Login Button here */}
-      <Button type="submit" variant="primary" className="mt-3">
-        Sign In
-      </Button>
 
       {/* Modal for new user registration */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
