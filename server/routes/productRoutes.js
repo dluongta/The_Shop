@@ -8,10 +8,12 @@ import {
   updateProduct,
   createProductReview,
   getTopProducts,
+  getAllProducts
 } from '../controllers/productController.js'
 import { protect, admin, isSeller } from '../middleware/authMiddleware.js'
 import Product from '../models/productModel.js'
 
+router.get('/allProducts', getAllProducts);
 router.get('/admin/productlist', protect, admin, async (req, res) => {
   try {
     const products = await Product.find();
@@ -51,4 +53,5 @@ router.route('/:id')
     throw new Error('Not authorized as admin or seller')
   }, updateProduct)
 
+  
 export default router

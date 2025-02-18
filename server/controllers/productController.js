@@ -162,6 +162,18 @@ const getTopProducts = asyncHandler(async (req, res) => {
   res.json(products)
 })
 
+const getAllProducts = asyncHandler(async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json({ products });
+  } catch (error) {
+    console.error('Error fetching all products:', error);
+    res.status(500).json({ message: 'Server error, unable to fetch products' });
+  }
+});
+
+
+
 export {
   getProducts,
   getProductById,
@@ -170,4 +182,5 @@ export {
   updateProduct,
   createProductReview,
   getTopProducts,
+  getAllProducts
 }

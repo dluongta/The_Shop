@@ -1,4 +1,4 @@
-import { DISCOUNT_LIST_REQUEST, DISCOUNT_LIST_SUCCESS, DISCOUNT_LIST_FAIL, DISCOUNT_APPLY, DISCOUNT_REMOVE } from '../constants/discountConstants';
+import { DISCOUNT_LIST_REQUEST, DISCOUNT_LIST_SUCCESS, DISCOUNT_LIST_FAIL, DISCOUNT_APPLY, DISCOUNT_REMOVE, DISCOUNT_LIST_ALL_REQUEST,DISCOUNT_LIST_ALL_SUCCESS,DISCOUNT_LIST_ALL_FAIL } from '../constants/discountConstants';
 import axios from 'axios';
 
 // Action to get the list of discount codes
@@ -74,4 +74,35 @@ export const applyDiscount = (discountCode) => async (dispatch, getState) => {
 // Action to remove a discount
 export const removeDiscount = () => (dispatch) => {
   dispatch({ type: DISCOUNT_REMOVE });
+};
+
+export const getAllDiscounts = () => async (dispatch, getState) => {
+  try {
+    dispatch({ type: DISCOUNT_LIST_ALL_REQUEST });
+
+    const {
+      userLogin: { userInfo },
+    } = getState();
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+
+    const { data } = await axios.get('/api/discounts/allDiscounts', config);
+
+    dispatch({
+      type: DISCOUNT_LIST_ALL_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: DISCOUNT_LIST_ALL_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
 };

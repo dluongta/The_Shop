@@ -31,6 +31,9 @@ import {
   USER_GET_PASSWORD_REQUEST,
   USER_GET_PASSWORD_SUCCESS,
   USER_GET_PASSWORD_FAIL,
+  USER_LIST_ALL_REQUEST,
+  USER_LIST_ALL_SUCCESS,
+  USER_LIST_ALL_FAIL
 } from '../constants/userConstants'
 
 export const userLoginReducer = (state = {}, action) => {
@@ -162,4 +165,18 @@ export const userGetPasswordReducer = (state = { password: '' }, action) => {
       return state;
   }
 };
+
+export const userListAllReducer = (state = { users: [] }, action) => {
+  switch (action.type) {
+    case USER_LIST_ALL_REQUEST:
+      return { loading: true };
+    case USER_LIST_ALL_SUCCESS:
+      return { loading: false, users: action.payload };
+    case USER_LIST_ALL_FAIL:
+      return { loading: false, error: action.payload };
+    default:
+      return state;
+  }
+};
+
 

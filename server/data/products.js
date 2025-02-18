@@ -139,7 +139,7 @@ const products = [
 ]
 
 // Add 300 more products to the array
-for (let i = 1; i <= 300; i++) {
+/*for (let i = 1; i <= 300; i++) {
   const newProduct = {
     name: `Sample Product ${i}`,
     image: '/images/sample.jpg',
@@ -155,5 +155,5 @@ for (let i = 1; i <= 300; i++) {
   };
   products.push(newProduct);
 }
-
+*/
 export default products

@@ -11,6 +11,7 @@ import {
   productReviewCreateReducer,
   productTopRatedReducer,
   productAdminListReducer,
+  productListAllReducer
 } from './reducers/productReducers';
 
 import { cartReducer } from './reducers/cartReducers';
@@ -25,6 +26,7 @@ import {
   userUpdateReducer,
   userCheckEmailReducer,  // Added email check reducer
   userGetPasswordReducer, // Added get password reducer
+  userListAllReducer
 } from './reducers/userReducers';
 
 import {
@@ -37,7 +39,7 @@ import {
   orderListMySellReducer
 } from './reducers/orderReducers';
 
-import { discountReducer, discountListReducer } from './reducers/discountReducers';
+import { discountReducer, discountListReducer, discountListAllReducer } from './reducers/discountReducers';
 
 const reducer = combineReducers({
   productList: productListReducer,
@@ -48,6 +50,7 @@ const reducer = combineReducers({
   productReviewCreate: productReviewCreateReducer,
   productTopRated: productTopRatedReducer,
   productAdminList: productAdminListReducer,
+  productListAll: productListAllReducer,
   cart: cartReducer,
   userLogin: userLoginReducer,
   userRegister: userRegisterReducer,
@@ -58,6 +61,7 @@ const reducer = combineReducers({
   userUpdate: userUpdateReducer,
   userCheckEmail: userCheckEmailReducer,  // Add this line for email check
   userGetPassword: userGetPasswordReducer,  // Add this line for get password
+  userListAll: userListAllReducer,
   orderCreate: orderCreateReducer,
   orderDetails: orderDetailsReducer,
   orderPay: orderPayReducer,
@@ -67,6 +71,7 @@ const reducer = combineReducers({
   orderListMySell: orderListMySellReducer,
   discount: discountReducer,
   discountList: discountListReducer,
+  discountListAll: discountListAllReducer,
 });
 
 const cartItemsFromStorage = localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems')) : [];

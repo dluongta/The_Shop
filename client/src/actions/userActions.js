@@ -30,6 +30,9 @@ import {
   USER_GET_PASSWORD_REQUEST,
   USER_GET_PASSWORD_SUCCESS,
   USER_GET_PASSWORD_FAIL,
+  USER_LIST_ALL_REQUEST,
+  USER_LIST_ALL_SUCCESS,
+  USER_LIST_ALL_FAIL
 } from '../constants/userConstants'
 import { ORDER_LIST_MY_RESET } from '../constants/orderConstants'
 import { GoogleLogin, googleLogout, useGoogleOneTapLogin } from '@react-oauth/google';
@@ -338,3 +341,35 @@ export const getPasswordByEmail = (email) => async (dispatch) => {
     });
   }
 };
+
+export const getAllUsers = () => async (dispatch, getState) => {
+  try {
+    dispatch({ type: USER_LIST_ALL_REQUEST });
+
+    const {
+      userLogin: { userInfo },
+    } = getState();
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+
+    const { data } = await axios.get('/api/users/allUsers', config);
+
+    dispatch({
+      type: USER_LIST_ALL_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: USER_LIST_ALL_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+};
+

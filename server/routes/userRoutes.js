@@ -10,10 +10,12 @@ import {
   getUserById,
   updateUser,
   getPayPalClientId,
-  getUserPassword
+  getUserPassword,
 } from '../controllers/userController.js'
 import { protect, admin} from '../middleware/authMiddleware.js'
 import User from '../models/userModel.js'
+
+router.route('/allUsers').get(getUsers);
 
 router.route('/').post(registerUser).get(protect, getUsers);
 router.post('/login', authUser);
@@ -52,5 +54,6 @@ router.get('/exists/:email', async (req, res) => {
 
 // Route to get the hashed password for the user by email
 router.get('/password/:email', getUserPassword);  // This route will allow us to retrieve the password for login validation
+
 
 export default router
