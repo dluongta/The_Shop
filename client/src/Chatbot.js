@@ -79,7 +79,7 @@ function Chatbot() {
             try {
                 console.log("Starting API request...");
                 await axios.post(
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAJC7L9bXORVgkjqQrF0Ta9mYDceu5mSYE",
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAJC7L9bXORVgkjqQrF0Ta9mYDceu5mSYE",
                     {
                         contents: [
                             {
@@ -130,7 +130,7 @@ function Chatbot() {
 
         try {
             const response = await axios.post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAJC7L9bXORVgkjqQrF0Ta9mYDceu5mSYE",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAJC7L9bXORVgkjqQrF0Ta9mYDceu5mSYE",
                 {
                     contents: [{
                         parts: [{
