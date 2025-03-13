@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.d262f4f0.css",
+    "main.js": "/static/js/main.f5f59f0c.js",
+    "static/media/dinosaur.png": "/static/media/dinosaur.2df0c0a19bb305827f50.png",
+    "index.html": "/index.html",
+    "main.d262f4f0.css.map": "/static/css/main.d262f4f0.css.map",
+    "main.f5f59f0c.js.map": "/static/js/main.f5f59f0c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d262f4f0.css",
+    "static/js/main.f5f59f0c.js"
+  ]
+}

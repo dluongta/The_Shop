@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllDiscounts } from "./actions/discountActions"
-import { getAllProducts } from "./actions/productActions"
-import { getAllUsers } from "./actions/userActions"
+import { getAllDiscounts } from "./actions/discountActions";
+import { getAllProducts } from "./actions/productActions";
+import { getAllUsers } from "./actions/userActions";
 import axios from "axios";
 import "./Chatbot.css";
 
@@ -21,22 +21,12 @@ function Chatbot() {
     const { discounts } = discountList;
     const { products } = productList;
     const { users } = userList;
-    let arr1 = products || [];
 
-    useEffect(() => {
-        if (products) {
-            arr1 = products; // Log only when products is updated
-        }
-    }, [products]);
-    let allProducts = arr1.products || [];
+    // Ensure safe defaults if the data is not yet available
+    const discountsList = discounts && Array.isArray(discounts) ? discounts : [];
+    const allProducts = products && Array.isArray(products) ? products : [];
+    const usersList = users && Array.isArray(users) ? users : [];
 
-    console.log(arr1.products)
-    if (arr1.products) {
-        allProducts = arr1.products
-    }
-    console.log(allProducts[0])
-
-    // Fetch data on component mount
     useEffect(() => {
         dispatch(getAllDiscounts());
         dispatch(getAllProducts());
@@ -73,7 +63,8 @@ function Chatbot() {
             document.removeEventListener("click", handleCopyButtonClick);
         };
     }, []);
-    // Set initial bot data with discounts, products, and users
+
+    // Fetch data on component mount and update the bot's knowledge
     useEffect(() => {
         const fetchBotInitialData = async () => {
             try {
@@ -86,18 +77,18 @@ function Chatbot() {
                                 parts: [
                                     {
                                         text: `
-                        Bây giờ bạn tên là Trợ lý của The Shop. Bạn chỉ trả lời các câu hỏi liên quan đến giá, mã giảm giá, sản phẩm, người dùng và các câu hỏi liên quan như tính toán, gợi ý và các vấn đề khác, nếu không liên quan thì trả lời "Không trong lĩnh vực của ứng dụng The Shop".
-                        Dữ liệu mã giảm giá, người dùng, sản phẩm được cho như sau:
-    
-                        Mã giảm giá:
-                        ${discounts.map(d => `Code-${d.code}: Description-${d.description}, Amount-${d.amount}, IsActive-${d.isActive}`).join("\n")}
-    
-                        Sản phẩm:
-                        ${allProducts.map(p => `Name-${p.name}: Price-${p.price} USD, Description-${p.description}, Brand-${p.brand}, Category-${p.category}, countInStock-${p.countInStock}`).join("\n")}
-    
-                        Người dùng:
-                        ${users.map(u => `Name-${u.name}: Email-${u.email}, Role-${u.role}, IsAdmin-${u.isAdmin}`).join("\n")}
-                        `,
+                    Bây giờ bạn tên là Trợ lý của The Shop. Bạn chỉ trả lời các câu hỏi liên quan đến giá, mã giảm giá, sản phẩm, người dùng và các câu hỏi liên quan như tính toán, gợi ý và các vấn đề khác, nếu không liên quan thì trả lời "Không trong lĩnh vực của ứng dụng The Shop". 
+                    Dữ liệu mã giảm giá, người dùng, sản phẩm được cho như sau:
+        
+                    Mã giảm giá:
+                    ${discountsList.map(d => `Code-${d.code}: Description-${d.description}, Amount-${d.amount}, IsActive-${d.isActive}`).join("\n")}
+        
+                    Sản phẩm:
+                    ${allProducts.map(p => `Name-${p.name}: Price-${p.price} USD, Description-${p.description}, Brand-${p.brand}, Category-${p.category}, countInStock-${p.countInStock}`).join("\n")}
+        
+                    Người dùng:
+                    ${usersList.map(u => `Name-${u.name}: Email-${u.email}, Role-${u.role}, IsAdmin-${u.isAdmin}`).join("\n")}
+                    `,
                                     },
                                 ],
                             },
@@ -113,7 +104,6 @@ function Chatbot() {
 
         fetchBotInitialData(); // Gọi API chỉ một lần khi component mount
     }, []);  // Mảng phụ thuộc rỗng đảm bảo API chỉ gọi một lần khi component mount
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -132,28 +122,32 @@ function Chatbot() {
             const response = await axios.post(
                 "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAJC7L9bXORVgkjqQrF0Ta9mYDceu5mSYE",
                 {
-                    contents: [{
-                        parts: [{
-                            text: message + `
-                        Bây giờ bạn tên là Trợ lý của The Shop. Bạn chỉ trả lời các câu hỏi liên quan đến giá, mã giảm giá, sản phẩm, người dùng và các câu hỏi liên quan như tính toán, gợi ý và các vấn đề khác, nếu không liên quan thì trả lời "Không trong lĩnh vực của ứng dụng The Shop".
-                        Dữ liệu mã giảm giá, người dùng, sản phẩm được cho như sau:
-    
-                        Mã giảm giá:
-                        ${discounts.map(d => `Code-${d.code}: Description-${d.description}, Amount-${d.amount}, IsActive-${d.isActive}`).join("\n")}
-    
-                        Sản phẩm:
-                        ${allProducts.map(p => `Name-${p.name}: Price-${p.price} USD, Description-${p.description}, Brand-${p.brand}, Category-${p.category}, countInStock-${p.countInStock}`).join("\n")}
-    
-                        Người dùng:
-                        ${users.map(u => `Name-${u.name}: Email-${u.email}, Role-${u.role}, IsAdmin-${u.isAdmin}`).join("\n")}
-                        ` }]
-                    }],
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: message + `
+                                    Bây giờ bạn tên là Trợ lý của The Shop. Bạn chỉ trả lời các câu hỏi liên quan đến giá, mã giảm giá, sản phẩm, người dùng và các câu hỏi liên quan như tính toán, gợi ý và các vấn đề khác, nếu không liên quan thì trả lời "Không trong lĩnh vực của ứng dụng The Shop".
+                                    Dữ liệu mã giảm giá, người dùng, sản phẩm được cho như sau:
+                
+                                    Mã giảm giá:
+                                    ${discountsList.map(d => `Code-${d.code}: Description-${d.description}, Amount-${d.amount}, IsActive-${d.isActive}`).join("\n")}
+                
+                                    Sản phẩm:
+                                    ${allProducts.map(p => `Name-${p.name}: Price-${p.price} USD, Description-${p.description}, Brand-${p.brand}, Category-${p.category}, countInStock-${p.countInStock}`).join("\n")}
+                
+                                    Người dùng:
+                                    ${usersList.map(u => `Name-${u.name}: Email-${u.email}, Role-${u.role}, IsAdmin-${u.isAdmin}`).join("\n")}
+                                    ` }
+                            ]
+                        }
+                    ],
                 },
                 {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-
+            console.log(response)
             if (isMounted) {
                 const botMessage = {
                     sender: "bot",
