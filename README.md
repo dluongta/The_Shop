@@ -23,11 +23,13 @@
 Create a .env file in then root and add the following
 
 ```
-NODE_ENV = 'development'
+NODE_ENV = 'production'
 PORT = 5000
 MONGO_URI = your mongo_database url
 JWT_SECRET = 'mernshop'
 PAYPAL_CLIENT_ID = your paypal_client_id
+CLINET_ID= your client_id
+CLIENT_SECRET= your client secret
 ```
 ### Install Dependencies
 
