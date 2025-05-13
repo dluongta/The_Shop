@@ -30,7 +30,7 @@ router.route('/paypal-client-id').get(protect, getPayPalClientId);
 router
   .route('/:id')
   .delete(protect, admin, deleteUser)
-  .get(protect, admin, getUserById)
+  .get(protect, getUserById)
   .put(protect, admin, updateUser)
 
 // Check if user exists by email
