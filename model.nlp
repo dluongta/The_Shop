@@ -1,0 +1,863 @@
+{
+  "settings": {
+    "languages": [
+      "vi"
+    ],
+    "tag": "nlp",
+    "threshold": 0.5,
+    "autoLoad": true,
+    "autoSave": true,
+    "modelFileName": "model.nlp",
+    "executeActionsBeforeAnswers": false,
+    "calculateSentiment": true
+  },
+  "nluManager": {
+    "settings": {
+      "tag": "nlu-manager"
+    },
+    "locales": [
+      "vi"
+    ],
+    "languageNames": {},
+    "domainManagers": {
+      "vi": {
+        "settings": {
+          "locale": "vi",
+          "trainByDomain": false,
+          "tag": "domain-manager-vi",
+          "nluByDomain": {
+            "default": {
+              "className": "NeuralNlu",
+              "settings": {}
+            }
+          },
+          "useStemDict": true
+        },
+        "stemDict": {
+          "airpods,bluetooth,gi,headphones,la,pham,san,wireless": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "g-series,gaming,gi,la,logitech,mouse,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "3rd,amazon,dot,echo,generation,gi,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "dell,gi,la,pham,san,xps": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "computer,gi,keyboard,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "11,256gb,gi,iphone,la,memory,pham,pro,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "80d,camera,cannon,dslr,eos,gi,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "4,gi,la,pham,playstation,pro,san,sony,version,white": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "gi,iphone,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "biet,cho,discount10,gia,giam,hay,ma,toi,ve": {
+            "intent": "discount.info",
+            "domain": "default"
+          },
+          "biet,cho,gia,giam,hay,ma,sale10,toi,ve": {
+            "intent": "discount.info",
+            "domain": "default"
+          },
+          "biet,cho,discount20,gia,giam,hay,ma,toi,ve": {
+            "intent": "discount.info",
+            "domain": "default"
+          },
+          "admin,ai,la,user": {
+            "intent": "user.info",
+            "domain": "default"
+          },
+          "ai,john,la,street": {
+            "intent": "user.info",
+            "domain": "default"
+          },
+          "ai,jane,la,street": {
+            "intent": "user.info",
+            "domain": "default"
+          }
+        },
+        "intentDict": {
+          "product.info": "default",
+          "discount.info": "default",
+          "user.info": "default"
+        },
+        "sentences": [
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Airpods Wireless Bluetooth Headphones là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Logitech G-Series Gaming Mouse là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Amazon Echo Dot 3rd Generation là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm DELL XPS là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Computer Keyboard là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm iPhone 11 Pro 256GB Memory là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Cannon EOS 80D DSLR Camera là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Sony Playstation 4 Pro White Version là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Iphone là gì?",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Hãy cho tôi biết về mã giảm giá DISCOUNT10",
+            "intent": "discount.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Hãy cho tôi biết về mã giảm giá SALE10",
+            "intent": "discount.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Hãy cho tôi biết về mã giảm giá DISCOUNT20",
+            "intent": "discount.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Ai là Admin User?",
+            "intent": "user.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Ai là John Street?",
+            "intent": "user.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Ai là Jane Street?",
+            "intent": "user.info"
+          }
+        ],
+        "domains": {
+          "master_domain": {
+            "settings": {
+              "locale": "vi",
+              "tag": "nlu-vi",
+              "keepStopwords": true,
+              "nonefeatureValue": 1,
+              "nonedeltaMultiplier": 1.2,
+              "spellCheck": false,
+              "spellCheckDistance": 1,
+              "filterZeros": true,
+              "log": true
+            },
+            "features": {
+              "4": 1,
+              "11": 1,
+              "san": 1,
+              "pham": 1,
+              "airpods": 1,
+              "wireless": 1,
+              "bluetooth": 1,
+              "headphones": 1,
+              "la": 1,
+              "gi": 1,
+              "logitech": 1,
+              "g-series": 1,
+              "gaming": 1,
+              "mouse": 1,
+              "amazon": 1,
+              "echo": 1,
+              "dot": 1,
+              "3rd": 1,
+              "generation": 1,
+              "dell": 1,
+              "xps": 1,
+              "computer": 1,
+              "keyboard": 1,
+              "iphone": 1,
+              "pro": 1,
+              "256gb": 1,
+              "memory": 1,
+              "cannon": 1,
+              "eos": 1,
+              "80d": 1,
+              "dslr": 1,
+              "camera": 1,
+              "sony": 1,
+              "playstation": 1,
+              "white": 1,
+              "version": 1,
+              "hay": 1,
+              "cho": 1,
+              "toi": 1,
+              "biet": 1,
+              "ve": 1,
+              "ma": 1,
+              "giam": 1,
+              "gia": 1,
+              "discount10": 1,
+              "sale10": 1,
+              "discount20": 1,
+              "ai": 1,
+              "admin": 1,
+              "user": 1,
+              "john": 1,
+              "street": 1,
+              "jane": 1
+            },
+            "intents": {
+              "product.info": 1,
+              "discount.info": 1,
+              "user.info": 1
+            },
+            "intentFeatures": {
+              "product.info": {
+                "4": 1,
+                "11": 1,
+                "san": 1,
+                "pham": 1,
+                "airpods": 1,
+                "wireless": 1,
+                "bluetooth": 1,
+                "headphones": 1,
+                "la": 1,
+                "gi": 1,
+                "logitech": 1,
+                "g-series": 1,
+                "gaming": 1,
+                "mouse": 1,
+                "amazon": 1,
+                "echo": 1,
+                "dot": 1,
+                "3rd": 1,
+                "generation": 1,
+                "dell": 1,
+                "xps": 1,
+                "computer": 1,
+                "keyboard": 1,
+                "iphone": 1,
+                "pro": 1,
+                "256gb": 1,
+                "memory": 1,
+                "cannon": 1,
+                "eos": 1,
+                "80d": 1,
+                "dslr": 1,
+                "camera": 1,
+                "sony": 1,
+                "playstation": 1,
+                "white": 1,
+                "version": 1
+              },
+              "discount.info": {
+                "hay": 1,
+                "cho": 1,
+                "toi": 1,
+                "biet": 1,
+                "ve": 1,
+                "ma": 1,
+                "giam": 1,
+                "gia": 1,
+                "discount10": 1,
+                "sale10": 1,
+                "discount20": 1
+              },
+              "user.info": {
+                "ai": 1,
+                "la": 1,
+                "admin": 1,
+                "user": 1,
+                "john": 1,
+                "street": 1,
+                "jane": 1
+              }
+            },
+            "featuresToIntent": {
+              "4": [
+                "product.info"
+              ],
+              "11": [
+                "product.info"
+              ],
+              "san": [
+                "product.info"
+              ],
+              "pham": [
+                "product.info"
+              ],
+              "airpods": [
+                "product.info"
+              ],
+              "wireless": [
+                "product.info"
+              ],
+              "bluetooth": [
+                "product.info"
+              ],
+              "headphones": [
+                "product.info"
+              ],
+              "la": [
+                "product.info",
+                "user.info"
+              ],
+              "gi": [
+                "product.info"
+              ],
+              "logitech": [
+                "product.info"
+              ],
+              "g-series": [
+                "product.info"
+              ],
+              "gaming": [
+                "product.info"
+              ],
+              "mouse": [
+                "product.info"
+              ],
+              "amazon": [
+                "product.info"
+              ],
+              "echo": [
+                "product.info"
+              ],
+              "dot": [
+                "product.info"
+              ],
+              "3rd": [
+                "product.info"
+              ],
+              "generation": [
+                "product.info"
+              ],
+              "dell": [
+                "product.info"
+              ],
+              "xps": [
+                "product.info"
+              ],
+              "computer": [
+                "product.info"
+              ],
+              "keyboard": [
+                "product.info"
+              ],
+              "iphone": [
+                "product.info"
+              ],
+              "pro": [
+                "product.info"
+              ],
+              "256gb": [
+                "product.info"
+              ],
+              "memory": [
+                "product.info"
+              ],
+              "cannon": [
+                "product.info"
+              ],
+              "eos": [
+                "product.info"
+              ],
+              "80d": [
+                "product.info"
+              ],
+              "dslr": [
+                "product.info"
+              ],
+              "camera": [
+                "product.info"
+              ],
+              "sony": [
+                "product.info"
+              ],
+              "playstation": [
+                "product.info"
+              ],
+              "white": [
+                "product.info"
+              ],
+              "version": [
+                "product.info"
+              ],
+              "hay": [
+                "discount.info"
+              ],
+              "cho": [
+                "discount.info"
+              ],
+              "toi": [
+                "discount.info"
+              ],
+              "biet": [
+                "discount.info"
+              ],
+              "ve": [
+                "discount.info"
+              ],
+              "ma": [
+                "discount.info"
+              ],
+              "giam": [
+                "discount.info"
+              ],
+              "gia": [
+                "discount.info"
+              ],
+              "discount10": [
+                "discount.info"
+              ],
+              "sale10": [
+                "discount.info"
+              ],
+              "discount20": [
+                "discount.info"
+              ],
+              "ai": [
+                "user.info"
+              ],
+              "admin": [
+                "user.info"
+              ],
+              "user": [
+                "user.info"
+              ],
+              "john": [
+                "user.info"
+              ],
+              "street": [
+                "user.info"
+              ],
+              "jane": [
+                "user.info"
+              ]
+            },
+            "neuralNetwork": {
+              "settings": {
+                "locale": "vi",
+                "tag": "nlu-vi",
+                "keepStopwords": true,
+                "nonefeatureValue": 1,
+                "nonedeltaMultiplier": 1.2,
+                "spellCheck": false,
+                "spellCheckDistance": 1,
+                "filterZeros": true,
+                "log": true
+              },
+              "features": [
+                "san",
+                "pham",
+                "airpods",
+                "wireless",
+                "bluetooth",
+                "headphones",
+                "la",
+                "gi",
+                "logitech",
+                "g-series",
+                "gaming",
+                "mouse",
+                "amazon",
+                "echo",
+                "dot",
+                "3rd",
+                "generation",
+                "dell",
+                "xps",
+                "computer",
+                "keyboard",
+                "11",
+                "iphone",
+                "pro",
+                "256gb",
+                "memory",
+                "cannon",
+                "eos",
+                "80d",
+                "dslr",
+                "camera",
+                "4",
+                "sony",
+                "playstation",
+                "white",
+                "version",
+                "hay",
+                "cho",
+                "toi",
+                "biet",
+                "ve",
+                "ma",
+                "giam",
+                "gia",
+                "discount10",
+                "sale10",
+                "discount20",
+                "ai",
+                "admin",
+                "user",
+                "john",
+                "street",
+                "jane"
+              ],
+              "intents": [
+                "product.info",
+                "discount.info",
+                "user.info"
+              ],
+              "perceptrons": [
+                [
+                  3.4760873317718506,
+                  3.4760873317718506,
+                  0.34404444694519043,
+                  0.34404444694519043,
+                  0.34404444694519043,
+                  0.34404444694519043,
+                  1.8349244594573975,
+                  3.4760873317718506,
+                  0.3108377754688263,
+                  0.3108377754688263,
+                  0.3108377754688263,
+                  0.3108377754688263,
+                  0.24418498575687408,
+                  0.24418498575687408,
+                  0.24418498575687408,
+                  0.24418498575687408,
+                  0.24418498575687408,
+                  0.6430429220199585,
+                  0.6430429220199585,
+                  0.6453995108604431,
+                  0.6453995108604431,
+                  0.07160883396863937,
+                  0.8451983332633972,
+                  0.2676423490047455,
+                  0.07160883396863937,
+                  0.07160883396863937,
+                  0.25619786977767944,
+                  0.25619786977767944,
+                  0.25619786977767944,
+                  0.25619786977767944,
+                  0.25619786977767944,
+                  0.20893673598766327,
+                  0.20893673598766327,
+                  0.20893673598766327,
+                  0.20893673598766327,
+                  0.20893673598766327,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.20249804854393005,
+                  -0.06975263357162476,
+                  -0.043412476778030396,
+                  -0.01531221903860569,
+                  -1.6114917993545532,
+                  -0.6152195334434509,
+                  -0.6152195334434509,
+                  -0.4421643614768982,
+                  -0.8939541578292847,
+                  -0.3363119065761566,
+                  0.7982652016254644
+                ],
+                [
+                  -0.15184497833251953,
+                  -0.15184497833251953,
+                  -0.030260073021054268,
+                  -0.030260073021054268,
+                  -0.030260073021054268,
+                  -0.030260073021054268,
+                  -0.38853299617767334,
+                  -0.15184497833251953,
+                  -0.022733328863978386,
+                  -0.022733328863978386,
+                  -0.022733328863978386,
+                  -0.022733328863978386,
+                  -0.01483967900276184,
+                  -0.01483967900276184,
+                  -0.01483967900276184,
+                  -0.01483967900276184,
+                  -0.01483967900276184,
+                  -0.008259188383817673,
+                  -0.008259188383817673,
+                  -0.003548986976966262,
+                  -0.003548986976966262,
+                  -0.0006231835577636957,
+                  -0.0006231835577636957,
+                  -0.0006231835577636957,
+                  -0.0006231835577636957,
+                  -0.0006231835577636957,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  1.6373436450958252,
+                  0.4256061017513275,
+                  0.6685833930969238,
+                  0.5412708520889282,
+                  -0.22213344275951385,
+                  -0.06883411109447479,
+                  -0.06883411109447479,
+                  -0.05728186294436455,
+                  -0.12292444705963135,
+                  -0.04344487935304642,
+                  0.6208647898556318
+                ],
+                [
+                  -1.6296987533569336,
+                  -1.6296987533569336,
+                  -0.2377910315990448,
+                  -0.2377910315990448,
+                  -0.2377910315990448,
+                  -0.2377910315990448,
+                  3.3775200843811035,
+                  -1.6296987533569336,
+                  -0.2214106023311615,
+                  -0.2214106023311615,
+                  -0.2214106023311615,
+                  -0.2214106023311615,
+                  -0.2184298187494278,
+                  -0.2184298187494278,
+                  -0.2184298187494278,
+                  -0.2184298187494278,
+                  -0.2184298187494278,
+                  -0.19192835688591003,
+                  -0.19192835688591003,
+                  -0.15738900005817413,
+                  -0.15738900005817413,
+                  -0.06732993572950363,
+                  -0.11348903924226761,
+                  -0.1115269586443901,
+                  -0.06732993572950363,
+                  -0.06732993572950363,
+                  -0.05189133435487747,
+                  -0.05189133435487747,
+                  -0.05189133435487747,
+                  -0.05189133435487747,
+                  -0.05189133435487747,
+                  -0.02079891413450241,
+                  -0.02079891413450241,
+                  -0.02079891413450241,
+                  -0.02079891413450241,
+                  -0.02079891413450241,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.19956400990486145,
+                  -0.0941401869058609,
+                  -0.05888764560222626,
+                  -0.015435765497386456,
+                  5.01631498336792,
+                  2.1232385635375977,
+                  2.1232385635375977,
+                  1.5223368406295776,
+                  2.882533311843872,
+                  1.3690009117126465,
+                  1.5875494359243638
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "intentDomains": {},
+    "extraSentences": [
+      [
+        "vi",
+        "Sản phẩm Airpods Wireless Bluetooth Headphones là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm Logitech G-Series Gaming Mouse là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm Amazon Echo Dot 3rd Generation là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm DELL XPS là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm Computer Keyboard là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm iPhone 11 Pro 256GB Memory là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm Cannon EOS 80D DSLR Camera là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm Sony Playstation 4 Pro White Version là gì?"
+      ],
+      [
+        "vi",
+        "Sản phẩm Iphone là gì?"
+      ],
+      [
+        "vi",
+        "Hãy cho tôi biết về mã giảm giá DISCOUNT10"
+      ],
+      [
+        "vi",
+        "Hãy cho tôi biết về mã giảm giá SALE10"
+      ],
+      [
+        "vi",
+        "Hãy cho tôi biết về mã giảm giá DISCOUNT20"
+      ],
+      [
+        "vi",
+        "Ai là Admin User?"
+      ],
+      [
+        "vi",
+        "Ai là John Street?"
+      ],
+      [
+        "vi",
+        "Ai là Jane Street?"
+      ]
+    ]
+  },
+  "ner": {
+    "settings": {
+      "tag": "ner",
+      "entityPreffix": "%",
+      "entitySuffix": "%"
+    },
+    "rules": {}
+  },
+  "nlgManager": {
+    "settings": {
+      "tag": "nlg-manager"
+    },
+    "responses": {
+      "vi": {
+        "product.info": [
+          {
+            "answer": "Airpods Wireless Bluetooth Headphones: Bluetooth technology lets you connect it with compatible devices wirelessly High-quality AAC audio offers immersive listening experience Built-in microphone allows you to take calls while working, Giá: 89.99 VNĐ"
+          },
+          {
+            "answer": "Logitech G-Series Gaming Mouse: Get a better handle on your games with this Logitech LIGHTSYNC gaming mouse. The six programmable buttons allow customization for a smooth playing experience, Giá: 49.99 VNĐ"
+          },
+          {
+            "answer": "Amazon Echo Dot 3rd Generation: Meet Echo Dot - Our most popular smart speaker with a fabric design. It is our most compact smart speaker that fits perfectly into small space, Giá: 29.99 VNĐ"
+          },
+          {
+            "answer": "DELL XPS: High quality with impressive display and sound, Giá: 599.99 VNĐ"
+          },
+          {
+            "answer": "Computer Keyboard: Compatible with most of computer devices, Giá: 29.99 VNĐ"
+          },
+          {
+            "answer": "iPhone 11 Pro 256GB Memory: Introducing the iPhone 11 Pro. A transformative triple-camera system that adds tons of capability without complexity. An unprecedented leap in battery life, Giá: 599.99 VNĐ"
+          },
+          {
+            "answer": "Cannon EOS 80D DSLR Camera: Characterized by versatile imaging specs, the Canon EOS 80D further clarifies itself using a pair of robust focusing systems and an intuitive design, Giá: 929.99 VNĐ"
+          },
+          {
+            "answer": "Sony Playstation 4 Pro White Version: The ultimate home entertainment center starts with PlayStation. Whether you are into gaming, HD movies, television, music, Giá: 399.99 VNĐ"
+          },
+          {
+            "answer": "Iphone: High Quality Iphone, Giá: 99.99 VNĐ"
+          }
+        ],
+        "discount.info": [
+          {
+            "answer": "DISCOUNT10: 10% off your next purchase"
+          },
+          {
+            "answer": "SALE10: 10% off sale items"
+          },
+          {
+            "answer": "DISCOUNT20: 20% off your next purchase"
+          }
+        ],
+        "user.info": [
+          {
+            "answer": "Admin User: admin@example.com"
+          },
+          {
+            "answer": "John Street: john@example.com"
+          },
+          {
+            "answer": "Jane Street: jane@example.com"
+          }
+        ]
+      }
+    }
+  },
+  "actionManager": {
+    "settings": {
+      "tag": "action-manager"
+    },
+    "actions": {}
+  },
+  "slotManager": {}
+}

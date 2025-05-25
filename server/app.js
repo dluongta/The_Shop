@@ -13,7 +13,12 @@ import productRoutes from './routes/productRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
-import discountRoutes from './routes/discountRoutes.js'
+import discountRoutes from './routes/discountRoutes.js';
+import { NlpManager } from 'node-nlp';
+import asyncHandler from 'express-async-handler';
+import Product from './models/productModel.js'
+import User from './models/userModel.js'
+import Discount from './models/discountModel.js';
 
 dotenv.config();
 
@@ -40,7 +45,54 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/room', chatRoomRoutes);
 app.use('/api/message', chatMessageRoutes);
-app.use('/api/discounts', discountRoutes);  // Make sure this line is correctly configured
+app.use('/api/discounts', discountRoutes);  // Ensure this is correctly configured
+
+// Huấn luyện chatbot với node-nlp (Chỉ dùng Tiếng Việt)
+const manager = new NlpManager({ languages: ['vi'] });
+
+// Function to train chatbot
+const trainChatbot = async () => {
+  // Lấy dữ liệu từ MongoDB để huấn luyện chatbot
+  const products = await Product.find();
+  const discounts = await Discount.find();
+  const users = await User.find();
+
+  // Huấn luyện chatbot với dữ liệu sản phẩm
+  products.forEach(product => {
+    manager.addDocument('vi', `Sản phẩm ${product.name} là gì?`, 'product.info');
+    manager.addAnswer('vi', 'product.info', `${product.name}: ${product.description}, Giá: ${product.price} VNĐ`);
+  });
+
+  // Huấn luyện chatbot với dữ liệu mã giảm giá
+  discounts.forEach(discount => {
+    manager.addDocument('vi', `Hãy cho tôi biết về mã giảm giá ${discount.code}`, 'discount.info');
+    manager.addAnswer('vi', 'discount.info', `${discount.code}: ${discount.description}`);
+  });
+
+  // Huấn luyện chatbot với dữ liệu người dùng
+  users.forEach(user => {
+    manager.addDocument('vi', `Ai là ${user.name}?`, 'user.info');
+    manager.addAnswer('vi', 'user.info', `${user.name}: ${user.email}`);
+  });
+
+  // Huấn luyện mô hình
+  console.log('Training chatbot...');
+  await manager.train();
+  manager.save();
+  console.log('Training complete!');
+};
+
+// API huấn luyện lại chatbot
+app.post('/api/train', asyncHandler(async (req, res) => {
+  await trainChatbot();
+  res.json({ message: 'Chatbot is trained successfully!' });
+}));
+// API để trả lời câu hỏi từ chatbot
+app.post('/api/chat', asyncHandler(async (req, res) => {
+  const { message } = req.body;
+  const response = await manager.process('vi', message); // Chỉ sử dụng tiếng Việt
+  res.json({ answer: response.answer });
+}));
 
 // Static file serving
 const __dirname = path.resolve();
