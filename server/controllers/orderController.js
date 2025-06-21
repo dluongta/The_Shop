@@ -16,34 +16,38 @@ const addOrderItems = asyncHandler(async (req, res) => {
     totalPrice,
   } = req.body
 
-  if (orderItems && orderItems.length === 0) {
+  if (!orderItems || orderItems.length === 0) {
     res.status(400)
     throw new Error('No order items')
-    return
   }
 
-  // Add seller info to order items
   const updatedOrderItems = []
 
   for (let item of orderItems) {
-    // Check if the product exists and fetch it
     const product = await Product.findById(item.product)
 
-    if (product) {
-      // Add the seller information from the product to the order item
-      item.seller = product.user // Assuming `product.user` is the seller reference
-    } else {
-      res.status(400)
-      throw new Error(`Product with ID ${item.product} not found`)
+    if (!product) {
+      res.status(404)
+      throw new Error(`Product not found: ${item.name}`)
     }
 
+    if (product.countInStock < item.qty) {
+      res.status(400)
+      throw new Error(`Not enough stock for product: ${product.name}`)
+    }
+
+    // Reduce stock
+    product.countInStock -= item.qty
+    await product.save()
+
+    // Attach seller info
+    item.seller = product.user
     updatedOrderItems.push(item)
   }
 
-  // Create the order with the updated orderItems
   const order = new Order({
     orderItems: updatedOrderItems,
-    user: req.user._id, // The logged-in user's ID (customer)
+    user: req.user._id,
     shippingAddress,
     paymentMethod,
     itemsPrice,
@@ -52,9 +56,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
     totalPrice,
   })
 
-  // Save the order
   const createdOrder = await order.save()
-
   res.status(201).json(createdOrder)
 })
 

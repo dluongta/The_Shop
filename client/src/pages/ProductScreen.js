@@ -19,7 +19,6 @@ const ProductScreen = () => {
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
   const { id } = useParams()
 
   const productDetails = useSelector((state) => state.productDetails)
@@ -40,11 +39,12 @@ const ProductScreen = () => {
       setRating(0)
       setComment('')
     }
+
     if (!product._id || product._id !== id) {
       dispatch(listProductDetails(id))
       dispatch({ type: PRODUCT_CREATE_REVIEW_RESET })
     }
-  }, [dispatch, id, successProductReview])
+  }, [dispatch, id, successProductReview, product._id])
 
   const addToCartHandler = () => {
     navigate(`/cart/${id}?qty=${qty}`)
@@ -76,6 +76,7 @@ const ProductScreen = () => {
             <Col md={6}>
               <Image src={product.image} alt={product.name} fluid />
             </Col>
+
             <Col md={3}>
               <ListGroup variant='flush'>
                 <ListGroup.Item>
@@ -97,6 +98,7 @@ const ProductScreen = () => {
                 </ListGroup.Item>
               </ListGroup>
             </Col>
+
             <Col md={3}>
               <Card>
                 <ListGroup variant='flush'>
@@ -113,7 +115,14 @@ const ProductScreen = () => {
                     <Row>
                       <Col>Status:</Col>
                       <Col>
-                        {product.countInStock > 0 ? 'In Stock' : 'Out Of Stock'}
+                        {product.countInStock > 0 ? (
+                          <>
+                            In Stock ({product.countInStock}{' '}
+                            {product.countInStock === 1 ? 'item' : 'items'} left)
+                          </>
+                        ) : (
+                          <span style={{ color: 'red' }}>Out Of Stock</span>
+                        )}
                       </Col>
                     </Row>
                   </ListGroup.Item>
@@ -126,16 +135,19 @@ const ProductScreen = () => {
                           <Form.Control
                             as='select'
                             value={qty}
-                            onChange={(e) => setQty(e.target.value)}
+                            onChange={(e) => setQty(Number(e.target.value))}
                           >
-                            {[...Array(product.countInStock).keys()].map(
-                              (x) => (
-                                <option key={x + 1} value={x + 1}>
-                                  {x + 1}
-                                </option>
-                              )
-                            )}
+                            {[...Array(product.countInStock).keys()].map((x) => (
+                              <option key={x + 1} value={x + 1}>
+                                {x + 1}
+                              </option>
+                            ))}
                           </Form.Control>
+                          {product.countInStock <= 5 && (
+                            <div style={{ color: 'orange', fontSize: '0.9rem' }}>
+                              Only {product.countInStock} left in stock – order soon!
+                            </div>
+                          )}
                         </Col>
                       </Row>
                     </ListGroup.Item>
@@ -144,7 +156,7 @@ const ProductScreen = () => {
                   <ListGroup.Item>
                     <Button
                       onClick={addToCartHandler}
-                      className='btn-block'
+                      className='btn-block w-100'
                       type='button'
                       disabled={product.countInStock === 0}
                     >
@@ -155,6 +167,7 @@ const ProductScreen = () => {
               </Card>
             </Col>
           </Row>
+
           <Row>
             <Col md={6}>
               <h2>Reviews</h2>
@@ -196,15 +209,17 @@ const ProductScreen = () => {
                           <option value='5'>5 - Excellent</option>
                         </Form.Control>
                       </Form.Group>
+
                       <Form.Group controlId='comment'>
                         <Form.Label>Comment</Form.Label>
                         <Form.Control
                           as='textarea'
-                          row='3'
+                          rows='3'
                           value={comment}
                           onChange={(e) => setComment(e.target.value)}
                         ></Form.Control>
                       </Form.Group>
+
                       <Button
                         disabled={loadingProductReview}
                         type='submit'
@@ -215,7 +230,7 @@ const ProductScreen = () => {
                     </Form>
                   ) : (
                     <Message>
-                      Please <Link to='/login'>sign in</Link> to write a review{' '}
+                      Please <Link to='/login'>sign in</Link> to write a review
                     </Message>
                   )}
                 </ListGroup.Item>
