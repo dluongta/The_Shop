@@ -79,22 +79,23 @@ export const useApi = () => {
 
   const markAllMessagesAsRead = async (chatRoomId) => {
     try {
-        await axios.put(`/api/message/mark-as-read/${chatRoomId}`);
+      await axios.put(`/api/message/mark-as-read/${chatRoomId}`);
     } catch (error) {
-        console.error("Error marking messages as read:", error);
+      console.error("Error marking messages as read:", error);
     }
-};
+  };
 
-  const createChatRoom = async (members) => {
+  const createChatRoom = async (data) => {
     const header = createHeader();
 
     try {
-      const res = await axios.post(`${baseURL}/room`, members, header);
+      const res = await axios.post(`${baseURL}/room/${data.isGroup ? "group" : ""}`, data, header);
       return res.data;
     } catch (e) {
       console.error(e);
     }
   };
+
 
   const getMessagesOfChatRoom = async (chatRoomId) => {
     const header = createHeader();
@@ -117,6 +118,7 @@ export const useApi = () => {
       console.error(e);
     }
   };
+
 
   return {
     initiateSocketConnection,

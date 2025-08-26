@@ -7,6 +7,7 @@ import Welcome from "../chat/Welcome";
 import AllUsers from "../chat/AllUsers";
 import SearchUsers from "../chat/SearchUsers";
 import Header from "../layouts/HeaderChat";
+import GroupChatModal from "../chat/GroupChatModal";
 import axios from "axios";
 
 export default function ChatLayout() {
@@ -18,6 +19,7 @@ export default function ChatLayout() {
   const [onlineUsersId, setOnlineUsersId] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isContact, setIsContact] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
 
   const socket = useRef();
   const scrollRef = useRef();
@@ -74,7 +76,6 @@ export default function ChatLayout() {
   const handleChatChange = async (chat) => {
     setCurrentChat(chat);
     try {
-      // Mark messages as read when changing chat
       await axios.put(`/api/message/mark-as-read/${chat._id}`, {});
     } catch (error) {
       console.error("Error marking messages as read:", error);
@@ -110,7 +111,20 @@ export default function ChatLayout() {
       <div className="container mx-auto">
         <div className="min-w-full bg-white border-x border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded lg:grid lg:grid-cols-3">
           <div className="bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 lg:col-span-1">
-            <SearchUsers handleSearch={handleSearch} />
+            <div className="flex justify-between items-center px-3 pt-3">
+              <SearchUsers handleSearch={handleSearch} />
+              {/* Nút tạo nhóm chat rõ ràng có icon + */}
+              <button
+                className="ml-2 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center"
+                onClick={() => {
+                  console.log("Clicked show group modal");
+                  setShowGroupModal(true);
+                }}
+                title="Create New Group Chat"
+              >
+                + New Group Chat
+              </button>
+            </div>
             <AllUsers
               users={searchQuery !== "" ? filteredUsers : users}
               chatRooms={searchQuery !== "" ? filteredRooms : chatRooms}
@@ -126,13 +140,34 @@ export default function ChatLayout() {
               currentChat={currentChat}
               currentUser={currentUser}
               socket={socket}
-              scrollRef={scrollRef}
+              users={users}
             />
+
           ) : (
             <Welcome />
           )}
         </div>
       </div>
+
+      {showGroupModal && (
+        <>
+          {console.log("Rendering GroupChatModal")}
+          <GroupChatModal
+            users={users}
+            currentUser={currentUser}
+            onClose={() => {
+              console.log("Modal closed");
+              setShowGroupModal(false);
+            }}
+            onCreated={(newRoom) => {
+              console.log("New group created", newRoom);
+              setChatRooms([...chatRooms, newRoom]);
+              setCurrentChat(newRoom);
+              setShowGroupModal(false);
+            }}
+          />
+        </>
+      )}
     </>
   );
 }

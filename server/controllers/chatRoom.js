@@ -1,5 +1,25 @@
 import ChatRoom from "../models/ChatRoom.js";
 
+
+// POST /api/room/group
+export const createGroupChat = async (req, res) => {
+  const { name, memberIds } = req.body;
+  if (!name || !memberIds || memberIds.length < 2) {
+    return res.status(400).json({ message: "Tên nhóm và tối thiểu 2 thành viên" });
+  }
+  try {
+    const newRoom = new ChatRoom({
+      name,
+      members: memberIds,
+      isGroup: true,
+    });
+    await newRoom.save();
+    return res.status(201).json(newRoom);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 export const createChatRoom = async (req, res) => {
   const newChatRoom = new ChatRoom({
     members: [req.body.senderId, req.body.receiverId],

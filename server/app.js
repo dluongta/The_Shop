@@ -16,8 +16,8 @@ import uploadRoutes from './routes/uploadRoutes.js';
 import discountRoutes from './routes/discountRoutes.js';
 import { NlpManager } from 'node-nlp';
 import asyncHandler from 'express-async-handler';
-import Product from './models/productModel.js'
-import User from './models/userModel.js'
+import Product from './models/productModel.js';
+import User from './models/userModel.js';
 import Discount from './models/discountModel.js';
 
 dotenv.config();
@@ -87,6 +87,7 @@ app.post('/api/train', asyncHandler(async (req, res) => {
   await trainChatbot();
   res.json({ message: 'Chatbot is trained successfully!' });
 }));
+
 // API để trả lời câu hỏi từ chatbot
 app.post('/api/chat', asyncHandler(async (req, res) => {
   const { message } = req.body;
@@ -155,7 +156,12 @@ io.on("connection", (socket) => {
     socket.emit("getUsers", Array.from(onlineUsers));
   });
 
-  // Send a message to the receiver
+  // Join a chat room
+  socket.on("joinRoom", (roomId) => {
+    socket.join(roomId);
+  });
+
+  // Send a direct message to the receiver
   socket.on("sendMessage", ({ senderId, receiverId, message }) => {
     const sendUserSocket = onlineUsers.get(receiverId);
     if (sendUserSocket) {
@@ -164,6 +170,11 @@ io.on("connection", (socket) => {
         message,
       });
     }
+  });
+
+  // Send message to everyone in the chat room
+  socket.on("sendMessageInRoom", ({ chatRoomId, senderId, message }) => {
+    io.to(chatRoomId).emit("getMessage", { senderId, message, chatRoomId });
   });
 
   // Handle disconnect events
