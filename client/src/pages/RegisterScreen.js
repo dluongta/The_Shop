@@ -19,6 +19,7 @@ const RegisterScreen = () => {
   const [passwordModal, setPasswordModal] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [userData, setUserData] = useState(null); // Store user data (name, email from Google)
+  const [paypalClientId, setPaypalClientId] = useState('');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ const RegisterScreen = () => {
      if (userData && passwordModal) {
        const { email, name } = userData;
        // Register new user and then login
-       await dispatch(register(name, email, passwordModal, 'buyer')); // Register with role 'Buyer'
+       await dispatch(register(name, email, passwordModal, 'buyer', paypalClientId));
        dispatch(login(email, passwordModal)); // Login after successful registration
        setShowModal(false); // Close modal
      }
@@ -114,7 +115,7 @@ const RegisterScreen = () => {
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
     } else {
-      dispatch(register(name, email, password, role)); // Register the user
+      dispatch(register(name, email, password, role, paypalClientId));
     }
   };
 
@@ -183,6 +184,15 @@ const RegisterScreen = () => {
             <option value='buyer'>Buyer</option>
             <option value='seller'>Seller</option>
           </Form.Control>
+        </Form.Group>
+        <Form.Group controlId='paypalClientId'>
+          <Form.Label>PayPal Client ID (Optional)</Form.Label>
+          <Form.Control
+            type='text'
+            placeholder='Enter PayPal Client ID (optional)'
+            value={paypalClientId}
+            onChange={(e) => setPaypalClientId(e.target.value)}
+          />
         </Form.Group>
 
         <Button type='submit' variant='primary' className='mt-3'>

@@ -17,6 +17,7 @@ const authUser = asyncHandler(async (req, res) => {
       email: user.email,
       isAdmin: user.isAdmin,
       role: user.role,
+      paypalClientId: user.paypalClientId,  // Include PayPal Client ID in the response
       token: generateToken(user._id),
     })
   } else {
@@ -29,7 +30,7 @@ const authUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, paypalClientId } = req.body;
 
   // Check if the user already exists
   const userExists = await User.findOne({ email });
@@ -46,6 +47,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     role,
     discounts: [],  // Initialize an empty array to hold references to discount documents
+    paypalClientId,  // Store the PayPal Client ID
   });
 
   // Default discount codes to add

@@ -85,7 +85,7 @@ export const logout = () => (dispatch) => {
   document.location.href = '/login'
 }
 
-export const register = (name, email, password, role) => async (dispatch) => {
+export const register = (name, email, password, role, paypalClientId = '') => async (dispatch) => {
   try {
     dispatch({
       type: USER_REGISTER_REQUEST,
@@ -99,7 +99,7 @@ export const register = (name, email, password, role) => async (dispatch) => {
 
     const { data } = await axios.post(
       '/api/users',
-      { name, email, password, role }, // Include the role in the request body
+      { name, email, password, role, paypalClientId }, // Include the role and PayPal Client ID in the request body
       config
     )
 
