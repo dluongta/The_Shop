@@ -33,13 +33,13 @@ router.get('/admin/productlist', protect, admin, async (req, res) => {
 
     let sortOption = {};
     if (req.query.sort === 'price_asc') {
-      sortBy = { price: 1 }
+      sortOption = { price: 1 }
     } else if (req.query.sort === 'price_desc') {
-      sortBy = { price: -1 }
+      sortOption = { price: -1 }
     } else if (req.query.sort === 'name_asc') {
-      sortBy = { name: 1 }
+      sortOption = { name: 1 }
     } else if (req.query.sort === 'name_desc') {
-      sortBy = { name: -1 }
+      sortOption = { name: -1 }
     }
     else {
       sortOption = { createdAt: -1 };
