@@ -41,8 +41,6 @@ const getProducts = asyncHandler(async (req, res) => {
   }
 
 
-  console.log('Sorting by:', sortBy)
-
   const filters = { ...keyword, ...userFilter, ...priceFilter }
 
   const count = await Product.countDocuments(filters)

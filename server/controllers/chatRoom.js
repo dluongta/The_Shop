@@ -60,3 +60,30 @@ export const getChatRoomOfUsers = async (req, res) => {
     });
   }
 };
+
+// PUT /api/room/leave/:roomId
+export const leaveGroupChat = async (req, res) => {
+  const { userId } = req.body;
+  const { roomId } = req.params;
+
+  try {
+    const room = await ChatRoom.findById(roomId);
+
+    if (!room || !room.isGroup) {
+      return res.status(404).json({ message: "Group chat not found" });
+    }
+
+    // Nếu chỉ còn 1 người thì xóa luôn nhóm
+    if (room.members.length === 1 && room.members[0].toString() === userId) {
+      await ChatRoom.findByIdAndDelete(roomId);
+      return res.status(200).json({ message: "Group deleted" });
+    }
+
+    room.members = room.members.filter(id => id.toString() !== userId);
+    await room.save();
+
+    res.status(200).json({ message: "Left group successfully", room });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

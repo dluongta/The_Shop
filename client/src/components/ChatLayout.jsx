@@ -105,6 +105,28 @@ export default function ChatLayout() {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!currentChat || !currentChat._id) return;
+
+    const confirmLeave = window.confirm("Are you sure you want to leave this group?");
+    if (!confirmLeave) return;
+
+    try {
+      const response = await axios.put(`/api/room/leave/${currentChat._id}`, {
+        userId: currentUser._id,
+      });
+
+      const updatedRooms = chatRooms.filter((room) => room._id !== currentChat._id);
+      setChatRooms(updatedRooms);
+      setCurrentChat(null); 
+
+      console.log("Left group successfully", response.data);
+    } catch (error) {
+      console.error("Error leaving group:", error);
+      alert("Failed to leave group.");
+    }
+  };
+
   return (
     <>
       <Header />
@@ -113,7 +135,6 @@ export default function ChatLayout() {
           <div className="bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 lg:col-span-1">
             <div className="flex justify-between items-center px-3 pt-3">
               <SearchUsers handleSearch={handleSearch} />
-              {/* Nút tạo nhóm chat rõ ràng có icon + */}
               <button
                 className="ml-2 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center"
                 onClick={() => {
@@ -135,38 +156,47 @@ export default function ChatLayout() {
             />
           </div>
 
-          {currentChat ? (
-            <ChatRoom
-              currentChat={currentChat}
-              currentUser={currentUser}
-              socket={socket}
-              users={users}
-            />
+          <div className="lg:col-span-2 relative">
+            {currentChat ? (
+              <>
+                {currentChat.isGroup && (
+                  <div className="absolute top-0 right-0 m-4 z-10">
+                    <button
+                      onClick={handleLeaveGroup}
+                      className="bg-red-600 text-white text-sm px-4 py-2 rounded hover:bg-red-700"
+                    >
+                      Leave Group
+                    </button>
+                  </div>
+                )}
 
-          ) : (
-            <Welcome />
-          )}
+                <ChatRoom
+                  currentChat={currentChat}
+                  currentUser={currentUser}
+                  socket={socket}
+                  users={users}
+                />
+              </>
+            ) : (
+              <Welcome />
+            )}
+          </div>
         </div>
       </div>
 
       {showGroupModal && (
-        <>
-          {console.log("Rendering GroupChatModal")}
-          <GroupChatModal
-            users={users}
-            currentUser={currentUser}
-            onClose={() => {
-              console.log("Modal closed");
-              setShowGroupModal(false);
-            }}
-            onCreated={(newRoom) => {
-              console.log("New group created", newRoom);
-              setChatRooms([...chatRooms, newRoom]);
-              setCurrentChat(newRoom);
-              setShowGroupModal(false);
-            }}
-          />
-        </>
+        <GroupChatModal
+          users={users}
+          currentUser={currentUser}
+          onClose={() => {
+            setShowGroupModal(false);
+          }}
+          onCreated={(newRoom) => {
+            setChatRooms([...chatRooms, newRoom]);
+            setCurrentChat(newRoom);
+            setShowGroupModal(false);
+          }}
+        />
       )}
     </>
   );
