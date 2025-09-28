@@ -93,6 +93,7 @@ const registerUser = asyncHandler(async (req, res) => {
       isAdmin: user.isAdmin,
       role: user.role,
       discounts: user.discounts,  // Send the discount IDs back in the response
+      paypalClientId: user.paypalClientId,  // Return PayPal Client ID
       token: generateToken(user._id),
     });
   } else {

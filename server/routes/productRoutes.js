@@ -16,12 +16,46 @@ import Product from '../models/productModel.js'
 router.get('/allProducts', getAllProducts);
 router.get('/admin/productlist', protect, admin, async (req, res) => {
   try {
-    const products = await Product.find();
+    const { minPrice, maxPrice, sort } = req.query;
+
+    const query = {};
+
+    if (minPrice) {
+      query.price = { $gte: Number(minPrice) };
+    }
+
+    if (maxPrice) {
+      query.price = {
+        ...query.price,
+        $lte: Number(maxPrice),
+      };
+    }
+
+    let sortOption = {};
+    if (req.query.sort === 'price_asc') {
+      sortBy = { price: 1 }
+    } else if (req.query.sort === 'price_desc') {
+      sortBy = { price: -1 }
+    } else if (req.query.sort === 'name_asc') {
+      sortBy = { name: 1 }
+    } else if (req.query.sort === 'name_desc') {
+      sortBy = { name: -1 }
+    }
+    else {
+      sortOption = { createdAt: -1 };
+    }
+
+    const products = await Product.find(query).sort(sortOption);
+
     res.json(products);
   } catch (error) {
+    console.error('Admin product list error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+
 // Route for getting products and creating products (admin or seller)
 router.route('/')
   .get(getProducts)
@@ -53,5 +87,5 @@ router.route('/:id')
     throw new Error('Not authorized as admin or seller')
   }, updateProduct)
 
-  
+
 export default router

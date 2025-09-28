@@ -31,48 +31,69 @@ import {
 import { logout } from './userActions'
 
 
-export const listAdminProducts = () => async (dispatch, getState) => {
-  try {
-    dispatch({ type: PRODUCT_LIST_ADMIN_REQUEST });
+// listAdminProducts action
+export const listAdminProducts =
+  (minPrice = '', maxPrice = '', sort = '') =>
+  async (dispatch, getState) => {
+    try {
+      dispatch({ type: PRODUCT_LIST_ADMIN_REQUEST })
 
-    // Get user token from state
-    const {
-      userLogin: { userInfo },
-    } = getState();
+      const {
+        userLogin: { userInfo },
+      } = getState()
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${userInfo.token}`, // Send token for authentication
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      }
 
-    const { data } = await axios.get('/api/products/admin/productlist', config); // Use the admin-specific route
+      let query = `/api/products/admin/productlist?`
+      if (minPrice !== '') query += `minPrice=${minPrice}&`
+      if (maxPrice !== '') query += `maxPrice=${maxPrice}&`
+      if (sort) query += `sort=${sort}`
 
-    dispatch({
-      type: PRODUCT_LIST_ADMIN_SUCCESS,
-      payload: data,
-    });
-  } catch (error) {
-    dispatch({
-      type: PRODUCT_LIST_ADMIN_FAIL,
-      payload: error.response && error.response.data.message ? error.response.data.message : error.message,
-    });
+      if (query.endsWith('&')) query = query.slice(0, -1)
+
+      const { data } = await axios.get(query, config)
+
+      dispatch({
+        type: PRODUCT_LIST_ADMIN_SUCCESS,
+        payload: data,
+      })
+    } catch (error) {
+      dispatch({
+        type: PRODUCT_LIST_ADMIN_FAIL,
+        payload:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+      })
+    }
   }
-};
 
-export const listProducts = (keyword = '', pageNumber = '', userId = '') => async (dispatch) => {
+// listProducts action
+export const listProducts = (keyword = '', pageNumber = '', userId = '', minPrice = '', maxPrice = '', sort = '') => async (dispatch) => {
   try {
-    dispatch({ type: PRODUCT_LIST_REQUEST });
+    dispatch({ type: PRODUCT_LIST_REQUEST })
 
-    // Update the API request to include the userId if provided
-    const { data } = await axios.get(
-      `/api/products?keyword=${keyword}&pageNumber=${pageNumber}&userId=${userId}`  // Added userId parameter here
-    );
+    let query = `/api/products?`
+
+    if (keyword) query += `keyword=${keyword}&`
+    if (pageNumber) query += `pageNumber=${pageNumber}&`
+    if (userId) query += `userId=${userId}&`
+    if (minPrice !== '') query += `minPrice=${minPrice}&`
+    if (maxPrice !== '') query += `maxPrice=${maxPrice}&`
+    if (sort) query += `sort=${sort}`
+
+    if (query.endsWith('&')) query = query.slice(0, -1)
+
+    const { data } = await axios.get(query)
 
     dispatch({
       type: PRODUCT_LIST_SUCCESS,
       payload: data,
-    });
+    })
   } catch (error) {
     dispatch({
       type: PRODUCT_LIST_FAIL,
@@ -80,9 +101,10 @@ export const listProducts = (keyword = '', pageNumber = '', userId = '') => asyn
         error.response && error.response.data.message
           ? error.response.data.message
           : error.message,
-    });
+    })
   }
-};
+}
+
 
 
 export const listProductDetails = (id) => async (dispatch) => {

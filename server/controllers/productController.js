@@ -4,30 +4,59 @@ import Product from '../models/productModel.js'
 // @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
+// getProducts controller
 const getProducts = asyncHandler(async (req, res) => {
   const pageSize = 10
   const page = Number(req.query.pageNumber) || 1
 
+  // Keyword search (case-insensitive)
   const keyword = req.query.keyword
     ? {
-        name: {
-          $regex: req.query.keyword,
-          $options: 'i',
-        },
-      }
+      name: {
+        $regex: req.query.keyword,
+        $options: 'i',
+      },
+    }
     : {}
 
-  // Filter by userId if provided in the query
+  // Filter theo userId nếu có
   const userFilter = req.query.userId ? { user: req.query.userId } : {}
 
-  const count = await Product.countDocuments({ ...keyword, ...userFilter })  // Include userFilter in the count query
-  const products = await Product.find({ ...keyword, ...userFilter })  // Include userFilter in the products query
+  const minPrice = req.query.minPrice ? Number(req.query.minPrice) : 0
+  const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : Infinity
+  const priceFilter = {
+    price: { $gte: minPrice, $lte: maxPrice },
+  }
+
+  let sortBy = { updatedAt: -1 } 
+
+  if (req.query.sort === 'price_asc') {
+    sortBy = { price: 1 }
+  } else if (req.query.sort === 'price_desc') {
+    sortBy = { price: -1 }
+  } else if (req.query.sort === 'name_asc') {
+    sortBy = { name: 1 }
+  } else if (req.query.sort === 'name_desc') {
+    sortBy = { name: -1 }
+  }
+
+
+  console.log('Sorting by:', sortBy)
+
+  const filters = { ...keyword, ...userFilter, ...priceFilter }
+
+  const count = await Product.countDocuments(filters)
+
+  const products = await Product.find(filters)
     .limit(pageSize)
     .skip(pageSize * (page - 1))
-    .sort('-updatedAt')  // Sorting by the most recently updated product
+    .sort(sortBy)
 
   res.json({ products, page, pages: Math.ceil(count / pageSize) })
 })
+
+
+
 
 
 // @desc    Fetch single product

@@ -85,7 +85,7 @@ export const logout = () => (dispatch) => {
   document.location.href = '/login'
 }
 
-export const register = (name, email, password, role, paypalClientId = '') => async (dispatch) => {
+export const register = (name, email, password, role, paypalClientId) => async (dispatch) => {
   try {
     dispatch({
       type: USER_REGISTER_REQUEST,
