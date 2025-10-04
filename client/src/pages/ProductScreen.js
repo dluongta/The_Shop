@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react'
+import {
+  Row,
+  Col,
+  Image,
+  ListGroup,
+  Card,
+  Button,
+  Form,
+  Container,
+  Carousel,
+} from 'react-bootstrap'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Row, Col, Image, ListGroup, Card, Button, Form, Container } from 'react-bootstrap'
 import Rating from '../components/Rating'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
@@ -74,7 +84,25 @@ const ProductScreen = () => {
           <Meta title={product.name} />
           <Row>
             <Col md={6}>
-              <Image src={product.image} alt={product.name} fluid />
+              {product.images && product.images.length > 0 ? (
+                <Carousel variant='dark'>
+                  {product.images.map((img, idx) => (
+                    <Carousel.Item key={idx}>
+                      <Image
+                        src={img}
+                        alt={`Product Image ${idx + 1}`}
+                        fluid
+                      />
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
+              ) : (
+                <Image
+                  src={product.image || '/images/sample.jpg'}
+                  alt={product.name}
+                  fluid
+                />
+              )}
             </Col>
 
             <Col md={3}>
@@ -168,7 +196,7 @@ const ProductScreen = () => {
             </Col>
           </Row>
 
-          <Row>
+          <Row className='mt-5'>
             <Col md={6}>
               <h2>Reviews</h2>
               {product.reviews.length === 0 && <Message>No Reviews</Message>}
@@ -194,12 +222,12 @@ const ProductScreen = () => {
                   )}
                   {userInfo ? (
                     <Form onSubmit={submitHandler}>
-                      <Form.Group controlId='rating'>
+                      <Form.Group controlId='rating' className='my-2'>
                         <Form.Label>Rating</Form.Label>
                         <Form.Control
                           as='select'
                           value={rating}
-                          onChange={(e) => setRating(e.target.value)}
+                          onChange={(e) => setRating(Number(e.target.value))}
                         >
                           <option value=''>Select...</option>
                           <option value='1'>1 - Poor</option>
@@ -210,7 +238,7 @@ const ProductScreen = () => {
                         </Form.Control>
                       </Form.Group>
 
-                      <Form.Group controlId='comment'>
+                      <Form.Group controlId='comment' className='my-2'>
                         <Form.Label>Comment</Form.Label>
                         <Form.Control
                           as='textarea'

@@ -10,12 +10,12 @@ import { listProductDetails, updateProduct } from '../actions/productActions'
 import { PRODUCT_UPDATE_RESET } from '../constants/productConstants'
 
 const ProductEditScreen = () => {
-  const { id: productId } = useParams()  // Use `useParams` to get productId
-  const navigate = useNavigate()  // Use `useNavigate` for navigation
+  const { id: productId } = useParams()
+  const navigate = useNavigate()
 
   const [name, setName] = useState('')
   const [price, setPrice] = useState(0)
-  const [image, setImage] = useState('')
+  const [images, setImages] = useState([]) // mảng các url ảnh
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState('')
   const [countInStock, setCountInStock] = useState(0)
@@ -37,14 +37,14 @@ const ProductEditScreen = () => {
   useEffect(() => {
     if (successUpdate) {
       dispatch({ type: PRODUCT_UPDATE_RESET })
-      navigate('/seller/products') 
+      navigate('/seller/products')
     } else {
       if (!product.name || product._id !== productId) {
         dispatch(listProductDetails(productId))
       } else {
         setName(product.name)
         setPrice(product.price)
-        setImage(product.image)
+        setImages(product.images || [])
         setBrand(product.brand)
         setCategory(product.category)
         setCountInStock(product.countInStock)
@@ -54,9 +54,19 @@ const ProductEditScreen = () => {
   }, [dispatch, navigate, productId, product, successUpdate])
 
   const uploadFileHandler = async (e) => {
-    const file = e.target.files[0]
+    const files = Array.from(e.target.files)
+
+    // Giới hạn tổng số ảnh ≤ 5
+    if (files.length + images.length > 5) {
+      alert('You can upload up to 5 images only')
+      return
+    }
+
     const formData = new FormData()
-    formData.append('image', file)
+    files.forEach((file) => {
+      formData.append('images', file)
+    })
+
     setUploading(true)
 
     try {
@@ -67,14 +77,20 @@ const ProductEditScreen = () => {
       }
 
       const { data } = await axios.post('/api/upload', formData, config)
-      const new_data = data.replace(/\\/g, "/");  // Normalize file path if necessary
+      // data.paths là mảng đường dẫn ảnh trả về từ backend
+      const newPaths = data.paths || []
 
-      setImage(new_data)
-      setUploading(false)
+      // gộp với state trước đó
+      setImages((prev) => [...prev, ...newPaths])
     } catch (error) {
       console.error(error)
+    } finally {
       setUploading(false)
     }
+  }
+
+  const removeImage = (index) => {
+    setImages(images.filter((_, i) => i !== index))
   }
 
   const submitHandler = (e) => {
@@ -84,7 +100,7 @@ const ProductEditScreen = () => {
         _id: productId,
         name,
         price,
-        image,
+        images,
         brand,
         category,
         description,
@@ -111,11 +127,11 @@ const ProductEditScreen = () => {
             <Form.Group controlId='name'>
               <Form.Label>Name</Form.Label>
               <Form.Control
-                type='name'
+                type='text'
                 placeholder='Enter name'
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
             <Form.Group controlId='price'>
@@ -125,24 +141,58 @@ const ProductEditScreen = () => {
                 placeholder='Enter price'
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
-            <Form.Group controlId='image'>
-              <Form.Label>Image</Form.Label>
+            <Form.Group controlId='images'>
+              <Form.Label>Product Images (Max 5)</Form.Label>
               <Form.Control
-                type='text'
-                placeholder='Enter image url'
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              ></Form.Control>
-              <Form.File
-                id='image-file'
-                label='Choose File'
-                custom
+                type='file'
+                multiple
                 onChange={uploadFileHandler}
-              ></Form.File>
+              />
               {uploading && <Loader />}
+
+              <div
+                className='image-preview-container'
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  marginTop: '10px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {images.map((img, index) => (
+                  <div
+                    key={index}
+                    style={{ position: 'relative', width: '100px', height: '100px' }}
+                  >
+                    <img
+                      src={img}
+                      alt={`Preview ${index}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        border: '1px solid #ccc',
+                      }}
+                    />
+                    <Button
+                      variant='danger'
+                      size='sm'
+                      onClick={() => removeImage(index)}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        padding: '0 6px',
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </Form.Group>
 
             <Form.Group controlId='brand'>
@@ -152,7 +202,7 @@ const ProductEditScreen = () => {
                 placeholder='Enter brand'
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
             <Form.Group controlId='countInStock'>
@@ -162,7 +212,7 @@ const ProductEditScreen = () => {
                 placeholder='Enter countInStock'
                 value={countInStock}
                 onChange={(e) => setCountInStock(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
             <Form.Group controlId='category'>
@@ -172,17 +222,18 @@ const ProductEditScreen = () => {
                 placeholder='Enter category'
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
             <Form.Group controlId='description'>
               <Form.Label>Description</Form.Label>
               <Form.Control
-                type='text'
+                as='textarea'
+                rows={3}
                 placeholder='Enter description'
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
             <Button type='submit' variant='primary'>
