@@ -162,12 +162,17 @@ const getMySellOrders = asyncHandler(async (req, res) => {
     }
 
     // Get all orders
-    const orders = await Order.find();
+    const orders = await Order.find().populate({
+      path: 'orderItems.seller',
+      select: '_id name', 
+    });
+
 
     // Filter orders that belong to the seller
     const filteredOrders = orders.filter(order => 
-      order.orderItems.some(item => item.seller._id.toString() === req.user._id.toString())
+      order.orderItems.some(item => item.seller && item.seller._id.toString() === req.user._id.toString())
     );
+
 
     if (filteredOrders.length === 0) {
       return res.status(404).json({ message: 'No orders found for this seller.' });

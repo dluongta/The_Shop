@@ -15,7 +15,6 @@ const PlaceOrderScreen = () => {
 
   const errorRef = useRef(null)
 
-  // Redirect if no shipping address or payment method
   if (!cart.shippingAddress.address) {
     navigate('/shipping')
   } else if (!cart.paymentMethod) {
@@ -45,7 +44,7 @@ const PlaceOrderScreen = () => {
       dispatch({ type: USER_DETAILS_RESET })
       dispatch({ type: ORDER_CREATE_RESET })
     }
-  }, [success, dispatch, navigate])
+  }, [success, dispatch, navigate, order])
 
   useEffect(() => {
     if (error && errorRef.current) {
@@ -54,11 +53,14 @@ const PlaceOrderScreen = () => {
   }, [error])
 
   const placeOrderHandler = () => {
-    dispatch({ type: ORDER_CREATE_RESET }) // Clear previous error
+    dispatch({ type: ORDER_CREATE_RESET })
 
     const orderItems = cart.cartItems.map((item) => ({
-      ...item,
-      seller: item.product.seller || item.user,
+      product: item.product,
+      name: item.name,
+      image: item.image,
+      price: item.price,
+      qty: item.qty,
     }))
 
     dispatch(
@@ -74,7 +76,6 @@ const PlaceOrderScreen = () => {
     )
   }
 
-  // Extract product name from error message if it's a stock error
   const getOutOfStockProductName = (errorMessage) => {
     const match = errorMessage?.match(/Not enough stock for product: (.+)/)
     return match ? match[1] : null
