@@ -35,7 +35,7 @@ const Carousel = () => {
             className='carousel-item active'
             style={{
               backgroundImage:
-                'url("https://images.unsplash.com/photo-1561715276-a2d087060f1d")',
+                'url("/images/sample.png")',
             }}
           >
             <div className='carousel-caption'>
@@ -49,7 +49,7 @@ const Carousel = () => {
             className='carousel-item'
             style={{
               backgroundImage:
-                'url("https://images.unsplash.com/photo-1472851294608-062f824d29cc")',
+                'url("/images/sample.png")',
             }}
           >
             <div className='carousel-caption'>
@@ -63,7 +63,7 @@ const Carousel = () => {
             className='carousel-item'
             style={{
               backgroundImage:
-                'url("https://images.unsplash.com/photo-1607082350899-7e105aa886ae")',
+                'url("/images/sample.png")',
             }}
           >
             <div className='carousel-caption'>

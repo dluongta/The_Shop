@@ -57,7 +57,7 @@ const ProductScreen = () => {
   }, [dispatch, id, successProductReview, product._id])
 
   const addToCartHandler = () => {
-    navigate(`/cart/${id}?qty=${qty}`)
+    navigate(`/cart/${id}`)
   }
 
   const submitHandler = (e) => {
@@ -98,7 +98,7 @@ const ProductScreen = () => {
                 </Carousel>
               ) : (
                 <Image
-                  src={product.image || '/images/sample.jpg'}
+                  src={Array.isArray(product.images) ? product.images[0] : '/images/sample.jpg'}
                   alt={product.name}
                   fluid
                 />

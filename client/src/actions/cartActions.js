@@ -9,6 +9,7 @@ import {
 export const addToCart = (id, qty) => async (dispatch, getState) => {
   // Fetch product details including seller info
   const { data } = await axios.get(`/api/products/${id}`)
+  console.log('Product data fetched for cart:', data)
 
   // Dispatch action to add item to cart with seller information
   dispatch({
@@ -16,7 +17,7 @@ export const addToCart = (id, qty) => async (dispatch, getState) => {
     payload: {
       product: data._id,
       name: data.name,
-      image: data.image,
+      image: Array.isArray(data.images) ? data.images[0] : data.image,
       price: data.price,
       countInStock: data.countInStock,
       seller: data.seller, // Assuming the product object contains seller information
