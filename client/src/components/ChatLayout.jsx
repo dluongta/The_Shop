@@ -128,6 +128,7 @@ export default function ChatLayout() {
               onlineUsersId={onlineUsersId}
               currentUser={currentUser}
               changeChat={handleChatChange}
+              searchQuery={searchQuery}
             />
           </div>
 

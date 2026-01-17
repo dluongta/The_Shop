@@ -7,6 +7,8 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+const normalize = (str = "") => str.toLowerCase();
+
 export default function AllUsers({
   users,
   chatRooms,
@@ -14,6 +16,7 @@ export default function AllUsers({
   onlineUsersId,
   currentUser,
   changeChat,
+  searchQuery,
 }) {
   const [selectedChat, setSelectedChat] = useState(null);
   const [nonContacts, setNonContacts] = useState([]);
@@ -74,17 +77,40 @@ export default function AllUsers({
     changeChat(chat);
   };
 
-  // ================= GET USER BY ID =================
+  // ================= GET USER NAME (GROUP MEMBERS) =================
   const getUserName = (userId) => {
     const user = users.find((u) => u._id === userId);
     return user?.email || user?.name || "Unknown user";
   };
 
+  // ================= FILTER CHAT ROOMS =================
+  const filteredChatRooms = chatRooms.filter((room) => {
+    if (!searchQuery) return true;
+
+    // GROUP CHAT
+    if (room.isGroup) {
+      return normalize(room.name).includes(normalize(searchQuery));
+    }
+
+    // 1–1 CHAT
+    const contactId = room.members.find(
+      (id) => id !== currentUser._id
+    );
+    const contact = users.find((u) => u._id === contactId);
+
+    return normalize(contact?.email).includes(normalize(searchQuery));
+  });
+
+  // ================= FILTER OTHER USERS =================
+  const filteredNonContacts = nonContacts.filter((u) =>
+    normalize(u.email).includes(normalize(searchQuery))
+  );
+
   return (
     <ul className="overflow-auto h-[30rem]">
       <h2 className="m-2 font-semibold">Chats</h2>
 
-      {chatRooms.map((room, index) => (
+      {filteredChatRooms.map((room, index) => (
         <div
           key={room._id}
           onClick={() => changeCurrentChat(index, room)}
@@ -108,12 +134,11 @@ export default function AllUsers({
                 <span>{room.name}</span>
               ) : (
                 <Contact
-  chatRoom={room}
-  currentUser={currentUser}
-  onlineUsersId={onlineUsersId}
-  users={users}
-/>
-
+                  chatRoom={room}
+                  currentUser={currentUser}
+                  onlineUsersId={onlineUsersId}
+                  users={users}
+                />
               )}
             </div>
 
@@ -147,7 +172,7 @@ export default function AllUsers({
 
       <h2 className="m-2 font-semibold">Other Users</h2>
 
-      {nonContacts.map((u) => (
+      {filteredNonContacts.map((u) => (
         <div
           key={u._id}
           onClick={() =>
