@@ -1,0 +1,39 @@
+{
+  "name": "THE_SHOP",
+  "version": "2.0.0",
+  "description": "The shopping app",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/app",
+    "server": "nodemon server/app",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "data:import": "node server/seeder",
+    "data:destroy": "node server/seeder -d"
+  },
+  "author": "luen2003",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^2.2.0",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.6.0",
+    "express": "^4.21.2",
+    "express-async-handler": "^1.1.4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.13.23",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.2",
+    "node-nlp": "^5.0.0-alpha.5",
+    "react-router-dom": "^6.28.0",
+    "socket.io": "^4.8.1",
+    "start": "^5.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0",
+    "nodemon": "^2.0.4"
+  }
+}

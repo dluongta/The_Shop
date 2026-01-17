@@ -1,0 +1,1809 @@
+{
+  "settings": {
+    "languages": [
+      "vi"
+    ],
+    "forceNER": true,
+    "tag": "nlp",
+    "threshold": 0.5,
+    "autoLoad": true,
+    "autoSave": true,
+    "modelFileName": "model.nlp",
+    "executeActionsBeforeAnswers": false,
+    "calculateSentiment": true
+  },
+  "nluManager": {
+    "settings": {
+      "tag": "nlu-manager"
+    },
+    "locales": [
+      "vi"
+    ],
+    "languageNames": {},
+    "domainManagers": {
+      "vi": {
+        "settings": {
+          "locale": "vi",
+          "trainByDomain": false,
+          "tag": "domain-manager-vi",
+          "nluByDomain": {
+            "default": {
+              "className": "NeuralNlu",
+              "settings": {}
+            }
+          },
+          "useStemDict": true
+        },
+        "stemDict": {
+          "airpods,bluetooth,gi,headphones,la,pham,san,wireless": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "airpods,bluetooth,headphones,thong,tin,wireless": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "dell,gi,la,pham,san,xps": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "dell,thong,tin,xps": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "gi,iphone,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "iphone,thong,tin": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "4,gi,la,pham,playstation,pro,san,sony,version,white": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "4,playstation,pro,sony,thong,tin,version,white": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "g-series,gaming,gi,la,logitech,mouse,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "g-series,gaming,logitech,mouse,thong,tin": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "11,256gb,gi,iphone,la,memory,pham,pro,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "11,256gb,iphone,memory,pro,thong,tin": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "80d,camera,cannon,dslr,eos,gi,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "80d,camera,cannon,dslr,eos,thong,tin": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "3rd,amazon,dot,echo,generation,gi,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "3rd,amazon,dot,echo,generation,thong,tin": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "computer,gi,keyboard,la,pham,san": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "computer,keyboard,thong,tin": {
+            "intent": "product.info",
+            "domain": "default"
+          },
+          "discount20,gia,giam,ma": {
+            "intent": "discount.info",
+            "domain": "default"
+          },
+          "gia,giam,ma,sale10": {
+            "intent": "discount.info",
+            "domain": "default"
+          },
+          "discount10,gia,giam,ma": {
+            "intent": "discount.info",
+            "domain": "default"
+          },
+          "ai,ban,la": {
+            "intent": "bot.identity",
+            "domain": "default"
+          },
+          "ban,gi,la,ten": {
+            "intent": "bot.identity",
+            "domain": "default"
+          },
+          "ai,ban,lam,ra": {
+            "intent": "bot.creator",
+            "domain": "default"
+          },
+          "ai,ban,ra,tao": {
+            "intent": "bot.creator",
+            "domain": "default"
+          },
+          "bao,co,nhieu,pham,san": {
+            "intent": "shop.stats.products",
+            "domain": "default"
+          },
+          "bao,co,hang,nhieu,đon": {
+            "intent": "shop.stats.orders",
+            "domain": "default"
+          },
+          "bao,co,gia,giam,ma,nhieu": {
+            "intent": "shop.stats.discounts",
+            "domain": "default"
+          },
+          "nao,nhat,pham,re,san": {
+            "intent": "product.min_price",
+            "domain": "default"
+          },
+          "gia,nhat,thap": {
+            "intent": "product.min_price",
+            "domain": "default"
+          },
+          "nao,nhat,pham,san,đat": {
+            "intent": "product.max_price",
+            "domain": "default"
+          },
+          "cao,gia,nhat": {
+            "intent": "product.max_price",
+            "domain": "default"
+          },
+          "cua,hang,thai,toi,trang,đon": {
+            "intent": "order.status",
+            "domain": "default"
+          },
+          "hang,kiem,tra,đon": {
+            "intent": "order.status",
+            "domain": "default"
+          }
+        },
+        "intentDict": {
+          "product.info": "default",
+          "discount.info": "default",
+          "bot.identity": "default",
+          "bot.creator": "default",
+          "shop.stats.products": "default",
+          "shop.stats.orders": "default",
+          "shop.stats.discounts": "default",
+          "product.min_price": "default",
+          "product.max_price": "default",
+          "order.status": "default"
+        },
+        "sentences": [
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Airpods Wireless Bluetooth Headphones là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Airpods Wireless Bluetooth Headphones",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm DELL XPS là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin DELL XPS",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Iphone là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Iphone",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Sony Playstation 4 Pro White Version là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Sony Playstation 4 Pro White Version",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Logitech G-Series Gaming Mouse là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Logitech G-Series Gaming Mouse",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm iPhone 11 Pro 256GB Memory là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin iPhone 11 Pro 256GB Memory",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Cannon EOS 80D DSLR Camera là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Cannon EOS 80D DSLR Camera",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Amazon Echo Dot 3rd Generation là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Amazon Echo Dot 3rd Generation",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Sản phẩm Computer Keyboard là gì",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Thông tin Computer Keyboard",
+            "intent": "product.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Mã giảm giá DISCOUNT20",
+            "intent": "discount.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Mã giảm giá SALE10",
+            "intent": "discount.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "Mã giảm giá DISCOUNT10",
+            "intent": "discount.info"
+          },
+          {
+            "domain": "default",
+            "utterance": "bạn là ai",
+            "intent": "bot.identity"
+          },
+          {
+            "domain": "default",
+            "utterance": "tên bạn là gì",
+            "intent": "bot.identity"
+          },
+          {
+            "domain": "default",
+            "utterance": "ai làm ra bạn",
+            "intent": "bot.creator"
+          },
+          {
+            "domain": "default",
+            "utterance": "ai tạo ra bạn",
+            "intent": "bot.creator"
+          },
+          {
+            "domain": "default",
+            "utterance": "có bao nhiêu sản phẩm",
+            "intent": "shop.stats.products"
+          },
+          {
+            "domain": "default",
+            "utterance": "có bao nhiêu đơn hàng",
+            "intent": "shop.stats.orders"
+          },
+          {
+            "domain": "default",
+            "utterance": "có bao nhiêu mã giảm giá",
+            "intent": "shop.stats.discounts"
+          },
+          {
+            "domain": "default",
+            "utterance": "sản phẩm nào rẻ nhất",
+            "intent": "product.min_price"
+          },
+          {
+            "domain": "default",
+            "utterance": "giá thấp nhất",
+            "intent": "product.min_price"
+          },
+          {
+            "domain": "default",
+            "utterance": "sản phẩm nào đắt nhất",
+            "intent": "product.max_price"
+          },
+          {
+            "domain": "default",
+            "utterance": "giá cao nhất",
+            "intent": "product.max_price"
+          },
+          {
+            "domain": "default",
+            "utterance": "trạng thái đơn hàng của tôi",
+            "intent": "order.status"
+          },
+          {
+            "domain": "default",
+            "utterance": "kiểm tra đơn hàng",
+            "intent": "order.status"
+          }
+        ],
+        "domains": {
+          "master_domain": {
+            "settings": {
+              "locale": "vi",
+              "tag": "nlu-vi",
+              "keepStopwords": true,
+              "nonefeatureValue": 1,
+              "nonedeltaMultiplier": 1.2,
+              "spellCheck": false,
+              "spellCheckDistance": 1,
+              "filterZeros": true,
+              "log": true
+            },
+            "features": {
+              "4": 1,
+              "11": 1,
+              "san": 1,
+              "pham": 1,
+              "airpods": 1,
+              "wireless": 1,
+              "bluetooth": 1,
+              "headphones": 1,
+              "la": 1,
+              "gi": 1,
+              "thong": 1,
+              "tin": 1,
+              "dell": 1,
+              "xps": 1,
+              "iphone": 1,
+              "sony": 1,
+              "playstation": 1,
+              "pro": 1,
+              "white": 1,
+              "version": 1,
+              "logitech": 1,
+              "g-series": 1,
+              "gaming": 1,
+              "mouse": 1,
+              "256gb": 1,
+              "memory": 1,
+              "cannon": 1,
+              "eos": 1,
+              "80d": 1,
+              "dslr": 1,
+              "camera": 1,
+              "amazon": 1,
+              "echo": 1,
+              "dot": 1,
+              "3rd": 1,
+              "generation": 1,
+              "computer": 1,
+              "keyboard": 1,
+              "ma": 1,
+              "giam": 1,
+              "gia": 1,
+              "discount20": 1,
+              "sale10": 1,
+              "discount10": 1,
+              "ban": 1,
+              "ai": 1,
+              "ten": 1,
+              "lam": 1,
+              "ra": 1,
+              "tao": 1,
+              "co": 1,
+              "bao": 1,
+              "nhieu": 1,
+              "đon": 1,
+              "hang": 1,
+              "nao": 1,
+              "re": 1,
+              "nhat": 1,
+              "thap": 1,
+              "đat": 1,
+              "cao": 1,
+              "trang": 1,
+              "thai": 1,
+              "cua": 1,
+              "toi": 1,
+              "kiem": 1,
+              "tra": 1
+            },
+            "intents": {
+              "product.info": 1,
+              "discount.info": 1,
+              "bot.identity": 1,
+              "bot.creator": 1,
+              "shop.stats.products": 1,
+              "shop.stats.orders": 1,
+              "shop.stats.discounts": 1,
+              "product.min_price": 1,
+              "product.max_price": 1,
+              "order.status": 1
+            },
+            "intentFeatures": {
+              "product.info": {
+                "4": 1,
+                "11": 1,
+                "san": 1,
+                "pham": 1,
+                "airpods": 1,
+                "wireless": 1,
+                "bluetooth": 1,
+                "headphones": 1,
+                "la": 1,
+                "gi": 1,
+                "thong": 1,
+                "tin": 1,
+                "dell": 1,
+                "xps": 1,
+                "iphone": 1,
+                "sony": 1,
+                "playstation": 1,
+                "pro": 1,
+                "white": 1,
+                "version": 1,
+                "logitech": 1,
+                "g-series": 1,
+                "gaming": 1,
+                "mouse": 1,
+                "256gb": 1,
+                "memory": 1,
+                "cannon": 1,
+                "eos": 1,
+                "80d": 1,
+                "dslr": 1,
+                "camera": 1,
+                "amazon": 1,
+                "echo": 1,
+                "dot": 1,
+                "3rd": 1,
+                "generation": 1,
+                "computer": 1,
+                "keyboard": 1
+              },
+              "discount.info": {
+                "ma": 1,
+                "giam": 1,
+                "gia": 1,
+                "discount20": 1,
+                "sale10": 1,
+                "discount10": 1
+              },
+              "bot.identity": {
+                "ban": 1,
+                "la": 1,
+                "ai": 1,
+                "ten": 1,
+                "gi": 1
+              },
+              "bot.creator": {
+                "ai": 1,
+                "lam": 1,
+                "ra": 1,
+                "ban": 1,
+                "tao": 1
+              },
+              "shop.stats.products": {
+                "co": 1,
+                "bao": 1,
+                "nhieu": 1,
+                "san": 1,
+                "pham": 1
+              },
+              "shop.stats.orders": {
+                "co": 1,
+                "bao": 1,
+                "nhieu": 1,
+                "đon": 1,
+                "hang": 1
+              },
+              "shop.stats.discounts": {
+                "co": 1,
+                "bao": 1,
+                "nhieu": 1,
+                "ma": 1,
+                "giam": 1,
+                "gia": 1
+              },
+              "product.min_price": {
+                "san": 1,
+                "pham": 1,
+                "nao": 1,
+                "re": 1,
+                "nhat": 1,
+                "gia": 1,
+                "thap": 1
+              },
+              "product.max_price": {
+                "san": 1,
+                "pham": 1,
+                "nao": 1,
+                "đat": 1,
+                "nhat": 1,
+                "gia": 1,
+                "cao": 1
+              },
+              "order.status": {
+                "trang": 1,
+                "thai": 1,
+                "đon": 1,
+                "hang": 1,
+                "cua": 1,
+                "toi": 1,
+                "kiem": 1,
+                "tra": 1
+              }
+            },
+            "featuresToIntent": {
+              "4": [
+                "product.info"
+              ],
+              "11": [
+                "product.info"
+              ],
+              "san": [
+                "product.info",
+                "shop.stats.products",
+                "product.min_price",
+                "product.max_price"
+              ],
+              "pham": [
+                "product.info",
+                "shop.stats.products",
+                "product.min_price",
+                "product.max_price"
+              ],
+              "airpods": [
+                "product.info"
+              ],
+              "wireless": [
+                "product.info"
+              ],
+              "bluetooth": [
+                "product.info"
+              ],
+              "headphones": [
+                "product.info"
+              ],
+              "la": [
+                "product.info",
+                "bot.identity"
+              ],
+              "gi": [
+                "product.info",
+                "bot.identity"
+              ],
+              "thong": [
+                "product.info"
+              ],
+              "tin": [
+                "product.info"
+              ],
+              "dell": [
+                "product.info"
+              ],
+              "xps": [
+                "product.info"
+              ],
+              "iphone": [
+                "product.info"
+              ],
+              "sony": [
+                "product.info"
+              ],
+              "playstation": [
+                "product.info"
+              ],
+              "pro": [
+                "product.info"
+              ],
+              "white": [
+                "product.info"
+              ],
+              "version": [
+                "product.info"
+              ],
+              "logitech": [
+                "product.info"
+              ],
+              "g-series": [
+                "product.info"
+              ],
+              "gaming": [
+                "product.info"
+              ],
+              "mouse": [
+                "product.info"
+              ],
+              "256gb": [
+                "product.info"
+              ],
+              "memory": [
+                "product.info"
+              ],
+              "cannon": [
+                "product.info"
+              ],
+              "eos": [
+                "product.info"
+              ],
+              "80d": [
+                "product.info"
+              ],
+              "dslr": [
+                "product.info"
+              ],
+              "camera": [
+                "product.info"
+              ],
+              "amazon": [
+                "product.info"
+              ],
+              "echo": [
+                "product.info"
+              ],
+              "dot": [
+                "product.info"
+              ],
+              "3rd": [
+                "product.info"
+              ],
+              "generation": [
+                "product.info"
+              ],
+              "computer": [
+                "product.info"
+              ],
+              "keyboard": [
+                "product.info"
+              ],
+              "ma": [
+                "discount.info",
+                "shop.stats.discounts"
+              ],
+              "giam": [
+                "discount.info",
+                "shop.stats.discounts"
+              ],
+              "gia": [
+                "discount.info",
+                "shop.stats.discounts",
+                "product.min_price",
+                "product.max_price"
+              ],
+              "discount20": [
+                "discount.info"
+              ],
+              "sale10": [
+                "discount.info"
+              ],
+              "discount10": [
+                "discount.info"
+              ],
+              "ban": [
+                "bot.identity",
+                "bot.creator"
+              ],
+              "ai": [
+                "bot.identity",
+                "bot.creator"
+              ],
+              "ten": [
+                "bot.identity"
+              ],
+              "lam": [
+                "bot.creator"
+              ],
+              "ra": [
+                "bot.creator"
+              ],
+              "tao": [
+                "bot.creator"
+              ],
+              "co": [
+                "shop.stats.products",
+                "shop.stats.orders",
+                "shop.stats.discounts"
+              ],
+              "bao": [
+                "shop.stats.products",
+                "shop.stats.orders",
+                "shop.stats.discounts"
+              ],
+              "nhieu": [
+                "shop.stats.products",
+                "shop.stats.orders",
+                "shop.stats.discounts"
+              ],
+              "đon": [
+                "shop.stats.orders",
+                "order.status"
+              ],
+              "hang": [
+                "shop.stats.orders",
+                "order.status"
+              ],
+              "nao": [
+                "product.min_price",
+                "product.max_price"
+              ],
+              "re": [
+                "product.min_price"
+              ],
+              "nhat": [
+                "product.min_price",
+                "product.max_price"
+              ],
+              "thap": [
+                "product.min_price"
+              ],
+              "đat": [
+                "product.max_price"
+              ],
+              "cao": [
+                "product.max_price"
+              ],
+              "trang": [
+                "order.status"
+              ],
+              "thai": [
+                "order.status"
+              ],
+              "cua": [
+                "order.status"
+              ],
+              "toi": [
+                "order.status"
+              ],
+              "kiem": [
+                "order.status"
+              ],
+              "tra": [
+                "order.status"
+              ]
+            },
+            "neuralNetwork": {
+              "settings": {
+                "locale": "vi",
+                "tag": "nlu-vi",
+                "keepStopwords": true,
+                "nonefeatureValue": 1,
+                "nonedeltaMultiplier": 1.2,
+                "spellCheck": false,
+                "spellCheckDistance": 1,
+                "filterZeros": true,
+                "log": true
+              },
+              "features": [
+                "san",
+                "pham",
+                "airpods",
+                "wireless",
+                "bluetooth",
+                "headphones",
+                "la",
+                "gi",
+                "thong",
+                "tin",
+                "dell",
+                "xps",
+                "iphone",
+                "4",
+                "sony",
+                "playstation",
+                "pro",
+                "white",
+                "version",
+                "logitech",
+                "g-series",
+                "gaming",
+                "mouse",
+                "11",
+                "256gb",
+                "memory",
+                "cannon",
+                "eos",
+                "80d",
+                "dslr",
+                "camera",
+                "amazon",
+                "echo",
+                "dot",
+                "3rd",
+                "generation",
+                "computer",
+                "keyboard",
+                "ma",
+                "giam",
+                "gia",
+                "discount20",
+                "sale10",
+                "discount10",
+                "ban",
+                "ai",
+                "ten",
+                "lam",
+                "ra",
+                "tao",
+                "co",
+                "bao",
+                "nhieu",
+                "đon",
+                "hang",
+                "nao",
+                "re",
+                "nhat",
+                "thap",
+                "đat",
+                "cao",
+                "trang",
+                "thai",
+                "cua",
+                "toi",
+                "kiem",
+                "tra"
+              ],
+              "intents": [
+                "product.info",
+                "discount.info",
+                "bot.identity",
+                "bot.creator",
+                "shop.stats.products",
+                "shop.stats.orders",
+                "shop.stats.discounts",
+                "product.min_price",
+                "product.max_price",
+                "order.status"
+              ],
+              "perceptrons": [
+                [
+                  2.1519744396209717,
+                  2.1519744396209717,
+                  0.8794434070587158,
+                  0.8794434070587158,
+                  0.8794434070587158,
+                  0.8794434070587158,
+                  2.2784454822540283,
+                  3.2639307975769043,
+                  4.923514366149902,
+                  4.923514366149902,
+                  1.7596052885055542,
+                  1.7596052885055542,
+                  3.5110578536987305,
+                  0.6112887859344482,
+                  0.6112887859344482,
+                  0.6112887859344482,
+                  0.4599832594394684,
+                  0.6112887859344482,
+                  0.6112887859344482,
+                  0.879102349281311,
+                  0.879102349281311,
+                  0.879102349281311,
+                  0.879102349281311,
+                  -0.1512775868177414,
+                  -0.1512775868177414,
+                  -0.1512775868177414,
+                  0.7032978534698486,
+                  0.7032978534698486,
+                  0.7032978534698486,
+                  0.7032978534698486,
+                  0.7032978534698486,
+                  0.7033197283744812,
+                  0.7033197283744812,
+                  0.7033197283744812,
+                  0.7033197283744812,
+                  0.7033197283744812,
+                  1.7586281299591064,
+                  1.7586281299591064,
+                  -0.7449679970741272,
+                  -0.7449679970741272,
+                  -0.8793092966079712,
+                  -0.249018594622612,
+                  -0.1981056183576584,
+                  -0.09908757358789444,
+                  -3.8449625968933105,
+                  -1.1185989379882812,
+                  -2.6179182529449463,
+                  -0.07430059462785721,
+                  -0.1579301804304123,
+                  -0.04647928476333618,
+                  -1.7418220043182373,
+                  -1.7418220043182373,
+                  -1.7418220043182373,
+                  -0.4370861351490021,
+                  -0.4370861351490021,
+                  -2.0934793949127197,
+                  -1.01547110080719,
+                  -2.196897268295288,
+                  -0.04492659121751785,
+                  -0.9348270297050476,
+                  -0.0067820120602846146,
+                  -0.12843357026576996,
+                  -0.12843357026576996,
+                  -0.12843357026576996,
+                  -0.12843357026576996,
+                  -0.1469421088695526,
+                  -0.1469421088695526,
+                  0.9217964203527307
+                ],
+                [
+                  -0.15139321982860565,
+                  -0.15139321982860565,
+                  -0.03568027913570404,
+                  -0.03568027913570404,
+                  -0.03568027913570404,
+                  -0.03568027913570404,
+                  -0.2807370722293854,
+                  -0.12273220717906952,
+                  -0.27335917949676514,
+                  -0.27335917949676514,
+                  -0.04476857930421829,
+                  -0.04476857930421829,
+                  -0.06557899713516235,
+                  -0.018097445368766785,
+                  -0.018097445368766785,
+                  -0.018097445368766785,
+                  -0.03268545866012573,
+                  -0.018097445368766785,
+                  -0.018097445368766785,
+                  -0.021475858986377716,
+                  -0.021475858986377716,
+                  -0.021475858986377716,
+                  -0.021475858986377716,
+                  -0.008236613124608994,
+                  -0.008236613124608994,
+                  -0.008236613124608994,
+                  -0.01597556471824646,
+                  -0.01597556471824646,
+                  -0.01597556471824646,
+                  -0.01597556471824646,
+                  -0.01597556471824646,
+                  -0.015702983364462852,
+                  -0.015702983364462852,
+                  -0.015702983364462852,
+                  -0.015702983364462852,
+                  -0.015702983364462852,
+                  -0.03281964361667633,
+                  -0.03281964361667633,
+                  4.315263271331787,
+                  4.315263271331787,
+                  2.3632006645202637,
+                  2.670173168182373,
+                  2.710848569869995,
+                  2.6678662300109863,
+                  -0.4771937429904938,
+                  -0.3305146098136902,
+                  -0.11385245621204376,
+                  -0.07535947114229202,
+                  -0.16250155866146088,
+                  -0.0561932809650898,
+                  -3.8684329986572266,
+                  -3.8684329986572266,
+                  -3.8684329986572266,
+                  -0.21689778566360474,
+                  -0.21689778566360474,
+                  -0.06361449509859085,
+                  -0.042492061853408813,
+                  -2.0312371253967285,
+                  -1.0059572458267212,
+                  -0.009840247221291065,
+                  -0.9407013058662415,
+                  -0.05361053720116615,
+                  -0.05361053720116615,
+                  -0.05361053720116615,
+                  -0.05361053720116615,
+                  -0.0898580327630043,
+                  -0.0898580327630043,
+                  0.6087046139812886
+                ],
+                [
+                  -3.0529792308807373,
+                  -3.0529792308807373,
+                  -0.3050713539123535,
+                  -0.3050713539123535,
+                  -0.3050713539123535,
+                  -0.3050713539123535,
+                  6.632349491119385,
+                  -0.23668454587459564,
+                  -0.0804862454533577,
+                  -0.0804862454533577,
+                  -0.5121375322341919,
+                  -0.5121375322341919,
+                  -0.8319783806800842,
+                  -0.2010289430618286,
+                  -0.2010289430618286,
+                  -0.2010289430618286,
+                  -0.27619510889053345,
+                  -0.2010289430618286,
+                  -0.2010289430618286,
+                  -0.2487422227859497,
+                  -0.2487422227859497,
+                  -0.2487422227859497,
+                  -0.2487422227859497,
+                  -0.04804786294698715,
+                  -0.04804786294698715,
+                  -0.04804786294698715,
+                  -0.1970665454864502,
+                  -0.1970665454864502,
+                  -0.1970665454864502,
+                  -0.1970665454864502,
+                  -0.1970665454864502,
+                  -0.18775656819343567,
+                  -0.18775656819343567,
+                  -0.18775656819343567,
+                  -0.18775656819343567,
+                  -0.18775656819343567,
+                  -0.4143133759498596,
+                  -0.4143133759498596,
+                  -0.11728062480688095,
+                  -0.11728062480688095,
+                  -0.2903248965740204,
+                  -0.023619653657078743,
+                  -0.02171023003757,
+                  -0.02026059664785862,
+                  4.739706993103027,
+                  2.0288960933685303,
+                  2.7221412658691406,
+                  -2.440918445587158,
+                  -4.843250751495361,
+                  -2.3942527770996094,
+                  -0.13378092646598816,
+                  -0.13378092646598816,
+                  -0.13378092646598816,
+                  -0.20753096044063568,
+                  -0.20753096044063568,
+                  -0.03783301264047623,
+                  -0.017722057178616524,
+                  -0.22405880689620972,
+                  -0.08310595899820328,
+                  -0.011249927803874016,
+                  -0.06619727611541748,
+                  -0.05653032660484314,
+                  -0.05653032660484314,
+                  -0.05653032660484314,
+                  -0.05653032660484314,
+                  -0.06944015622138977,
+                  -0.06944015622138977,
+                  0.5475709102004197
+                ],
+                [
+                  -0.25682637095451355,
+                  -0.25682637095451355,
+                  -0.06397292017936707,
+                  -0.06397292017936707,
+                  -0.06397292017936707,
+                  -0.06397292017936707,
+                  -4.5592451095581055,
+                  -0.5017914772033691,
+                  -0.38590580224990845,
+                  -0.38590580224990845,
+                  -0.07736627757549286,
+                  -0.07736627757549286,
+                  -0.08311741799116135,
+                  -0.028637278825044632,
+                  -0.028637278825044632,
+                  -0.028637278825044632,
+                  -0.05249370262026787,
+                  -0.028637278825044632,
+                  -0.028637278825044632,
+                  -0.03281164541840553,
+                  -0.03281164541840553,
+                  -0.03281164541840553,
+                  -0.03281164541840553,
+                  -0.012723920866847038,
+                  -0.012723920866847038,
+                  -0.012723920866847038,
+                  -0.021349700167775154,
+                  -0.021349700167775154,
+                  -0.021349700167775154,
+                  -0.021349700167775154,
+                  -0.021349700167775154,
+                  -0.017287874594330788,
+                  -0.017287874594330788,
+                  -0.017287874594330788,
+                  -0.017287874594330788,
+                  -0.017287874594330788,
+                  -0.01538984663784504,
+                  -0.01538984663784504,
+                  -0.18987442553043365,
+                  -0.18987442553043365,
+                  -0.40558499097824097,
+                  -0.04865506663918495,
+                  -0.035104330629110336,
+                  -0.023659085854887962,
+                  1.922337532043457,
+                  2.426600933074951,
+                  -0.45024794340133667,
+                  3.211294412612915,
+                  6.436773777008057,
+                  3.222525119781494,
+                  -0.20051227509975433,
+                  -0.20051227509975433,
+                  -0.20051227509975433,
+                  -0.2897665202617645,
+                  -0.2897665202617645,
+                  -0.10432413220405579,
+                  -0.05192219465970993,
+                  -0.32196471095085144,
+                  -0.09084239602088928,
+                  -0.031119918450713158,
+                  -0.07004111260175705,
+                  -0.08351906388998032,
+                  -0.08351906388998032,
+                  -0.08351906388998032,
+                  -0.08351906388998032,
+                  -0.09321039915084839,
+                  -0.09321039915084839,
+                  0.2674611854911503
+                ],
+                [
+                  3.5370562076568604,
+                  3.5370562076568604,
+                  -0.25061091780662537,
+                  -0.25061091780662537,
+                  -0.25061091780662537,
+                  -0.25061091780662537,
+                  -2.5604517459869385,
+                  -2.5604517459869385,
+                  0,
+                  0,
+                  -0.4329726994037628,
+                  -0.4329726994037628,
+                  -0.7860121130943298,
+                  -0.13255575299263,
+                  -0.13255575299263,
+                  -0.13255575299263,
+                  -0.1573612242937088,
+                  -0.13255575299263,
+                  -0.13255575299263,
+                  -0.20331545174121857,
+                  -0.20331545174121857,
+                  -0.20331545174121857,
+                  -0.20331545174121857,
+                  -0.022662527859210968,
+                  -0.022662527859210968,
+                  -0.022662527859210968,
+                  -0.16206997632980347,
+                  -0.16206997632980347,
+                  -0.16206997632980347,
+                  -0.16206997632980347,
+                  -0.16206997632980347,
+                  -0.16154320538043976,
+                  -0.16154320538043976,
+                  -0.16154320538043976,
+                  -0.16154320538043976,
+                  -0.16154320538043976,
+                  -0.3927050530910492,
+                  -0.3927050530910492,
+                  -2.3124566078186035,
+                  -2.3124566078186035,
+                  -2.319195508956909,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  2.699190855026245,
+                  2.699190855026245,
+                  2.699190855026245,
+                  -3.4426207542419434,
+                  -3.4426207542419434,
+                  -2.367821455001831,
+                  -1.1842989921569824,
+                  -2.3745603561401367,
+                  -0.003550959751009941,
+                  -1.1793529987335205,
+                  0,
+                  -0.00008593316306360066,
+                  -0.00008593316306360066,
+                  -0.00008593316306360066,
+                  -0.00008593316306360066,
+                  0,
+                  0,
+                  -1.1219749635988057
+                ],
+                [
+                  -3.322636604309082,
+                  -3.322636604309082,
+                  -0.020691026002168655,
+                  -0.020691026002168655,
+                  -0.020691026002168655,
+                  -0.020691026002168655,
+                  -0.04285145550966263,
+                  -0.028466861695051193,
+                  -0.09563213586807251,
+                  -0.09563213586807251,
+                  -0.016003688797354698,
+                  -0.016003688797354698,
+                  -0.018720054998993874,
+                  -0.006879247259348631,
+                  -0.006879247259348631,
+                  -0.006879247259348631,
+                  -0.013424156233668327,
+                  -0.006879247259348631,
+                  -0.006879247259348631,
+                  -0.005386185832321644,
+                  -0.005386185832321644,
+                  -0.005386185832321644,
+                  -0.005386185832321644,
+                  -0.0032433695159852505,
+                  -0.0032433695159852505,
+                  -0.0032433695159852505,
+                  -0.0031542719807475805,
+                  -0.0031542719807475805,
+                  -0.0031542719807475805,
+                  -0.0031542719807475805,
+                  -0.0031542719807475805,
+                  -0.0023642461746931076,
+                  -0.0023642461746931076,
+                  -0.0023642461746931076,
+                  -0.0023642461746931076,
+                  -0.0023642461746931076,
+                  -0.0017559850821271539,
+                  -0.0017559850821271539,
+                  -2.239719867706299,
+                  -2.239719867706299,
+                  -2.2852370738983154,
+                  0,
+                  0,
+                  0,
+                  -0.052172549068927765,
+                  -0.039253391325473785,
+                  -0.0067842621356248856,
+                  -0.01201659720391035,
+                  -0.02297070436179638,
+                  -0.006151394918560982,
+                  2.636319160461426,
+                  2.636319160461426,
+                  2.636319160461426,
+                  3.6006276607513428,
+                  3.6006276607513428,
+                  -0.045771513134241104,
+                  -0.021016191691160202,
+                  -0.09419821947813034,
+                  -0.015062118880450726,
+                  -0.014536827802658081,
+                  -0.008525713346898556,
+                  -1.521177887916565,
+                  -1.521177887916565,
+                  -1.521177887916565,
+                  -1.521177887916565,
+                  -2.9965665340423584,
+                  -2.9965665340423584,
+                  -1.0972064302755047
+                ],
+                [
+                  -3.6204304695129395,
+                  -3.6204304695129395,
+                  -0.0338100902736187,
+                  -0.0338100902736187,
+                  -0.0338100902736187,
+                  -0.0338100902736187,
+                  -0.04495694115757942,
+                  -0.04495694115757942,
+                  -0.13846851885318756,
+                  -0.13846851885318756,
+                  -0.02707829885184765,
+                  -0.02707829885184765,
+                  -0.030737053602933884,
+                  -0.011660694144666195,
+                  -0.011660694144666195,
+                  -0.011660694144666195,
+                  -0.02111119218170643,
+                  -0.011660694144666195,
+                  -0.011660694144666195,
+                  -0.007946194149553776,
+                  -0.007946194149553776,
+                  -0.007946194149553776,
+                  -0.007946194149553776,
+                  -0.004619575571268797,
+                  -0.004619575571268797,
+                  -0.004619575571268797,
+                  -0.004717324394732714,
+                  -0.004717324394732714,
+                  -0.004717324394732714,
+                  -0.004717324394732714,
+                  -0.004717324394732714,
+                  -0.0035579062532633543,
+                  -0.0035579062532633543,
+                  -0.0035579062532633543,
+                  -0.0035579062532633543,
+                  -0.0035579062532633543,
+                  -0.0026565033476799726,
+                  -0.0026565033476799726,
+                  2.1086678504943848,
+                  2.1086678504943848,
+                  1.7139370441436768,
+                  -2.8299853801727295,
+                  -2.8373560905456543,
+                  -2.741060972213745,
+                  -0.00009444274473935366,
+                  -0.00009444274473935366,
+                  0,
+                  -0.00004264329618308693,
+                  -0.00009444274473935366,
+                  -0.000033916207030415535,
+                  3.489053726196289,
+                  3.489053726196289,
+                  3.489053726196289,
+                  -3.613771915435791,
+                  -3.613771915435791,
+                  -0.05102488771080971,
+                  -0.024758661165833473,
+                  -0.4357001483440399,
+                  -0.1512753665447235,
+                  -0.014279288239777088,
+                  -0.16146314144134521,
+                  -0.019416529685258865,
+                  -0.019416529685258865,
+                  -0.019416529685258865,
+                  -0.019416529685258865,
+                  -0.016773786395788193,
+                  -0.016773786395788193,
+                  -2.851005575151558
+                ],
+                [
+                  0.3590528070926666,
+                  0.3590528070926666,
+                  -0.161070317029953,
+                  -0.161070317029953,
+                  -0.161070317029953,
+                  -0.161070317029953,
+                  -0.62354975938797,
+                  -0.6128510236740112,
+                  -0.2455800324678421,
+                  -0.2455800324678421,
+                  -0.18526344001293182,
+                  -0.18526344001293182,
+                  -0.177765890955925,
+                  -0.059419650584459305,
+                  -0.059419650584459305,
+                  -0.059419650584459305,
+                  -0.06890633702278137,
+                  -0.059419650584459305,
+                  -0.059419650584459305,
+                  -0.05010226368904114,
+                  -0.05010226368904114,
+                  -0.05010226368904114,
+                  -0.05010226368904114,
+                  -0.004632848780602217,
+                  -0.004632848780602217,
+                  -0.004632848780602217,
+                  -0.030142810195684433,
+                  -0.030142810195684433,
+                  -0.030142810195684433,
+                  -0.030142810195684433,
+                  -0.030142810195684433,
+                  -0.02862817794084549,
+                  -0.02862817794084549,
+                  -0.02862817794084549,
+                  -0.02862817794084549,
+                  -0.02862817794084549,
+                  -0.05775495991110802,
+                  -0.05775495991110802,
+                  -0.9261265397071838,
+                  -0.9261265397071838,
+                  1.5093432664871216,
+                  -0.3168216943740845,
+                  -0.2783011794090271,
+                  -0.25989586114883423,
+                  -0.17995163798332214,
+                  -0.1774401217699051,
+                  -0.001255747047252953,
+                  -0.08504203706979752,
+                  -0.16674141585826874,
+                  -0.08155865222215652,
+                  -0.4401264786720276,
+                  -0.4401264786720276,
+                  -0.4401264786720276,
+                  -0.20592235028743744,
+                  -0.20592235028743744,
+                  1.3375250101089478,
+                  7.540990352630615,
+                  3.7740862369537354,
+                  8.008186340332031,
+                  -6.214156627655029,
+                  -5.5828938484191895,
+                  -0.07674955576658249,
+                  -0.07674955576658249,
+                  -0.07674955576658249,
+                  -0.07674955576658249,
+                  -0.09932934492826462,
+                  -0.09932934492826462,
+                  0.6097440740154078
+                ],
+                [
+                  0.22395001351833344,
+                  0.22395001351833344,
+                  -0.1731514036655426,
+                  -0.1731514036655426,
+                  -0.1731514036655426,
+                  -0.1731514036655426,
+                  -0.9110778570175171,
+                  -0.9005045890808105,
+                  -0.30232521891593933,
+                  -0.30232521891593933,
+                  -0.19392259418964386,
+                  -0.19392259418964386,
+                  -0.26644256711006165,
+                  -0.1058867946267128,
+                  -0.1058867946267128,
+                  -0.1058867946267128,
+                  -0.1642376333475113,
+                  -0.1058867946267128,
+                  -0.1058867946267128,
+                  -0.10507558286190033,
+                  -0.10507558286190033,
+                  -0.10507558286190033,
+                  -0.10507558286190033,
+                  -0.03329470753669739,
+                  -0.03329470753669739,
+                  -0.03329470753669739,
+                  -0.06107141077518463,
+                  -0.06107141077518463,
+                  -0.06107141077518463,
+                  -0.06107141077518463,
+                  -0.06107141077518463,
+                  -0.044857949018478394,
+                  -0.044857949018478394,
+                  -0.044857949018478394,
+                  -0.044857949018478394,
+                  -0.044857949018478394,
+                  -0.06077301874756813,
+                  -0.06077301874756813,
+                  -0.9579026699066162,
+                  -0.9579026699066162,
+                  1.4923163652420044,
+                  -0.27718567848205566,
+                  -0.27342352271080017,
+                  -0.2364661991596222,
+                  -0.20302684605121613,
+                  -0.20302684605121613,
+                  0,
+                  -0.09950961917638779,
+                  -0.19245876371860504,
+                  -0.07632213085889816,
+                  -0.4507749676704407,
+                  -0.4507749676704407,
+                  -0.4507749676704407,
+                  -0.2718193233013153,
+                  -0.2718193233013153,
+                  1.5234310626983643,
+                  -6.079533576965332,
+                  3.989750862121582,
+                  -5.528137683868408,
+                  7.61462926864624,
+                  8.006105422973633,
+                  -0.10777416080236435,
+                  -0.10777416080236435,
+                  -0.10777416080236435,
+                  -0.10777416080236435,
+                  -0.12010426074266434,
+                  -0.12010426074266434,
+                  0.4639547892981952
+                ],
+                [
+                  -0.28448477387428284,
+                  -0.28448477387428284,
+                  -0.1250755339860916,
+                  -0.1250755339860916,
+                  -0.1250755339860916,
+                  -0.1250755339860916,
+                  -0.37582412362098694,
+                  -0.27132609486579895,
+                  -0.4754002094268799,
+                  -0.4754002094268799,
+                  -0.13909076154232025,
+                  -0.13909076154232025,
+                  -0.14619378745555878,
+                  -0.0498213917016983,
+                  -0.0498213917016983,
+                  -0.0498213917016983,
+                  -0.07710792869329453,
+                  -0.0498213917016983,
+                  -0.0498213917016983,
+                  -0.052609771490097046,
+                  -0.052609771490097046,
+                  -0.052609771490097046,
+                  -0.052609771490097046,
+                  -0.015596399083733559,
+                  -0.015596399083733559,
+                  -0.015596399083733559,
+                  -0.033506955951452255,
+                  -0.033506955951452255,
+                  -0.033506955951452255,
+                  -0.033506955951452255,
+                  -0.033506955951452255,
+                  -0.026758404448628426,
+                  -0.026758404448628426,
+                  -0.026758404448628426,
+                  -0.026758404448628426,
+                  -0.026758404448628426,
+                  -0.024372149258852005,
+                  -0.024372149258852005,
+                  -0.28150781989097595,
+                  -0.28150781989097595,
+                  -0.47254282236099243,
+                  -0.09396209567785263,
+                  -0.07442783564329147,
+                  -0.0545869804918766,
+                  -0.36146196722984314,
+                  -0.31320637464523315,
+                  -0.033422961831092834,
+                  -0.10378216952085495,
+                  -0.2076321840286255,
+                  -0.079747773706913,
+                  -2.34425687789917,
+                  -2.34425687789917,
+                  -2.34425687789917,
+                  3.124876022338867,
+                  3.124876022338867,
+                  -0.026285693049430847,
+                  -0.017889445647597313,
+                  -0.20085114240646362,
+                  -0.08910626918077469,
+                  -0.0045430478639900684,
+                  -0.08136314898729324,
+                  1.8203827142715454,
+                  1.8203827142715454,
+                  1.8203827142715454,
+                  1.8203827142715454,
+                  3.640829563140869,
+                  3.640829563140869,
+                  0.7543898975838952
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "intentDomains": {},
+    "extraSentences": [
+      [
+        "vi",
+        "Sản phẩm Airpods Wireless Bluetooth Headphones là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Airpods Wireless Bluetooth Headphones"
+      ],
+      [
+        "vi",
+        "Sản phẩm DELL XPS là gì"
+      ],
+      [
+        "vi",
+        "Thông tin DELL XPS"
+      ],
+      [
+        "vi",
+        "Sản phẩm Iphone là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Iphone"
+      ],
+      [
+        "vi",
+        "Sản phẩm Sony Playstation 4 Pro White Version là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Sony Playstation 4 Pro White Version"
+      ],
+      [
+        "vi",
+        "Sản phẩm Logitech G-Series Gaming Mouse là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Logitech G-Series Gaming Mouse"
+      ],
+      [
+        "vi",
+        "Sản phẩm iPhone 11 Pro 256GB Memory là gì"
+      ],
+      [
+        "vi",
+        "Thông tin iPhone 11 Pro 256GB Memory"
+      ],
+      [
+        "vi",
+        "Sản phẩm Cannon EOS 80D DSLR Camera là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Cannon EOS 80D DSLR Camera"
+      ],
+      [
+        "vi",
+        "Sản phẩm Amazon Echo Dot 3rd Generation là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Amazon Echo Dot 3rd Generation"
+      ],
+      [
+        "vi",
+        "Sản phẩm Computer Keyboard là gì"
+      ],
+      [
+        "vi",
+        "Thông tin Computer Keyboard"
+      ],
+      [
+        "vi",
+        "Mã giảm giá DISCOUNT20"
+      ],
+      [
+        "vi",
+        "Mã giảm giá SALE10"
+      ],
+      [
+        "vi",
+        "Mã giảm giá DISCOUNT10"
+      ],
+      [
+        "vi",
+        "bạn là ai"
+      ],
+      [
+        "vi",
+        "tên bạn là gì"
+      ],
+      [
+        "vi",
+        "ai làm ra bạn"
+      ],
+      [
+        "vi",
+        "ai tạo ra bạn"
+      ],
+      [
+        "vi",
+        "có bao nhiêu sản phẩm"
+      ],
+      [
+        "vi",
+        "có bao nhiêu đơn hàng"
+      ],
+      [
+        "vi",
+        "có bao nhiêu mã giảm giá"
+      ],
+      [
+        "vi",
+        "sản phẩm nào rẻ nhất"
+      ],
+      [
+        "vi",
+        "giá thấp nhất"
+      ],
+      [
+        "vi",
+        "sản phẩm nào đắt nhất"
+      ],
+      [
+        "vi",
+        "giá cao nhất"
+      ],
+      [
+        "vi",
+        "trạng thái đơn hàng của tôi"
+      ],
+      [
+        "vi",
+        "kiểm tra đơn hàng"
+      ]
+    ]
+  },
+  "ner": {
+    "settings": {
+      "tag": "ner",
+      "entityPreffix": "%",
+      "entitySuffix": "%"
+    },
+    "rules": {}
+  },
+  "nlgManager": {
+    "settings": {
+      "tag": "nlg-manager"
+    },
+    "responses": {
+      "vi": {
+        "product.info": [
+          {
+            "answer": "Airpods Wireless Bluetooth Headphones: Bluetooth technology lets you connect it with compatible devices wirelessly High-quality AAC audio offers immersive listening experience Built-in microphone allows you to take calls while working, Giá: 89.99 VNĐ"
+          },
+          {
+            "answer": "DELL XPS: High quality with impressive display and sound, Giá: 599.99 VNĐ"
+          },
+          {
+            "answer": "Iphone: High Quality Iphone, Giá: 99.99 VNĐ"
+          },
+          {
+            "answer": "Sony Playstation 4 Pro White Version: The ultimate home entertainment center starts with PlayStation. Whether you are into gaming, HD movies, television, music, Giá: 399.99 VNĐ"
+          },
+          {
+            "answer": "Logitech G-Series Gaming Mouse: Get a better handle on your games with this Logitech LIGHTSYNC gaming mouse. The six programmable buttons allow customization for a smooth playing experience, Giá: 49.99 VNĐ"
+          },
+          {
+            "answer": "iPhone 11 Pro 256GB Memory: Introducing the iPhone 11 Pro. A transformative triple-camera system that adds tons of capability without complexity. An unprecedented leap in battery life, Giá: 599.99 VNĐ"
+          },
+          {
+            "answer": "Cannon EOS 80D DSLR Camera: Characterized by versatile imaging specs, the Canon EOS 80D further clarifies itself using a pair of robust focusing systems and an intuitive design, Giá: 929.99 VNĐ"
+          },
+          {
+            "answer": "Amazon Echo Dot 3rd Generation: Meet Echo Dot - Our most popular smart speaker with a fabric design. It is our most compact smart speaker that fits perfectly into small space, Giá: 29.99 VNĐ"
+          },
+          {
+            "answer": "Computer Keyboard: Compatible with most of computer devices, Giá: 29.99 VNĐ"
+          }
+        ],
+        "discount.info": [
+          {
+            "answer": "Mã DISCOUNT20: 20% off your next purchase"
+          },
+          {
+            "answer": "Mã SALE10: 10% off sale items"
+          },
+          {
+            "answer": "Mã DISCOUNT10: 10% off your next purchase"
+          }
+        ],
+        "bot.identity": [
+          {
+            "answer": "Mình là The Shop Chatbot, trợ lý thông minh của cửa hàng!"
+          }
+        ],
+        "bot.creator": [
+          {
+            "answer": "Mình được phát triển và xây dựng bởi DLUONGTA."
+          }
+        ]
+      }
+    }
+  },
+  "actionManager": {
+    "settings": {
+      "tag": "action-manager"
+    },
+    "actions": {}
+  },
+  "slotManager": {}
+}
