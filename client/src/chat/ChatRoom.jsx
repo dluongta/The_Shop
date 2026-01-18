@@ -57,7 +57,7 @@ export default function ChatRoom({
       setCurrentChat(null);
     } catch (err) {
       console.error(err);
-      alert("Leave group failed");
+      // alert("Leave group failed");
     }
   };
 
