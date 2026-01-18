@@ -55,6 +55,13 @@ export default function AllUsers({
       return normalize(otherUserName).includes(q);
     });
   }, [chatRooms, searchQuery, users]);
+  const hasUnread = (room) => {
+    return (
+      room.lastMessage &&
+      !room.lastMessage.isRead &&
+      room.lastMessage.sender !== currentUser._id
+    );
+  };
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -104,17 +111,34 @@ export default function AllUsers({
                   )}
 
                   <div className="truncate">
-                    <p className="font-medium truncate">
+                    {/* <p className="font-medium truncate">
                       {room.isGroup
                         ? room.name
                         : getUserName(otherUserId)}
+                    </p> */}
+
+                    <p
+                      className={
+                        hasUnread(room)
+                          ? "font-bold text-blue-600 truncate"
+                          : "font-medium text-gray-900 truncate"
+                      }
+                    >
+                      {room.isGroup ? room.name : getUserName(otherUserId)}
                     </p>
 
                     {room.lastMessage && (
-                      <p className="text-xs text-gray-500 truncate">
+                      <p
+                        className={
+                          hasUnread(room)
+                            ? "text-xs text-blue-600 font-semibold truncate"
+                            : "text-xs text-gray-500 truncate"
+                        }
+                      >
                         {room.lastMessage.message}
                       </p>
                     )}
+
                   </div>
                 </div>
 

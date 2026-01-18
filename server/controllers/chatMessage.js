@@ -20,8 +20,25 @@ export const createMessage = async (req, res) => {
 
   try {
     // 1. Lưu tin nhắn mới
-    const newMessage = new ChatMessage({ chatRoomId, sender, message });
-    const savedMessage = await newMessage.save();
+      const newMessage = new ChatMessage({
+      chatRoomId,
+      sender,
+      message,
+      isRead: false,
+    });
+
+    await newMessage.save();
+
+    // ✅ CẬP NHẬT LAST MESSAGE
+    await ChatRoom.findByIdAndUpdate(chatRoomId, {
+      lastMessage: {
+        sender,
+        message,
+        isRead: false,
+        createdAt: new Date(),
+      },
+    });
+    // const savedMessage = await newMessage.save();
 
     // 2. Tìm thông tin người gửi (sender) để lấy Email/Name
     const senderInfo = await User.findById(sender);
@@ -59,6 +76,26 @@ export const createMessage = async (req, res) => {
   }
 };
 // Mark messages as read
+// export const markMessagesAsRead = async (req, res) => {
+//   const { chatRoomId } = req.params;
+//   const { userId } = req.body;
+
+//   try {
+//     await ChatMessage.updateMany(
+//       {
+//         chatRoomId,
+//         sender: { $ne: userId },
+//         isRead: false
+//       },
+//       { $set: { isRead: true } }
+//     );
+
+//     res.status(200).json({ success: true });
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// };
+
 export const markMessagesAsRead = async (req, res) => {
   const { chatRoomId } = req.params;
   const { userId } = req.body;
@@ -68,15 +105,20 @@ export const markMessagesAsRead = async (req, res) => {
       {
         chatRoomId,
         sender: { $ne: userId },
-        isRead: false
+        isRead: false,
       },
       { $set: { isRead: true } }
     );
 
-    res.status(200).json({ success: true });
+    await ChatRoom.findByIdAndUpdate(chatRoomId, {
+      "lastMessage.isRead": true,
+    });
+
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json(err);
   }
 };
+
 
 
