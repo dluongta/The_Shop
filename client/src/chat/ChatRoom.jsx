@@ -16,114 +16,36 @@ export default function ChatRoom({
   const [messages, setMessages] = useState([]);
   const chatContainerRef = useRef(null);
 
-  const currentChatIdRef = useRef(null);
-  const hasAutoScrolledRef = useRef(false);
-
-  const {
-    getMessagesOfChatRoom,
-    sendMessage,
-    leaveGroupChat,
-  } = useApi();
-
-  // ================= UPDATE ROOM =================
-  useEffect(() => {
-    currentChatIdRef.current = currentChat?._id || null;
-    hasAutoScrolledRef.current = false;
-  }, [currentChat?._id]);
-
-  // ================= SCROLL =================
-  const scrollToBottom = useCallback(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, []);
+  const { getMessagesOfChatRoom, sendMessage, leaveGroupChat } = useApi();
 
   // ================= FETCH MESSAGES =================
   useEffect(() => {
-    if (!currentChat?._id) {
-      setMessages([]);
-      return;
-    }
+    if (!currentChat?._id) return setMessages([]);
 
-    let mounted = true;
-
-    const fetchMessages = async () => {
-      try {
-        const res = await getMessagesOfChatRoom(currentChat._id);
-        if (!mounted) return;
-
-        setMessages(res || []);
-        requestAnimationFrame(() => {
-          if (!hasAutoScrolledRef.current) {
-            scrollToBottom();
-            hasAutoScrolledRef.current = true;
-          }
-        });
-      } catch (err) {
-        console.error("Fetch messages error:", err);
-      }
+    const fetch = async () => {
+      const res = await getMessagesOfChatRoom(currentChat._id);
+      setMessages(res || []);
     };
-
-    fetchMessages();
-    return () => (mounted = false);
-  }, [currentChat?._id, getMessagesOfChatRoom, scrollToBottom]);
-
-  // ================= SOCKET RECEIVE =================
-  useEffect(() => {
-    if (!socket?.current) return;
-
-    const handleGetMessage = (data) => {
-      if (
-        data.chatRoomId === currentChatIdRef.current &&
-        data.senderId !== currentUser._id
-      ) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            _id: `temp-${Date.now()}`,
-            sender: data.senderId,
-            message: data.message,
-            createdAt: new Date().toISOString(),
-          },
-        ]);
-      }
-    };
-
-    socket.current.on("getMessage", handleGetMessage);
-    return () => socket.current.off("getMessage", handleGetMessage);
-  }, [socket, currentUser._id]);
+    fetch();
+  }, [currentChat?._id]);
 
   // ================= SEND MESSAGE =================
   const handleFormSubmit = async (message) => {
-    if (!message.trim() || !currentChat?._id) return;
+    if (!message.trim()) return;
 
-    socket.current.emit("sendMessage", {
-      senderId: currentUser._id,
+    await sendMessage({
       chatRoomId: currentChat._id,
+      sender: currentUser._id,
       message,
+      isRead: false,
     });
-
-    try {
-      const res = await sendMessage({
-        chatRoomId: currentChat._id,
-        sender: currentUser._id,
-        message,
-        isRead: false,
-      });
-
-      setMessages((prev) => [...prev, res]);
-      scrollToBottom();
-    } catch (err) {
-      console.error("Send message error:", err);
-    }
   };
 
-  // ================= LEAVE GROUP (FINAL FIX) =================
+  // ================= LEAVE GROUP (NO FAIL) =================
   const handleLeaveGroup = async () => {
     if (!currentChat?.isGroup) return;
 
-    if (!window.confirm("Are you sure you want to leave this group?")) return;
+    if (!window.confirm("Leave this group?")) return;
 
     try {
       await leaveGroupChat(currentChat._id, currentUser._id);
@@ -134,22 +56,20 @@ export default function ChatRoom({
 
       setCurrentChat(null);
     } catch (err) {
-      console.error("Leave group error:", err);
-      alert("Failed to leave group");
+      console.error(err);
+      alert("Leave group failed");
     }
   };
 
   // ================= HEADER =================
-  const memoizedHeader = useMemo(() => {
+  const header = useMemo(() => {
     if (!currentChat) return null;
 
     if (currentChat.isGroup) {
       return (
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="font-semibold text-lg">
-              {currentChat.name}
-            </h3>
+            <h3 className="font-semibold">{currentChat.name}</h3>
             <p className="text-xs text-gray-500">
               {currentChat.members.length} members
             </p>
@@ -157,7 +77,7 @@ export default function ChatRoom({
 
           <button
             onClick={handleLeaveGroup}
-            className="text-sm font-semibold text-white bg-red-500 px-4 py-1.5 rounded-lg hover:bg-red-600 active:scale-95 transition"
+            className="bg-red-500 text-white px-4 py-1.5 rounded hover:bg-red-600"
           >
             Leave Group
           </button>
@@ -173,30 +93,19 @@ export default function ChatRoom({
         users={users}
       />
     );
-  }, [currentChat, currentUser, onlineUsersId]);
+  }, [currentChat]);
 
   return (
-    <div className="lg:col-span-2 flex flex-col h-[600px] border-l">
-      <div className="p-3 border-b bg-white">{memoizedHeader}</div>
+    <div className="flex flex-col h-full">
+      <div className="p-3 border-b">{header}</div>
 
-      <div
-        ref={chatContainerRef}
-        className="flex-1 p-6 overflow-y-auto bg-white"
-      >
-        <ul className="space-y-4">
-          {messages.map((msg) => (
-            <Message
-              key={msg._id}
-              message={msg}
-              self={currentUser._id}
-              users={users}
-              currentUser={currentUser}
-            />
-          ))}
-        </ul>
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
+        {messages.map((m) => (
+          <Message key={m._id} message={m} self={currentUser._id} />
+        ))}
       </div>
 
-      <div className="p-3 border-t bg-white">
+      <div className="border-t p-3">
         <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>
     </div>

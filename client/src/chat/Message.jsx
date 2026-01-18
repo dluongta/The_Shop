@@ -1,44 +1,43 @@
-import { format } from "timeago.js";
+export default function Message({ message, self, users = [] }) {
+  // senderId có thể là string hoặc object
+  const senderId =
+    typeof message.sender === "string"
+      ? message.sender
+      : message.sender?._id;
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+  const senderUser = users.find((u) => u._id === senderId);
 
-export default function Message({ message, self, users, currentUser }) {
-  // Tìm người gửi trong danh sách users
-  const senderInfo = users?.find((u) => u._id === message.sender);
-  const senderName =
-    message.sender === currentUser._id
-      ? "You"
-      : senderInfo?.email || senderInfo?.name || "Unknown";
+  const isSelf = senderId === self;
 
   return (
     <li
-      className={classNames(
-        self !== message.sender ? "justify-end" : "justify-start",
-        "flex"
-      )}
+      className={`flex ${
+        isSelf ? "justify-end" : "justify-start"
+      }`}
     >
-      <div>
-        <div
-          className={classNames(
-            self !== message.sender
-              ? "text-gray-700 dark:text-gray-400 bg-white border border-gray-200 shadow-md dark:bg-gray-900 dark:border-gray-700"
-              : "bg-blue-600 dark:bg-blue-500 text-white",
-            "relative max-w-xl px-4 py-2 rounded-lg shadow"
-          )}
-        >
-          <span className="block font-normal">{message.message}</span>
-        </div>
+      <div
+        className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow
+          ${
+            isSelf
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-900"
+          }`}
+      >
+        {/* ✅ Sender name */}
+        {!isSelf && (
+          <p className="text-xs font-semibold mb-1 text-gray-600">
+            {senderUser?.email ||
+              senderUser?.name ||
+              "Former member"}
+          </p>
+        )}
 
-        {/* Tên người gửi */}
-        <span className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mt-0.5">
-          {senderName}
-        </span>
+        {/* Message content */}
+        <p>{message.message}</p>
 
-        {/* Thời gian gửi */}
-        <span className="block text-sm text-gray-700 dark:text-gray-400">
-          {format(message.createdAt)}
+        {/* Time */}
+        <span className="block text-[10px] text-right opacity-70 mt-1">
+          {new Date(message.createdAt).toLocaleTimeString()}
         </span>
       </div>
     </li>
