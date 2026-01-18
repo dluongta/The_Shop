@@ -56,65 +56,82 @@ export default function ChatRoom({
             <h3 className="font-semibold truncate">{currentChat.name}</h3>
             <p className="text-[10px] text-gray-500">{currentChat.members?.length || 0} members</p>
           </div>
-          <button onClick={() => {if(window.confirm("Leave?")) leaveGroupChat(currentChat._id, currentUser._id)}} className="bg-red-500 text-white px-2 py-1 text-xs rounded ml-2">Leave</button>
+          <button
+            type="button"
+            onClick={async () => {
+              const ok = window.confirm("Bạn có chắc muốn rời nhóm?");
+              if (!ok) return;
+
+              await leaveGroupChat(currentChat._id, currentUser._id);
+
+              setChatRooms(prev =>
+                prev.filter(room => room._id !== currentChat._id)
+              );
+
+              setCurrentChat(null);
+            }}
+            className="bg-red-500 text-white px-2 py-1 text-xs rounded ml-2"
+          >
+            Leave
+          </button>
         </div>
       );
     }
     return <Contact chatRoom={currentChat} currentUser={currentUser} onlineUsersId={onlineUsersId} users={users} />;
   }, [currentChat, onlineUsersId]);
-useEffect(() => {
-  if (!socket || !currentChat?._id) return;
+  useEffect(() => {
+    if (!socket || !currentChat?._id) return;
 
-  socket.emit("joinRoom", currentChat._id);
+    socket.emit("joinRoom", currentChat._id);
 
-  return () => {
-    socket.emit("leaveRoom", currentChat._id);
+    return () => {
+      socket.emit("leaveRoom", currentChat._id);
+    };
+  }, [socket, currentChat?._id]);
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessage = (data) => {
+      if (data.chatRoomId !== currentChat?._id) return;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          _id: Date.now(),
+          sender: data.senderId,
+          message: data.message,
+        },
+      ]);
+    };
+
+    socket.on("getMessage", handleMessage);
+
+    return () => socket.off("getMessage", handleMessage);
+  }, [socket, currentChat]);
+  const handleFormSubmit = async (message) => {
+    if (!message.trim()) return;
+
+    const res = await sendMessage({
+      chatRoomId: currentChat._id,
+      sender: currentUser._id,
+      message,
+    });
+
+    socket.emit("sendMessageInRoom", {
+      chatRoomId: currentChat._id,
+      senderId: currentUser._id,
+      message,
+    });
+
+    setMessages((prev) => [...prev, res]);
   };
-}, [socket, currentChat?._id]);
-useEffect(() => {
-  if (!socket) return;
-
-  const handleMessage = (data) => {
-    if (data.chatRoomId !== currentChat?._id) return;
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        _id: Date.now(),
-        sender: data.senderId,
-        message: data.message,
-      },
-    ]);
-  };
-
-  socket.on("getMessage", handleMessage);
-
-  return () => socket.off("getMessage", handleMessage);
-}, [socket, currentChat]);
-const handleFormSubmit = async (message) => {
-  if (!message.trim()) return;
-
-  const res = await sendMessage({
-    chatRoomId: currentChat._id,
-    sender: currentUser._id,
-    message,
-  });
-
-  socket.emit("sendMessageInRoom", {
-    chatRoomId: currentChat._id,
-    senderId: currentUser._id,
-    message,
-  });
-
-  setMessages((prev) => [...prev, res]);
-};
 
   return (
     <div className="h-full flex flex-col w-full bg-white">
       {/* CUSTOM ROOM HEADER WITH BACK BUTTON */}
       <div className="flex items-center p-3 border-b bg-white shrink-0 shadow-sm">
         {/* Nút Back chỉ hiện trên Mobile */}
-        <button 
+        <button
           onClick={() => setCurrentChat(null)}
           className="lg:hidden mr-3 p-1 hover:bg-gray-100 rounded-full"
         >
