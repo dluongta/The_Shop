@@ -22,7 +22,15 @@ export default function AllUsers({
 
   const { createChatRoom } = useApi();
 
-  // ================= HELPER =================
+  // ================= HELPER (ĐÃ CẬP NHẬT) =================
+  const getFullUserInfo = (userId) => {
+    const user = users.find((u) => u._id === userId);
+    if (!user) return "";
+    // Trả về định dạng: "Tên - Email" hoặc chỉ Email nếu không có tên
+    return user.name ? `${user.name} - ${user.email}` : user.email;
+  };
+
+  // Hàm này giữ nguyên để hiển thị tiêu đề chat ngắn gọn
   const getUserName = (userId) => {
     const user = users.find((u) => u._id === userId);
     return user ? (user.name || user.email) : "";
@@ -125,7 +133,7 @@ export default function AllUsers({
                 )}
               </div>
 
-              {/* MEMBERS */}
+              {/* MEMBERS (PHẦN HIỂN THỊ THÀNH VIÊN ĐÃ CẬP NHẬT) */}
               {room.isGroup && showMembersId === room._id && (
                 <div className="bg-gray-50 px-4 py-2 border-t">
                   <p className="text-[10px] font-bold text-gray-400 mb-1">
@@ -144,8 +152,8 @@ export default function AllUsers({
                         )}
                       >
                         {id === currentUser._id
-                          ? "You"
-                          : getUserName(id)}
+                          ? `You - ${currentUser.email}`
+                          : getFullUserInfo(id)}
                       </span>
                     ))}
                   </div>
