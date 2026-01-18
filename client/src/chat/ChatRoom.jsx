@@ -39,13 +39,13 @@ export default function ChatRoom({
     firstLoadRef.current = false;
   }, [messages]);
 
-  const handleFormSubmit = async (message) => {
-    if (!message.trim()) return;
-    try {
-      const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message, isRead: false });
-      if (res) setMessages((prev) => [...prev, res]);
-    } catch (err) { console.error(err); }
-  };
+  // const handleFormSubmit = async (message) => {
+  //   if (!message.trim()) return;
+  //   try {
+  //     const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message, isRead: false });
+  //     if (res) setMessages((prev) => [...prev, res]);
+  //   } catch (err) { console.error(err); }
+  // };
 
   const headerContent = useMemo(() => {
     if (!currentChat) return null;
@@ -62,6 +62,52 @@ export default function ChatRoom({
     }
     return <Contact chatRoom={currentChat} currentUser={currentUser} onlineUsersId={onlineUsersId} users={users} />;
   }, [currentChat, onlineUsersId]);
+useEffect(() => {
+  if (!socket || !currentChat?._id) return;
+
+  socket.emit("joinRoom", currentChat._id);
+
+  return () => {
+    socket.emit("leaveRoom", currentChat._id);
+  };
+}, [socket, currentChat?._id]);
+useEffect(() => {
+  if (!socket) return;
+
+  const handleMessage = (data) => {
+    if (data.chatRoomId !== currentChat?._id) return;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        _id: Date.now(),
+        sender: data.senderId,
+        message: data.message,
+      },
+    ]);
+  };
+
+  socket.on("getMessage", handleMessage);
+
+  return () => socket.off("getMessage", handleMessage);
+}, [socket, currentChat]);
+const handleFormSubmit = async (message) => {
+  if (!message.trim()) return;
+
+  const res = await sendMessage({
+    chatRoomId: currentChat._id,
+    sender: currentUser._id,
+    message,
+  });
+
+  socket.emit("sendMessageInRoom", {
+    chatRoomId: currentChat._id,
+    senderId: currentUser._id,
+    message,
+  });
+
+  setMessages((prev) => [...prev, res]);
+};
 
   return (
     <div className="h-full flex flex-col w-full bg-white">

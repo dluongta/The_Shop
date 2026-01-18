@@ -17,7 +17,7 @@ export default function ChatLayout() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showGroupModal, setShowGroupModal] = useState(false);
 
-  const socket = useRef(null);
+  const socket = useRef();
   const { currentUser } = useAuth();
   const { initiateSocketConnection, getAllUsers, getChatRooms } = useApi();
 
@@ -108,7 +108,7 @@ export default function ChatLayout() {
               setCurrentChat={setCurrentChat}
               setChatRooms={setChatRooms}
               currentUser={currentUser}
-              socket={socket}
+              socket={socket.current}
               users={users}
               onlineUsersId={onlineUsersId}
             />
