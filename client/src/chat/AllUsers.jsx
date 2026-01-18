@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { useApi } from "../services/ChatService";
 import Contact from "./Contact";
-import UserLayout from "../layouts/UserLayout";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -19,187 +18,143 @@ export default function AllUsers({
   searchQuery,
 }) {
   const [selectedChat, setSelectedChat] = useState(null);
-  const [nonContacts, setNonContacts] = useState([]);
-  const [contactIds, setContactIds] = useState([]);
   const [showMembersId, setShowMembersId] = useState(null);
 
   const { createChatRoom } = useApi();
 
-  // ================= CONTACT IDS (1–1) =================
-  useEffect(() => {
-    if (!chatRooms || !currentUser) return;
-
-    const ids = chatRooms
-      .filter((r) => !r.isGroup)
-      .map((r) => r.members.find((m) => m !== currentUser._id))
-      .filter(Boolean);
-
-    setContactIds(ids);
-  }, [chatRooms, currentUser]);
-
-  // ================= NON CONTACTS =================
-  useEffect(() => {
-    if (!users || !currentUser) return;
-
-    setNonContacts(
-      users.filter(
-        (u) => u._id !== currentUser._id && !contactIds.includes(u._id)
-      )
-    );
-  }, [users, contactIds, currentUser]);
-
-  // ================= UNREAD =================
-  const hasUnreadMessages = (room) => {
-    if (!room.lastMessage) return false;
-    return (
-      room.lastMessage.sender !== currentUser._id &&
-      room.lastMessage.isRead === false
-    );
-  };
-
-  // ================= CHANGE CHAT =================
-  const changeCurrentChat = (index, chat) => {
-    setSelectedChat(index);
-
-    setChatRooms((prev) =>
-      prev.map((r) =>
-        r._id === chat._id
-          ? {
-              ...r,
-              lastMessage: r.lastMessage
-                ? { ...r.lastMessage, isRead: true }
-                : r.lastMessage,
-            }
-          : r
-      )
-    );
-
-    changeChat(chat);
-  };
-
-  // ================= GET USER NAME =================
+  // ================= HELPER =================
   const getUserName = (userId) => {
     const user = users.find((u) => u._id === userId);
-    return user?.email || user?.name || "Unknown user";
+    return user ? (user.name || user.email) : "";
   };
 
   // ================= FILTER CHAT ROOMS =================
-  const filteredChatRooms = chatRooms.filter((room) => {
-    if (!searchQuery) return true;
+  const filteredChatRooms = useMemo(() => {
+    if (!searchQuery.trim()) return chatRooms;
 
-    if (room.isGroup) {
-      return normalize(room.name).includes(normalize(searchQuery));
-    }
+    const q = normalize(searchQuery);
 
-    const contactId = room.members.find(
-      (id) => id !== currentUser._id
-    );
-    const contact = users.find((u) => u._id === contactId);
+    return chatRooms.filter((room) => {
+      if (room.isGroup) {
+        return normalize(room.name).includes(q);
+      }
 
-    return normalize(contact?.email).includes(normalize(searchQuery));
-  });
+      const otherUserId = room.members.find(
+        (id) => id !== currentUser._id
+      );
+      const otherUserName = getUserName(otherUserId);
 
-  // ================= FILTER OTHER USERS =================
-  const filteredNonContacts = nonContacts.filter((u) =>
-    normalize(u.email).includes(normalize(searchQuery))
-  );
+      return normalize(otherUserName).includes(q);
+    });
+  }, [chatRooms, searchQuery, users]);
 
   return (
-    <ul className="overflow-auto h-[30rem]">
-      <h2 className="m-2 font-semibold">Chats</h2>
+    <div className="flex flex-col h-full bg-white">
+      <div className="overflow-y-auto flex-1">
 
-      {filteredChatRooms.map((room, index) => (
-        <div
-          key={room._id}
-          onClick={() => changeCurrentChat(index, room)}
-          className={classNames(
-            "px-3 py-2 cursor-pointer border-b",
-            index === selectedChat
-              ? "bg-gray-100"
-              : "hover:bg-gray-100",
-            hasUnreadMessages(room) && "font-bold"
-          )}
-        >
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              {room.isGroup && (
-                <span className="text-xs bg-blue-500 text-white px-2 rounded">
-                  Group
-                </span>
-              )}
+        <h2 className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+          Chats
+        </h2>
 
-              {room.isGroup ? (
-                <span>{room.name}</span>
-              ) : (
-                <Contact
-                  chatRoom={room}
-                  currentUser={currentUser}
-                  onlineUsersId={onlineUsersId}
-                  users={users}
-                />
-              )}
-            </div>
+        {filteredChatRooms.length === 0 && (
+          <p className="px-4 py-6 text-sm text-gray-400 text-center">
+            No chats found
+          </p>
+        )}
 
-            {room.isGroup && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMembersId(
-                    showMembersId === room._id ? null : room._id
-                  );
+        {filteredChatRooms.map((room, index) => {
+          const otherUserId = !room.isGroup
+            ? room.members.find((id) => id !== currentUser._id)
+            : null;
+
+          return (
+            <div key={room._id} className="relative border-b">
+              <div
+                onClick={() => {
+                  setSelectedChat(index);
+                  changeChat(room);
                 }}
-                className="text-xs underline text-blue-600"
+                className={classNames(
+                  "px-4 py-3 cursor-pointer transition-colors flex justify-between items-center",
+                  selectedChat === index
+                    ? "bg-blue-50"
+                    : "hover:bg-gray-50"
+                )}
               >
-                Members
-              </button>
-            )}
-          </div>
+                <div className="flex items-center gap-3 overflow-hidden">
+                  {room.isGroup ? (
+                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
+                      {room.name.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <Contact
+                      chatRoom={room}
+                      currentUser={currentUser}
+                      onlineUsersId={onlineUsersId}
+                      users={users}
+                    />
+                  )}
 
-          {/* ===== GROUP MEMBERS ===== */}
-          {room.isGroup && showMembersId === room._id && (
-            <div className="ml-6 mt-2 text-xs text-gray-600 space-y-1">
-              {[...room.members]
-                .sort((a, b) =>
-                  a === currentUser._id ? -1 : b === currentUser._id ? 1 : 0
-                )
-                .map((id) => (
-                  <div
-                    key={id}
-                    className={classNames(
-                      "flex items-center gap-2",
-                      id === currentUser._id &&
-                        "font-semibold text-black"
+                  <div className="truncate">
+                    <p className="font-medium truncate">
+                      {room.isGroup
+                        ? room.name
+                        : getUserName(otherUserId)}
+                    </p>
+
+                    {room.lastMessage && (
+                      <p className="text-xs text-gray-500 truncate">
+                        {room.lastMessage.message}
+                      </p>
                     )}
-                  >
-                    <span>{getUserName(id)}</span>
-                    {/* {id === currentUser._id && (
-                      <span className="text-[10px] bg-gray-200 px-1.5 rounded">
-                        You
-                      </span>
-                    )} */}
                   </div>
-                ))}
+                </div>
+
+                {room.isGroup && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMembersId(
+                        showMembersId === room._id ? null : room._id
+                      );
+                    }}
+                    className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-blue-600 font-semibold"
+                  >
+                    {showMembersId === room._id ? "Close" : "Members"}
+                  </button>
+                )}
+              </div>
+
+              {/* MEMBERS */}
+              {room.isGroup && showMembersId === room._id && (
+                <div className="bg-gray-50 px-4 py-2 border-t">
+                  <p className="text-[10px] font-bold text-gray-400 mb-1">
+                    GROUP MEMBERS ({room.members.length})
+                  </p>
+
+                  <div className="flex flex-wrap gap-1">
+                    {room.members.map((id) => (
+                      <span
+                        key={id}
+                        className={classNames(
+                          "text-[10px] px-2 py-0.5 rounded-full border",
+                          id === currentUser._id
+                            ? "bg-blue-100 border-blue-200 text-blue-700"
+                            : "bg-white border-gray-200 text-gray-600"
+                        )}
+                      >
+                        {id === currentUser._id
+                          ? "You"
+                          : getUserName(id)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ))}
-
-      <h2 className="m-2 font-semibold">Other Users</h2>
-
-      {filteredNonContacts.map((u) => (
-        <div
-          key={u._id}
-          onClick={() =>
-            createChatRoom({
-              senderId: currentUser._id,
-              receiverId: u._id,
-            })
-          }
-          className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-        >
-          <UserLayout user={u} onlineUsersId={onlineUsersId} />
-        </div>
-      ))}
-    </ul>
+          );
+        })}
+      </div>
+    </div>
   );
 }
