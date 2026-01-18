@@ -10,9 +10,8 @@ export default function Message({ message, self, users = [] }) {
   return (
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow ${
-          isSelf ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
-        }`}
+        className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow ${isSelf ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
+          }`}
       >
         {/* HIỂN THỊ EMAIL: Hiện cho cả mình (isSelf) và người khác */}
         <p className={`text-xs font-semibold mb-1 ${isSelf ? "text-blue-100" : "text-gray-600"}`}>
@@ -23,9 +22,19 @@ export default function Message({ message, self, users = [] }) {
         <p>{message.message}</p>
 
         {/* Time */}
-        <span className="block text-[10px] text-right opacity-70 mt-1">
+        {/* <span className="block text-[10px] text-right opacity-70 mt-1">
           {new Date(message.createdAt).toLocaleTimeString()}
+        </span> */}
+        <span className="block text-[10px] text-right opacity-70 mt-1">
+          {new Date(message.createdAt).toLocaleString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </span>
+
       </div>
     </li>
   );
