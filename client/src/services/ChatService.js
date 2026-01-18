@@ -121,12 +121,18 @@ export const useApi = () => {
 const markMessagesAsRead = (chatRoomId, userId) => {
   return axios.put(`/chatMessage/mark-as-read/${chatRoomId}`, { userId });
 };
-  const leaveGroupChat = async (roomId, userId) => {
-    const res = await axios.put(`/api/room/leave/${roomId}`, {
-      userId,
-    });
-    return res.data;
-  };
+const leaveGroupChat = async (roomId, userId) => {
+  const header = createHeader();
+
+  const res = await axios.put(
+    `${baseURL}/room/leave/${roomId}`,
+    { userId },
+    header
+  );
+
+  return res.data;
+};
+
 
 
   return {

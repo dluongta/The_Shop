@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useApi } from "../services/ChatService";
 import Message from "./Message";
 import Contact from "./Contact";
@@ -20,44 +20,63 @@ export default function ChatRoom({
 
   // ================= FETCH MESSAGES =================
   useEffect(() => {
-    if (!currentChat?._id) return setMessages([]);
+    if (!currentChat?._id) {
+      setMessages([]);
+      return;
+    }
 
-    const fetch = async () => {
-      const res = await getMessagesOfChatRoom(currentChat._id);
-      setMessages(res || []);
+    const fetchMessages = async () => {
+      try {
+        const res = await getMessagesOfChatRoom(currentChat._id);
+        setMessages(res || []);
+      } catch (err) {
+        console.error("Fetch messages error:", err);
+      }
     };
-    fetch();
+
+    fetchMessages();
   }, [currentChat?._id]);
 
   // ================= SEND MESSAGE =================
   const handleFormSubmit = async (message) => {
-    if (!message.trim()) return;
+    if (!message.trim() || !currentChat?._id) return;
 
-    await sendMessage({
-      chatRoomId: currentChat._id,
-      sender: currentUser._id,
-      message,
-      isRead: false,
-    });
+    try {
+      const res = await sendMessage({
+        chatRoomId: currentChat._id,
+        sender: currentUser._id,
+        message,
+        isRead: false,
+      });
+
+      setMessages((prev) => [...prev, res]);
+    } catch (err) {
+      console.error("Send message error:", err);
+    }
   };
 
-  // ================= LEAVE GROUP (NO FAIL) =================
+  // ================= LEAVE GROUP (FINAL – NO FAIL) =================
   const handleLeaveGroup = async () => {
     if (!currentChat?.isGroup) return;
 
-    if (!window.confirm("Leave this group?")) return;
+    if (!window.confirm("Are you sure you want to leave this group?")) return;
 
     try {
       await leaveGroupChat(currentChat._id, currentUser._id);
 
+      // ✅ clear messages BEFORE unmount
+      setMessages([]);
+
+      // ✅ remove room from list
       setChatRooms((prev) =>
         prev.filter((r) => r._id !== currentChat._id)
       );
 
+      // ✅ reset current chat
       setCurrentChat(null);
     } catch (err) {
-      console.error(err);
-      // alert("Leave group failed");
+      console.error("Leave group error:", err);
+      alert("Failed to leave group");
     }
   };
 
@@ -95,19 +114,41 @@ export default function ChatRoom({
     );
   }, [currentChat]);
 
+  if (!currentChat) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-400">
+        Select a chat
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
+      {/* HEADER */}
       <div className="p-3 border-b">{header}</div>
 
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
+      {/* MESSAGES */}
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4"
+      >
         {messages.map((m) => (
-          <Message key={m._id} message={m} self={currentUser._id} />
+          <Message
+            key={m._id}
+            message={m}
+            self={currentUser._id}
+            users={users}
+          />
         ))}
       </div>
 
-      <div className="border-t p-3">
-        <ChatForm handleFormSubmit={handleFormSubmit} />
-      </div>
+      {/* INPUT */}
+      {!currentChat.isGroup ||
+      currentChat.members.includes(currentUser._id) ? (
+        <div className="border-t p-3">
+          <ChatForm handleFormSubmit={handleFormSubmit} />
+        </div>
+      ) : null}
     </div>
   );
 }
