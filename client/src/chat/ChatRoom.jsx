@@ -6,6 +6,8 @@ import ChatForm from "./ChatForm";
 
 export default function ChatRoom({
   currentChat,
+  setCurrentChat,
+  setChatRooms,
   currentUser,
   socket,
   users,
@@ -17,7 +19,11 @@ export default function ChatRoom({
   const currentChatIdRef = useRef(null);
   const hasAutoScrolledRef = useRef(false);
 
-  const { getMessagesOfChatRoom, sendMessage } = useApi();
+  const {
+    getMessagesOfChatRoom,
+    sendMessage,
+    leaveGroupChat,
+  } = useApi();
 
   // ================== UPDATE ROOM ==================
   useEffect(() => {
@@ -60,10 +66,7 @@ export default function ChatRoom({
     };
 
     fetchMessages();
-
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [currentChat?._id, getMessagesOfChatRoom, scrollToBottom]);
 
   // ================== SOCKET RECEIVE ==================
@@ -88,9 +91,7 @@ export default function ChatRoom({
     };
 
     socket.current.on("getMessage", handleGetMessage);
-    return () => {
-      socket.current.off("getMessage", handleGetMessage);
-    };
+    return () => socket.current.off("getMessage", handleGetMessage);
   }, [socket, currentUser._id]);
 
   // ================== SEND MESSAGE ==================
@@ -123,32 +124,77 @@ export default function ChatRoom({
     }
   };
 
+  // ================== LEAVE GROUP ==================
+  const handleLeaveGroup = async () => {
+    if (!currentChat?.isGroup) return;
+
+    const confirmLeave = window.confirm(
+      "Are you sure you want to leave this group?"
+    );
+    if (!confirmLeave) return;
+
+    try {
+      await leaveGroupChat(currentChat._id, currentUser._id);
+
+      // remove room khỏi danh sách
+      setChatRooms((prev) =>
+        prev.filter((r) => r._id !== currentChat._id)
+      );
+
+      // reset chat hiện tại
+      setCurrentChat(null);
+    } catch (err) {
+      console.error("Leave group error:", err);
+      alert("Failed to leave group");
+    }
+  };
+
   // ================== HEADER ==================
   const memoizedHeader = useMemo(() => {
     if (!currentChat) return null;
 
-    // ✅ GROUP CHAT
+    // ===== GROUP CHAT =====
     if (currentChat.isGroup) {
       return (
-        <div>
-          <h3 className="font-semibold text-lg">
-            {currentChat.name}
-          </h3>
-          <p className="text-xs text-gray-500">
-            {currentChat.members.length} members
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="font-semibold text-lg">
+              {currentChat.name}
+            </h3>
+            <p className="text-xs text-gray-500">
+              {currentChat.members.length} members
+            </p>
+          </div>
+
+          <button
+            onClick={handleLeaveGroup}
+            className="
+    text-sm font-semibold
+    text-white
+    bg-red-500
+    px-4 py-1.5
+    rounded-lg
+    hover:bg-red-600
+    active:scale-95
+    shadow-sm
+    transition
+  "
+          >
+            Leave Group
+          </button>
+
         </div>
       );
     }
 
+    // ===== PRIVATE CHAT =====
     return (
       <Contact
-  chatRoom={currentChat}
-  currentUser={currentUser}
-  onlineUsersId={onlineUsersId}
-  users={users}
-/>
-
+        chatRoom={currentChat}
+        currentUser={currentUser}
+        onlineUsersId={onlineUsersId}
+        users={users}
+      />
     );
   }, [currentChat, currentUser, onlineUsersId]);
 

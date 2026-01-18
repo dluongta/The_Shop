@@ -121,6 +121,13 @@ export const useApi = () => {
 const markMessagesAsRead = (chatRoomId, userId) => {
   return axios.put(`/chatMessage/mark-as-read/${chatRoomId}`, { userId });
 };
+  const leaveGroupChat = async (roomId, userId) => {
+    const res = await axios.put(`/api/room/leave/${roomId}`, {
+      userId,
+    });
+    return res.data;
+  };
+
 
   return {
     initiateSocketConnection,
@@ -132,7 +139,8 @@ const markMessagesAsRead = (chatRoomId, userId) => {
     getMessagesOfChatRoom,
     sendMessage,
     markAllMessagesAsRead,
-    markMessagesAsRead
+    markMessagesAsRead,
+    leaveGroupChat
   };
 };
 

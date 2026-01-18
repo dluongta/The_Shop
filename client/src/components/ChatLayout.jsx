@@ -44,14 +44,14 @@ export default function ChatLayout() {
           prev.map((room) =>
             room._id === data.chatRoomId
               ? {
-                  ...room,
-                  lastMessage: {
-                    sender: data.senderId,
-                    message: data.message,
-                    isRead: false,
-                    createdAt: new Date().toISOString(),
-                  },
-                }
+                ...room,
+                lastMessage: {
+                  sender: data.senderId,
+                  message: data.message,
+                  isRead: false,
+                  createdAt: new Date().toISOString(),
+                },
+              }
               : room
           )
         );
@@ -85,18 +85,18 @@ export default function ChatLayout() {
 
     try {
       await axios.put(`/api/message/mark-as-read/${chat._id}`);
-    } catch {}
+    } catch { }
 
     // mark read UI
     setChatRooms((prev) =>
       prev.map((room) =>
         room._id === chat._id
           ? {
-              ...room,
-              lastMessage: room.lastMessage
-                ? { ...room.lastMessage, isRead: true }
-                : room.lastMessage,
-            }
+            ...room,
+            lastMessage: room.lastMessage
+              ? { ...room.lastMessage, isRead: true }
+              : room.lastMessage,
+          }
           : room
       )
     );
@@ -137,11 +137,14 @@ export default function ChatLayout() {
             {currentChat ? (
               <ChatRoom
                 currentChat={currentChat}
+                setCurrentChat={setCurrentChat}
+                setChatRooms={setChatRooms}
                 currentUser={currentUser}
                 socket={socket}
                 users={users}
                 onlineUsersId={onlineUsersId}
               />
+
             ) : (
               <Welcome />
             )}

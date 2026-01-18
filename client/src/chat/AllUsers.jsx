@@ -77,7 +77,7 @@ export default function AllUsers({
     changeChat(chat);
   };
 
-  // ================= GET USER NAME (GROUP MEMBERS) =================
+  // ================= GET USER NAME =================
   const getUserName = (userId) => {
     const user = users.find((u) => u._id === userId);
     return user?.email || user?.name || "Unknown user";
@@ -87,12 +87,10 @@ export default function AllUsers({
   const filteredChatRooms = chatRooms.filter((room) => {
     if (!searchQuery) return true;
 
-    // GROUP CHAT
     if (room.isGroup) {
       return normalize(room.name).includes(normalize(searchQuery));
     }
 
-    // 1–1 CHAT
     const contactId = room.members.find(
       (id) => id !== currentUser._id
     );
@@ -160,10 +158,26 @@ export default function AllUsers({
           {/* ===== GROUP MEMBERS ===== */}
           {room.isGroup && showMembersId === room._id && (
             <div className="ml-6 mt-2 text-xs text-gray-600 space-y-1">
-              {room.members
-                .filter((id) => id !== currentUser._id)
+              {[...room.members]
+                .sort((a, b) =>
+                  a === currentUser._id ? -1 : b === currentUser._id ? 1 : 0
+                )
                 .map((id) => (
-                  <div key={id}>{getUserName(id)}</div>
+                  <div
+                    key={id}
+                    className={classNames(
+                      "flex items-center gap-2",
+                      id === currentUser._id &&
+                        "font-semibold text-black"
+                    )}
+                  >
+                    <span>{getUserName(id)}</span>
+                    {id === currentUser._id && (
+                      <span className="text-[10px] bg-gray-200 px-1.5 rounded">
+                        You
+                      </span>
+                    )}
+                  </div>
                 ))}
             </div>
           )}
