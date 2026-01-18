@@ -15,20 +15,19 @@ export default function ChatRoom({
 }) {
   const [messages, setMessages] = useState([]);
   const chatContainerRef = useRef(null);
+  const firstLoadRef = useRef(true);
 
   const { getMessagesOfChatRoom, sendMessage, leaveGroupChat } = useApi();
 
   // ================= FETCH MESSAGES =================
   useEffect(() => {
-    if (!currentChat?._id) {
-      setMessages([]);
-      return;
-    }
+    if (!currentChat?._id) return;
 
     const fetchMessages = async () => {
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
         setMessages(Array.isArray(res) ? res : []);
+        firstLoadRef.current = true; // đánh dấu lần mở phòng
       } catch (err) {
         console.error(err);
       }
@@ -37,9 +36,21 @@ export default function ChatRoom({
     fetchMessages();
   }, [currentChat?._id]);
 
+  // ================= AUTO SCROLL =================
+  useEffect(() => {
+    if (!chatContainerRef.current) return;
+
+    chatContainerRef.current.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: firstLoadRef.current ? "auto" : "smooth",
+    });
+
+    firstLoadRef.current = false;
+  }, [messages]);
+
   // ================= SEND MESSAGE =================
   const handleFormSubmit = async (message) => {
-    if (!message.trim() || !currentChat?._id) return;
+    if (!message.trim()) return;
 
     try {
       const res = await sendMessage({
@@ -55,24 +66,17 @@ export default function ChatRoom({
     }
   };
 
-  // ================= LEAVE GROUP (STABLE) =================
+  // ================= LEAVE GROUP =================
   const handleLeaveGroup = async () => {
     if (!currentChat?.isGroup) return;
-    if (typeof setChatRooms !== "function") return;
-
     if (!window.confirm("Are you sure you want to leave this group?")) return;
 
     try {
       await leaveGroupChat(currentChat._id, currentUser._id);
-
-      setMessages([]);
-      setChatRooms((prev) =>
-        prev.filter((r) => r._id !== currentChat._id)
-      );
+      setChatRooms((prev) => prev.filter((r) => r._id !== currentChat._id));
       setCurrentChat(null);
     } catch (err) {
-      console.error("Leave group error:", err);
-      alert("Leave group failed");
+      console.error(err);
     }
   };
 
@@ -89,10 +93,9 @@ export default function ChatRoom({
               {currentChat.members?.length || 0} members
             </p>
           </div>
-
           <button
             onClick={handleLeaveGroup}
-            className="bg-red-500 text-white px-4 py-1.5 rounded hover:bg-red-600"
+            className="bg-red-500 text-white px-4 py-1.5 rounded"
           >
             Leave Group
           </button>
@@ -119,12 +122,17 @@ export default function ChatRoom({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-3 border-b">{header}</div>
+    <div className="h-full flex flex-col overflow-hidden">
 
+      {/* HEADER */}
+      <div className="p-3 border-b shrink-0">
+        {header}
+      </div>
+
+      {/* 🔥 KHUNG TIN NHẮN CỐ ĐỊNH */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4"
+        className="flex-1 overflow-y-auto p-4 bg-gray-50"
       >
         {messages.map(
           (m) =>
@@ -139,12 +147,10 @@ export default function ChatRoom({
         )}
       </div>
 
-      {!currentChat.isGroup ||
-      currentChat.members?.includes(currentUser._id) ? (
-        <div className="border-t p-3">
-          <ChatForm handleFormSubmit={handleFormSubmit} />
-        </div>
-      ) : null}
+      {/* INPUT */}
+      <div className="border-t p-3 shrink-0">
+        <ChatForm handleFormSubmit={handleFormSubmit} />
+      </div>
     </div>
   );
 }

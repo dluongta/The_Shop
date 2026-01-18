@@ -92,13 +92,17 @@ export default function ChatLayout() {
 
   return (
     <>
+      {/* HEADER CỐ ĐỊNH */}
       <Header />
 
-      <div className="container mx-auto">
-        <div className="min-w-full bg-white border lg:grid lg:grid-cols-3">
-          {/* LEFT */}
-          <div className="border-r lg:col-span-1">
-            <div className="flex items-center p-3 gap-2">
+      {/* KHUNG CHAT = FULL MÀN HÌNH - HEADER */}
+      <div className="h-[calc(100vh-64px)] overflow-hidden bg-gray-100">
+        <div className="h-full grid grid-cols-3 bg-white border">
+
+          {/* LEFT SIDEBAR */}
+          <div className="col-span-1 border-r flex flex-col overflow-hidden">
+            {/* TOP */}
+            <div className="p-3 shrink-0 flex gap-2">
               <SearchUsers handleSearch={setSearchQuery} />
               <button
                 onClick={() => setShowGroupModal(true)}
@@ -108,19 +112,22 @@ export default function ChatLayout() {
               </button>
             </div>
 
-            <AllUsers
-              users={users}
-              chatRooms={chatRooms}
-              setChatRooms={setChatRooms}
-              onlineUsersId={onlineUsersId}
-              currentUser={currentUser}
-              changeChat={handleChatChange}
-              searchQuery={searchQuery}
-            />
+            {/* LIST CHAT SCROLL */}
+            <div className="flex-1 overflow-y-auto">
+              <AllUsers
+                users={users}
+                chatRooms={chatRooms}
+                setChatRooms={setChatRooms}
+                onlineUsersId={onlineUsersId}
+                currentUser={currentUser}
+                changeChat={handleChatChange}
+                searchQuery={searchQuery}
+              />
+            </div>
           </div>
 
-          {/* RIGHT */}
-          <div className="lg:col-span-2">
+          {/* RIGHT CHAT */}
+          <div className="col-span-2 h-full overflow-hidden">
             {currentChat ? (
               <ChatRoom
                 currentChat={currentChat}
@@ -138,6 +145,7 @@ export default function ChatLayout() {
         </div>
       </div>
 
+      {/* MODAL */}
       {showGroupModal && (
         <GroupChatModal
           users={users}
