@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import Helmet from "react-helmet";
 import { useApi } from "../services/ChatService";
 import { useAuth } from "../contexts/AuthContext";
 import ChatRoom from "../chat/ChatRoom";
@@ -19,31 +18,25 @@ export default function ChatLayout() {
   const [showGroupModal, setShowGroupModal] = useState(false);
 
   const socket = useRef(null);
-
   const { currentUser } = useAuth();
-  const {
-    initiateSocketConnection,
-    getAllUsers,
-    getChatRooms,
-  } = useApi();
+  const { initiateSocketConnection, getAllUsers, getChatRooms } = useApi();
 
   // ================= SOCKET =================
   useEffect(() => {
     if (!currentUser?._id) return;
 
-    const connect = async () => {
-      socket.current = await initiateSocketConnection();
-      socket.current.emit("addUser", currentUser._id);
+    socket.current = initiateSocketConnection();
+    socket.current.emit("addUser", currentUser._id);
 
-      socket.current.on("getUsers", (users) => {
-        setOnlineUsersId(users.map((u) => u.toString()));
-      });
+    socket.current.on("getUsers", (users) => {
+      setOnlineUsersId(users.map((u) => u.toString()));
+    });
 
-      socket.current.on("getMessage", (data) => {
-        setChatRooms((prev) =>
-          prev.map((room) =>
-            room._id === data.chatRoomId
-              ? {
+    socket.current.on("getMessage", (data) => {
+      setChatRooms((prev) =>
+        prev.map((room) =>
+          room._id === data.chatRoomId
+            ? {
                 ...room,
                 lastMessage: {
                   sender: data.senderId,
@@ -52,17 +45,12 @@ export default function ChatLayout() {
                   createdAt: new Date().toISOString(),
                 },
               }
-              : room
-          )
-        );
-      });
-    };
-
-    connect();
+            : room
+        )
+      );
+    });
 
     return () => {
-      socket.current?.off("getUsers");
-      socket.current?.off("getMessage");
       socket.current?.disconnect();
     };
   }, [currentUser?._id]);
@@ -70,7 +58,6 @@ export default function ChatLayout() {
   // ================= FETCH ROOMS =================
   useEffect(() => {
     if (!currentUser?._id) return;
-
     getChatRooms(currentUser._id).then(setChatRooms);
   }, [currentUser?._id]);
 
@@ -81,22 +68,23 @@ export default function ChatLayout() {
 
   // ================= CHANGE CHAT =================
   const handleChatChange = async (chat) => {
+    if (!chat?._id) return;
+
     setCurrentChat(chat);
 
     try {
       await axios.put(`/api/message/mark-as-read/${chat._id}`);
-    } catch { }
+    } catch {}
 
-    // mark read UI
     setChatRooms((prev) =>
       prev.map((room) =>
         room._id === chat._id
           ? {
-            ...room,
-            lastMessage: room.lastMessage
-              ? { ...room.lastMessage, isRead: true }
-              : room.lastMessage,
-          }
+              ...room,
+              lastMessage: room.lastMessage
+                ? { ...room.lastMessage, isRead: true }
+                : room.lastMessage,
+            }
           : room
       )
     );
@@ -108,7 +96,6 @@ export default function ChatLayout() {
 
       <div className="container mx-auto">
         <div className="min-w-full bg-white border lg:grid lg:grid-cols-3">
-
           {/* LEFT */}
           <div className="border-r lg:col-span-1">
             <div className="flex items-center p-3 gap-2">
@@ -144,7 +131,6 @@ export default function ChatLayout() {
                 users={users}
                 onlineUsersId={onlineUsersId}
               />
-
             ) : (
               <Welcome />
             )}

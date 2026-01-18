@@ -28,9 +28,9 @@ export default function ChatRoom({
     const fetchMessages = async () => {
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
-        setMessages(res || []);
+        setMessages(Array.isArray(res) ? res : []);
       } catch (err) {
-        console.error("Fetch messages error:", err);
+        console.error(err);
       }
     };
 
@@ -49,34 +49,30 @@ export default function ChatRoom({
         isRead: false,
       });
 
-      setMessages((prev) => [...prev, res]);
+      if (res) setMessages((prev) => [...prev, res]);
     } catch (err) {
-      console.error("Send message error:", err);
+      console.error(err);
     }
   };
 
-  // ================= LEAVE GROUP (FINAL – NO FAIL) =================
+  // ================= LEAVE GROUP (STABLE) =================
   const handleLeaveGroup = async () => {
     if (!currentChat?.isGroup) return;
+    if (typeof setChatRooms !== "function") return;
 
     if (!window.confirm("Are you sure you want to leave this group?")) return;
 
     try {
       await leaveGroupChat(currentChat._id, currentUser._id);
 
-      // ✅ clear messages BEFORE unmount
       setMessages([]);
-
-      // ✅ remove room from list
       setChatRooms((prev) =>
         prev.filter((r) => r._id !== currentChat._id)
       );
-
-      // ✅ reset current chat
       setCurrentChat(null);
     } catch (err) {
       console.error("Leave group error:", err);
-      alert("Failed to leave group");
+      alert("Leave group failed");
     }
   };
 
@@ -90,7 +86,7 @@ export default function ChatRoom({
           <div>
             <h3 className="font-semibold">{currentChat.name}</h3>
             <p className="text-xs text-gray-500">
-              {currentChat.members.length} members
+              {currentChat.members?.length || 0} members
             </p>
           </div>
 
@@ -124,27 +120,27 @@ export default function ChatRoom({
 
   return (
     <div className="flex flex-col h-full">
-      {/* HEADER */}
       <div className="p-3 border-b">{header}</div>
 
-      {/* MESSAGES */}
       <div
         ref={chatContainerRef}
         className="flex-1 overflow-y-auto p-4"
       >
-        {messages.map((m) => (
-          <Message
-            key={m._id}
-            message={m}
-            self={currentUser._id}
-            users={users}
-          />
-        ))}
+        {messages.map(
+          (m) =>
+            m?._id && (
+              <Message
+                key={m._id}
+                message={m}
+                self={currentUser._id}
+                users={users}
+              />
+            )
+        )}
       </div>
 
-      {/* INPUT */}
       {!currentChat.isGroup ||
-      currentChat.members.includes(currentUser._id) ? (
+      currentChat.members?.includes(currentUser._id) ? (
         <div className="border-t p-3">
           <ChatForm handleFormSubmit={handleFormSubmit} />
         </div>
