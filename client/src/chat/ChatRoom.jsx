@@ -25,20 +25,21 @@ export default function ChatRoom({
     leaveGroupChat,
   } = useApi();
 
-  // ================== UPDATE ROOM ==================
+  // ================= UPDATE ROOM =================
   useEffect(() => {
     currentChatIdRef.current = currentChat?._id || null;
     hasAutoScrolledRef.current = false;
   }, [currentChat?._id]);
 
-  // ================== SCROLL ==================
+  // ================= SCROLL =================
   const scrollToBottom = useCallback(() => {
-    const el = chatContainerRef.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
   }, []);
 
-  // ================== FETCH MESSAGES ==================
+  // ================= FETCH MESSAGES =================
   useEffect(() => {
     if (!currentChat?._id) {
       setMessages([]);
@@ -53,7 +54,6 @@ export default function ChatRoom({
         if (!mounted) return;
 
         setMessages(res || []);
-
         requestAnimationFrame(() => {
           if (!hasAutoScrolledRef.current) {
             scrollToBottom();
@@ -69,7 +69,7 @@ export default function ChatRoom({
     return () => (mounted = false);
   }, [currentChat?._id, getMessagesOfChatRoom, scrollToBottom]);
 
-  // ================== SOCKET RECEIVE ==================
+  // ================= SOCKET RECEIVE =================
   useEffect(() => {
     if (!socket?.current) return;
 
@@ -94,17 +94,12 @@ export default function ChatRoom({
     return () => socket.current.off("getMessage", handleGetMessage);
   }, [socket, currentUser._id]);
 
-  // ================== SEND MESSAGE ==================
+  // ================= SEND MESSAGE =================
   const handleFormSubmit = async (message) => {
     if (!message.trim() || !currentChat?._id) return;
 
-    const receiverId = currentChat.members.find(
-      (m) => m !== currentUser._id
-    );
-
     socket.current.emit("sendMessage", {
       senderId: currentUser._id,
-      receiverId,
       chatRoomId: currentChat._id,
       message,
     });
@@ -124,24 +119,19 @@ export default function ChatRoom({
     }
   };
 
-  // ================== LEAVE GROUP ==================
+  // ================= LEAVE GROUP (FINAL FIX) =================
   const handleLeaveGroup = async () => {
     if (!currentChat?.isGroup) return;
 
-    const confirmLeave = window.confirm(
-      "Are you sure you want to leave this group?"
-    );
-    if (!confirmLeave) return;
+    if (!window.confirm("Are you sure you want to leave this group?")) return;
 
     try {
       await leaveGroupChat(currentChat._id, currentUser._id);
 
-      // remove room khỏi danh sách
       setChatRooms((prev) =>
         prev.filter((r) => r._id !== currentChat._id)
       );
 
-      // reset chat hiện tại
       setCurrentChat(null);
     } catch (err) {
       console.error("Leave group error:", err);
@@ -149,11 +139,10 @@ export default function ChatRoom({
     }
   };
 
-  // ================== HEADER ==================
+  // ================= HEADER =================
   const memoizedHeader = useMemo(() => {
     if (!currentChat) return null;
 
-    // ===== GROUP CHAT =====
     if (currentChat.isGroup) {
       return (
         <div className="flex justify-between items-center">
@@ -168,26 +157,14 @@ export default function ChatRoom({
 
           <button
             onClick={handleLeaveGroup}
-            className="
-    text-sm font-semibold
-    text-white
-    bg-red-500
-    px-4 py-1.5
-    rounded-lg
-    hover:bg-red-600
-    active:scale-95
-    shadow-sm
-    transition
-  "
+            className="text-sm font-semibold text-white bg-red-500 px-4 py-1.5 rounded-lg hover:bg-red-600 active:scale-95 transition"
           >
             Leave Group
           </button>
-
         </div>
       );
     }
 
-    // ===== PRIVATE CHAT =====
     return (
       <Contact
         chatRoom={currentChat}
@@ -200,12 +177,8 @@ export default function ChatRoom({
 
   return (
     <div className="lg:col-span-2 flex flex-col h-[600px] border-l">
-      {/* HEADER */}
-      <div className="p-3 border-b bg-white">
-        {memoizedHeader}
-      </div>
+      <div className="p-3 border-b bg-white">{memoizedHeader}</div>
 
-      {/* MESSAGES */}
       <div
         ref={chatContainerRef}
         className="flex-1 p-6 overflow-y-auto bg-white"
@@ -223,7 +196,6 @@ export default function ChatRoom({
         </ul>
       </div>
 
-      {/* INPUT */}
       <div className="p-3 border-t bg-white">
         <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>

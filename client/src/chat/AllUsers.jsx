@@ -172,11 +172,11 @@ export default function AllUsers({
                     )}
                   >
                     <span>{getUserName(id)}</span>
-                    {id === currentUser._id && (
+                    {/* {id === currentUser._id && (
                       <span className="text-[10px] bg-gray-200 px-1.5 rounded">
                         You
                       </span>
-                    )}
+                    )} */}
                   </div>
                 ))}
             </div>
