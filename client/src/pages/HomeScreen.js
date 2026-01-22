@@ -164,8 +164,10 @@ const HomeScreen = () => {
                 onChange={(e) => setSort(e.target.value)}
               >
                 <option value="">Sort</option>
-                <option value="price_asc">Price ↑</option>
-                <option value="price_desc">Price ↓</option>
+                <option value="price_asc">Price: Ascending</option>
+                <option value="price_desc">Price: Descending</option>
+                <option value="name_asc">Name: A - Z</option>
+                <option value="name_desc">Name: Z - A</option>
               </Form.Control>
             </Col>
 

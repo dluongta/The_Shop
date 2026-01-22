@@ -145,11 +145,11 @@ const AdminProductList = () => {
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
               >
-                <option value="">Select</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="name_asc">Name: A to Z</option>
-                <option value="name_desc">Name: Z to A</option>
+                <option value="">Sort</option>
+                <option value="price_asc">Price: Ascending</option>
+                <option value="price_desc">Price: Descending</option>
+                <option value="name_asc">Name: A - Z</option>
+                <option value="name_desc">Name: Z - A</option>
               </Form.Control>
             </Form.Group>
           </Col>
