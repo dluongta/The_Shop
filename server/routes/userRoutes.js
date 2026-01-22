@@ -54,9 +54,7 @@ router.get('/exists/:email', async (req, res) => {
 
 router.get('/password/:email', getUserPassword);  
 
-// Giả sử trong file routes/userRoutes.js
 router.get('/', asyncHandler(async (req, res) => {
-    // Lấy tất cả user trừ chính mình
     const users = await User.find({ _id: { $ne: req.user._id } }).select('-password');
     res.json(users);
 }));
