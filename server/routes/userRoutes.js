@@ -14,7 +14,7 @@ import {
 } from '../controllers/userController.js'
 import { protect, admin} from '../middleware/authMiddleware.js'
 import User from '../models/userModel.js'
-
+import asyncHandler from 'express-async-handler';
 router.route('/allUsers').get(getUsers);
 
 router.route('/').post(registerUser).get(getUsers);
@@ -54,5 +54,10 @@ router.get('/exists/:email', async (req, res) => {
 
 router.get('/password/:email', getUserPassword);  
 
-
+// Giả sử trong file routes/userRoutes.js
+router.get('/', asyncHandler(async (req, res) => {
+    // Lấy tất cả user trừ chính mình
+    const users = await User.find({ _id: { $ne: req.user._id } }).select('-password');
+    res.json(users);
+}));
 export default router
