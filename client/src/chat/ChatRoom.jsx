@@ -16,69 +16,127 @@ export default function ChatRoom({
   const [messages, setMessages] = useState([]);
   const chatContainerRef = useRef(null);
   const firstLoadRef = useRef(true);
+
   const { getMessagesOfChatRoom, sendMessage, leaveGroupChat } = useApi();
 
+  // ================= FETCH MESSAGES =================
   useEffect(() => {
     if (!currentChat?._id) return;
+
     const fetchMessages = async () => {
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
         setMessages(Array.isArray(res) ? res : []);
         firstLoadRef.current = true;
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+      }
     };
+
     fetchMessages();
   }, [currentChat?._id]);
 
+  // ================= AUTO SCROLL =================
   useEffect(() => {
     if (!chatContainerRef.current) return;
+
     chatContainerRef.current.scrollTo({
       top: chatContainerRef.current.scrollHeight,
       behavior: firstLoadRef.current ? "auto" : "smooth",
     });
+
     firstLoadRef.current = false;
   }, [messages]);
 
-  // const handleFormSubmit = async (message) => {
-  //   if (!message.trim()) return;
-  //   try {
-  //     const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message, isRead: false });
-  //     if (res) setMessages((prev) => [...prev, res]);
-  //   } catch (err) { console.error(err); }
-  // };
+  // ================= HELPER: MEMBER INFO =================
+  const getMemberInfo = (memberId) => {
+    if (memberId === currentUser._id) {
+      return `You – ${currentUser.email}`;
+    }
 
+    const user = users.find((u) => u._id === memberId);
+    if (!user) return "Unknown User";
+
+    const name =
+      user.name && user.name.trim() !== "" ? user.name : "No Name";
+
+    return `${name} – ${user.email}`;
+  };
+
+  // ================= HEADER =================
   const headerContent = useMemo(() => {
     if (!currentChat) return null;
+
+    // ===== GROUP CHAT HEADER =====
     if (currentChat.isGroup) {
       return (
-        <div className="flex justify-between items-center w-full">
-          <div className="truncate">
-            <h3 className="font-semibold truncate">{currentChat.name}</h3>
-            <p className="text-[10px] text-gray-500">{currentChat.members?.length || 0} members</p>
+        <div className="flex flex-col w-full">
+          <div className="flex justify-between items-start">
+            <div className="truncate">
+              <h3 className="font-semibold truncate">
+                {currentChat.name}
+              </h3>
+              <p className="text-[10px] text-gray-500">
+                {currentChat.members?.length || 0} members
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                const ok = window.confirm("Bạn có chắc muốn rời nhóm?");
+                if (!ok) return;
+
+                await leaveGroupChat(
+                  currentChat._id,
+                  currentUser._id
+                );
+
+                setChatRooms((prev) =>
+                  prev.filter(
+                    (room) => room._id !== currentChat._id
+                  )
+                );
+
+                setCurrentChat(null);
+              }}
+              className="bg-red-500 text-white px-2 py-1 text-xs rounded"
+            >
+              Leave
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={async () => {
-              const ok = window.confirm("Bạn có chắc muốn rời nhóm?");
-              if (!ok) return;
 
-              await leaveGroupChat(currentChat._id, currentUser._id);
-
-              setChatRooms(prev =>
-                prev.filter(room => room._id !== currentChat._id)
-              );
-
-              setCurrentChat(null);
-            }}
-            className="bg-red-500 text-white px-2 py-1 text-xs rounded ml-2"
-          >
-            Leave
-          </button>
+          {/* ===== MEMBER LIST ===== */}
+          <div className="mt-2 flex flex-wrap gap-1">
+            {currentChat.members.map((memberId) => (
+              <span
+                key={memberId}
+                className={`text-[10px] px-2 py-1 rounded-full border ${
+                  memberId === currentUser._id
+                    ? "bg-blue-100 text-blue-600 border-blue-200"
+                    : "bg-gray-100 text-gray-600 border-gray-200"
+                }`}
+              >
+                {getMemberInfo(memberId)}
+              </span>
+            ))}
+          </div>
         </div>
       );
     }
-    return <Contact chatRoom={currentChat} currentUser={currentUser} onlineUsersId={onlineUsersId} users={users} />;
-  }, [currentChat, onlineUsersId]);
+
+    // ===== 1-1 CHAT HEADER =====
+    return (
+      <Contact
+        chatRoom={currentChat}
+        currentUser={currentUser}
+        onlineUsersId={onlineUsersId}
+        users={users}
+      />
+    );
+  }, [currentChat, users, onlineUsersId]);
+
+  // ================= SOCKET JOIN / LEAVE =================
   useEffect(() => {
     if (!socket || !currentChat?._id) return;
 
@@ -88,6 +146,8 @@ export default function ChatRoom({
       socket.emit("leaveRoom", currentChat._id);
     };
   }, [socket, currentChat?._id]);
+
+  // ================= SOCKET RECEIVE =================
   useEffect(() => {
     if (!socket) return;
 
@@ -108,6 +168,8 @@ export default function ChatRoom({
 
     return () => socket.off("getMessage", handleMessage);
   }, [socket, currentChat]);
+
+  // ================= SEND MESSAGE =================
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
 
@@ -126,26 +188,56 @@ export default function ChatRoom({
     setMessages((prev) => [...prev, res]);
   };
 
+  // ================= RENDER =================
   return (
     <div className="h-full flex flex-col w-full bg-white">
-      {/* CUSTOM ROOM HEADER WITH BACK BUTTON */}
+      {/* HEADER */}
       <div className="flex items-center p-3 border-b bg-white shrink-0 shadow-sm">
-        {/* Nút Back chỉ hiện trên Mobile */}
+        {/* BACK BUTTON (MOBILE) */}
         <button
           onClick={() => setCurrentChat(null)}
           className="lg:hidden mr-3 p-1 hover:bg-gray-100 rounded-full"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
-        <div className="flex-1 min-w-0">{headerContent}</div>
+
+        <div className="flex-1 min-w-0">
+          {headerContent}
+        </div>
       </div>
 
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-3">
-        {messages.map((m) => m?._id && <Message key={m._id} message={m} self={currentUser._id} users={users} />)}
+      {/* MESSAGES */}
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-3"
+      >
+        {messages.map(
+          (m) =>
+            m?._id && (
+              <Message
+                key={m._id}
+                message={m}
+                self={currentUser._id}
+                users={users}
+              />
+            )
+        )}
       </div>
 
+      {/* INPUT */}
       <div className="p-3 border-t bg-white shrink-0">
         <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>
