@@ -28,7 +28,7 @@ PORT = 5000
 MONGO_URI = your mongo_database url
 JWT_SECRET = 'mernshop'
 PAYPAL_CLIENT_ID = your paypal_client_id
-CLINET_ID= your client_id
+CLIENT_ID= your client_id
 CLIENT_SECRET= your client secret
 ```
 ### Install Dependencies
