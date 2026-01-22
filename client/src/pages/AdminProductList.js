@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Row, Col, Container, Table, Form } from 'react-bootstrap'
+import React, { useEffect } from 'react'
+import { Button, Row, Col, Container, Table } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   listAdminProducts,
@@ -7,7 +7,7 @@ import {
   createProduct,
 } from '../actions/productActions'
 import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { LinkContainer } from 'react-router-bootstrap'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
@@ -15,13 +15,6 @@ import Loader from '../components/Loader'
 const AdminProductList = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const location = useLocation()
-
-  // ===== FILTER =====
-  const searchParams = new URLSearchParams(location.search)
-  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
-  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
-  const [sort, setSort] = useState(searchParams.get('sort') || '')
 
   // ===== AUTH =====
   const { userInfo } = useSelector((state) => state.userLogin)
@@ -34,7 +27,7 @@ const AdminProductList = () => {
   const productDelete = useSelector((state) => state.productDelete)
   const { success: successDelete } = productDelete
 
-  // ===== CREATE (IMPORTANT) =====
+  // ===== CREATE =====
   const productCreate = useSelector((state) => state.productCreate)
   const {
     loading: loadingCreate,
@@ -55,7 +48,7 @@ const AdminProductList = () => {
       navigate(`/admin/product/${createdProduct._id}/edit`)
       dispatch({ type: PRODUCT_CREATE_RESET })
     } else {
-      dispatch(listAdminProducts(minPrice, maxPrice, sort))
+      dispatch(listAdminProducts())
     }
   }, [
     dispatch,
@@ -64,9 +57,6 @@ const AdminProductList = () => {
     successDelete,
     successCreate,
     createdProduct,
-    minPrice,
-    maxPrice,
-    sort,
   ])
 
   // ===== HANDLERS =====
@@ -80,15 +70,7 @@ const AdminProductList = () => {
     dispatch(createProduct())
   }
 
-  const submitHandler = (e) => {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    if (minPrice) params.set('minPrice', minPrice)
-    if (maxPrice) params.set('maxPrice', maxPrice)
-    if (sort) params.set('sort', sort)
-    navigate({ search: params.toString() })
-  }
-
+  // ===== RENDER =====
   return (
     <Container>
       <Row className="align-items-center">
@@ -104,46 +86,6 @@ const AdminProductList = () => {
 
       {loadingCreate && <Loader />}
       {errorCreate && <Message variant="danger">{errorCreate}</Message>}
-
-      <Form onSubmit={submitHandler} className="mb-3">
-        <Row>
-          <Col md={3}>
-            <Form.Control
-              type="number"
-              placeholder="Min Price"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-            />
-          </Col>
-          <Col md={3}>
-            <Form.Control
-              type="number"
-              placeholder="Max Price"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-            />
-          </Col>
-          <Col md={3}>
-  <Form.Control
-    as="select"
-    value={sort}
-    onChange={(e) => setSort(e.target.value)}
-  >
-    <option value="">Sort</option>
-    <option value="price_asc">Price Ascending</option>
-    <option value="price_desc">Price Descending</option>
-    <option value="name_asc">Name A-Z</option>
-    <option value="name_desc">Name Z-A</option>
-  </Form.Control>
-</Col>
-
-          <Col md={3}>
-            <Button type="submit" className="w-100">
-              Apply
-            </Button>
-          </Col>
-        </Row>
-      </Form>
 
       {loading ? (
         <Loader />
