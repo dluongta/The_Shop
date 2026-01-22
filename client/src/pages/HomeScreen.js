@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Container, Form, Row, Col, Button } from 'react-bootstrap'
+import { Container, Form, Row, Col, Button, Modal } from 'react-bootstrap'
+import { useGoogleOneTapLogin } from '@react-oauth/google'
+import { jwtDecode } from 'jwt-decode'
 
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import Paginate from '../components/Paginate'
 import Meta from '../components/Meta'
-import { listProducts } from '../actions/productActions'
 import LatestProducts from '../components/homePage/LatestProducts'
 import ProductCarousel from '../components/ProductCarousel'
 import SearchBar from '../layout/SearchBar'
+
+import { listProducts } from '../actions/productActions'
+import {
+  login,
+  register,
+  checkEmailExists,
+  loginWithPasswordFromApi,
+} from '../actions/userActions'
 
 const HomeScreen = () => {
   const { keyword, pageNumber = 1 } = useParams()
@@ -18,124 +27,151 @@ const HomeScreen = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  // Lấy filter từ URL
+  /* =========================
+     FILTER STATE
+  ========================= */
   const searchParams = new URLSearchParams(location.search)
-  const initMinPrice = searchParams.get('minPrice') || ''
-  const initMaxPrice = searchParams.get('maxPrice') || ''
-  const initSort = searchParams.get('sort') || ''
+  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
+  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
+  const [sort, setSort] = useState(searchParams.get('sort') || '')
 
-  // Local state quản lý filter inputs
-  const [minPrice, setMinPrice] = useState(initMinPrice)
-  const [maxPrice, setMaxPrice] = useState(initMaxPrice)
-  const [sort, setSort] = useState(initSort)
+  /* =========================
+     GOOGLE REGISTER MODAL
+  ========================= */
+  const [showModal, setShowModal] = useState(false)
+  const [googleUser, setGoogleUser] = useState(null)
+  const [passwordModal, setPasswordModal] = useState('')
 
-  const productList = useSelector((state) => state.productList) || {}
+  const productList = useSelector((state) => state.productList)
   const { loading, error, products = [], page = 1, pages = 1 } = productList
 
-  // Khi URL query thay đổi thì update state filter
-  useEffect(() => {
-    setMinPrice(initMinPrice)
-    setMaxPrice(initMaxPrice)
-    setSort(initSort)
-  }, [initMinPrice, initMaxPrice, initSort])
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin
 
-  // Gọi API mỗi khi filter hoặc keyword/pageNumber thay đổi
+  /* =========================
+     FETCH PRODUCTS
+  ========================= */
   useEffect(() => {
     dispatch(listProducts(keyword, pageNumber, '', minPrice, maxPrice, sort))
   }, [dispatch, keyword, pageNumber, minPrice, maxPrice, sort])
 
-  // Xử lý submit form filter: cập nhật URL query param
-  // const submitHandler = (e) => {
-  //   e.preventDefault()
+  /* =========================
+     GOOGLE ONE TAP LOGIN
+     (THEO ĐÚNG FLOW BẠN YÊU CẦU)
+  ========================= */
+  useGoogleOneTapLogin({
+    disabled: !!userInfo,
+    onSuccess: async (res) => {
+      try {
+        const decoded = jwtDecode(res.credential)
+        const { email, name } = decoded
 
-  //   const params = new URLSearchParams()
-  //   if (minPrice) params.set('minPrice', minPrice)
-  //   if (maxPrice) params.set('maxPrice', maxPrice)
-  //   if (sort) params.set('sort', sort)
+        const existsRes = await dispatch(checkEmailExists(email))
 
-  //   const basePath = keyword ? `/search/${keyword}/${pageNumber}` : `/`
-  //   navigate(`${basePath}?${params.toString()}`)
-  // }
-const submitHandler = (e) => {
-  e.preventDefault()
+        if (existsRes?.exists) {
+          // ✅ ĐÃ CÓ TÀI KHOẢN
+          // → LẤY PASSWORD TỪ API
+          // → LOGIN BẰNG EMAIL + PASSWORD
+          dispatch(loginWithPasswordFromApi(email))
+        } else {
+          // 🆕 CHƯA CÓ TÀI KHOẢN → HIỆN MODAL
+          setGoogleUser({ name, email })
+          setShowModal(true)
+        }
+      } catch (err) {
+        console.error('Google One Tap error:', err)
+      }
+    },
+    onError: () => console.log('Google One Tap failed'),
+  })
 
-  const params = new URLSearchParams()
+  /* =========================
+     REGISTER FROM MODAL
+  ========================= */
+  const handleRegisterFromGoogle = async () => {
+    if (!passwordModal || !googleUser) return
 
-  if (minPrice !== '') params.set('minPrice', Number(minPrice))
-  if (maxPrice !== '') params.set('maxPrice', Number(maxPrice))
-  if (sort) params.set('sort', sort)
+    await dispatch(
+      register(
+        googleUser.name,
+        googleUser.email,
+        passwordModal,
+        'buyer'
+      )
+    )
 
-  const basePath = keyword ? `/search/${keyword}/${pageNumber}` : `/`
-  navigate(`${basePath}?${params.toString()}`)
-}
+    dispatch(login(googleUser.email, passwordModal))
+
+    setShowModal(false)
+    setPasswordModal('')
+    setGoogleUser(null)
+  }
+
+  /* =========================
+     FILTER SUBMIT
+  ========================= */
+  const submitHandler = (e) => {
+    e.preventDefault()
+
+    const params = new URLSearchParams()
+    if (minPrice) params.set('minPrice', minPrice)
+    if (maxPrice) params.set('maxPrice', maxPrice)
+    if (sort) params.set('sort', sort)
+
+    navigate(`${keyword ? `/search/${keyword}/${pageNumber}` : '/'}?${params}`)
+  }
 
   return (
     <>
       <Meta />
       <SearchBar />
 
-      {!keyword ? (
+      {!keyword && (
         <Container>
           <h1>Top Products</h1>
           <ProductCarousel />
-        </Container>
-      ) : (
-        <Container>
-          <Link to='/' className='btn btn-light mb-3'>
-            Go Back
-          </Link>
         </Container>
       )}
 
       <Container>
         <h1>Latest Products</h1>
 
-        {/* Filter Form */}
+        {/* FILTER */}
         <Form onSubmit={submitHandler} className="mb-3">
-          <Row className="align-items-end">
-            <Col xs={12} md={3}>
-              <Form.Group controlId="minPrice">
-                <Form.Label>Min Price</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  placeholder="Min Price"
-                  min="0"
-                />
-              </Form.Group>
+          <Row>
+            <Col md={3}>
+              <Form.Control
+                type="number"
+                placeholder="Min Price"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+              />
             </Col>
-            <Col xs={12} md={3}>
-              <Form.Group controlId="maxPrice">
-                <Form.Label>Max Price</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  placeholder="Max Price"
-                  min="0"
-                />
-              </Form.Group>
+
+            <Col md={3}>
+              <Form.Control
+                type="number"
+                placeholder="Max Price"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+              />
             </Col>
-            <Col xs={12} md={3}>
-              <Form.Group controlId="sort">
-                <Form.Label>Sort By</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                >
-                  <option value="">Select</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="name_asc">Name: A to Z</option>
-                  <option value="name_desc">Name: Z to A</option>
-                </Form.Control>
-              </Form.Group>
+
+            <Col md={3}>
+              <Form.Control
+                as="select"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                <option value="">Sort</option>
+                <option value="price_asc">Price ↑</option>
+                <option value="price_desc">Price ↓</option>
+              </Form.Control>
             </Col>
-            <Col xs={12} md={3} className="mt-3 mt-md-0"> 
-              <Button type="submit" variant="primary" className="w-100">
-                Apply Filters
+
+            <Col md={3}>
+              <Button type="submit" className="w-100">
+                Apply
               </Button>
             </Col>
           </Row>
@@ -148,10 +184,41 @@ const submitHandler = (e) => {
         ) : (
           <>
             <LatestProducts products={products} />
-            <Paginate pages={pages} page={page} keyword={keyword ? keyword : ''} />
+            <Paginate pages={pages} page={page} keyword={keyword || ''} />
           </>
         )}
       </Container>
+
+      {/* =========================
+          GOOGLE REGISTER MODAL
+      ========================= */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Create account</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <p>
+            Please enter a password to create your account <strong>{googleUser?.email}</strong>.
+          </p>
+
+          <Form.Control
+            type="password"
+            placeholder="Enter password"
+            value={passwordModal}
+            onChange={(e) => setPasswordModal(e.target.value)}
+          />
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleRegisterFromGoogle}>
+            Register & Login
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   )
 }
