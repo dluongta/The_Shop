@@ -31,7 +31,7 @@ import {
 import { logout } from './userActions'
 
 
-// listAdminProducts action
+
 export const listAdminProducts =
   (minPrice = '', maxPrice = '', sort = '') =>
   async (dispatch, getState) => {
@@ -52,7 +52,6 @@ export const listAdminProducts =
       if (minPrice !== '') query += `minPrice=${minPrice}&`
       if (maxPrice !== '') query += `maxPrice=${maxPrice}&`
       if (sort) query += `sort=${sort}`
-
       if (query.endsWith('&')) query = query.slice(0, -1)
 
       const { data } = await axios.get(query, config)
@@ -65,12 +64,51 @@ export const listAdminProducts =
       dispatch({
         type: PRODUCT_LIST_ADMIN_FAIL,
         payload:
-          error.response && error.response.data.message
-            ? error.response.data.message
-            : error.message,
+          error.response?.data?.message || error.message,
       })
     }
   }
+
+// // listAdminProducts action
+// export const listAdminProducts =
+//   (minPrice = '', maxPrice = '', sort = '') =>
+//   async (dispatch, getState) => {
+//     try {
+//       dispatch({ type: PRODUCT_LIST_ADMIN_REQUEST })
+
+//       const {
+//         userLogin: { userInfo },
+//       } = getState()
+
+//       const config = {
+//         headers: {
+//           Authorization: `Bearer ${userInfo.token}`,
+//         },
+//       }
+
+//       let query = `/api/products/admin/productlist?`
+//       if (minPrice !== '') query += `minPrice=${minPrice}&`
+//       if (maxPrice !== '') query += `maxPrice=${maxPrice}&`
+//       if (sort) query += `sort=${sort}`
+
+//       if (query.endsWith('&')) query = query.slice(0, -1)
+
+//       const { data } = await axios.get(query, config)
+
+//       dispatch({
+//         type: PRODUCT_LIST_ADMIN_SUCCESS,
+//         payload: data,
+//       })
+//     } catch (error) {
+//       dispatch({
+//         type: PRODUCT_LIST_ADMIN_FAIL,
+//         payload:
+//           error.response && error.response.data.message
+//             ? error.response.data.message
+//             : error.message,
+//       })
+//     }
+//   }
 
 // listProducts action
 export const listProducts = (keyword = '', pageNumber = '', userId = '', minPrice = '', maxPrice = '', sort = '') => async (dispatch) => {
