@@ -12,19 +12,9 @@ const users = [
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
   },
   {
-    name: 'John Street',
-    email: 'john@example.com',
-    role: 'buyer',
-    password: '123456',
-    // Add default discount codes
-    discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
-    paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
-
-  },
-  {
     name: 'Jane Street',
     email: 'jane@example.com',
-    role: 'seller',
+    role: 'buyer',
     password: '123456',
     // Add default discount codes
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],

@@ -30,8 +30,7 @@ const importData = async () => {
 
     // Assign discounts to users
     users[0].discounts = discountIds;  // Admin User gets all discounts
-    users[1].discounts = [discountIds[0], discountIds[1]];  // John gets DISCOUNT10 and DISCOUNT20
-    users[2].discounts = [discountIds[1], discountIds[2]];  // Jane gets DISCOUNT20 and SALE10
+    users[1].discounts = [discountIds[1], discountIds[2]];  // Jane gets DISCOUNT20 and SALE10
 
     // Insert users with discounts
     const createdUsers = await User.insertMany(users);
