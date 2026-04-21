@@ -21,6 +21,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState('buyer')
+  const [roleModal, setRoleModal] = useState('buyer')
   const [showModal, setShowModal] = useState(false)
   const [passwordModal, setPasswordModal] = useState('')
   const [googleUser, setGoogleUser] = useState(null)
@@ -75,7 +76,7 @@ const RegisterScreen = () => {
         googleUser.name,
         googleUser.email,
         passwordModal,
-        role
+        roleModal
       )
     )
 
@@ -90,7 +91,7 @@ const RegisterScreen = () => {
     e.preventDefault()
 
     if (password !== confirmPassword) return
-    dispatch(register(name, email, password, 'buyer'))
+    dispatch(register(name, email, password, role))
   }
 
   return (
@@ -136,19 +137,18 @@ const RegisterScreen = () => {
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-        />  
-<Form.Group className="mb-2" controlId="role">
-  <Form.Label>Role:</Form.Label>
-  <Form.Control
-    as="select"
-    value={role}
-    onChange={(e) => setRole(e.target.value)}
-  >
-    <option value="buyer">Buyer (Người mua)</option>
-    <option value="seller">Seller (Người bán)</option>
-  </Form.Control>
-</Form.Group>
-        
+        />
+        <Form.Group className="mb-2" controlId="role">
+          <Form.Control
+            as="select"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <option value="buyer">Buyer (Người mua)</option>
+            <option value="seller">Seller (Người bán)</option>
+          </Form.Control>
+        </Form.Group>
+
 
         <Button type="submit">Register</Button>
       </Form>
@@ -175,16 +175,15 @@ const RegisterScreen = () => {
             onChange={(e) => setPasswordModal(e.target.value)}
           />
           <Form.Group className="mb-3" controlId="roleModal">
-      <Form.Label>Role:</Form.Label>
-      <Form.Control
-        as="select"
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
-      >
-        <option value="buyer">Buyer (Người mua)</option>
-        <option value="seller">Seller (Người bán)</option>
-      </Form.Control>
-    </Form.Group>
+            <Form.Control
+              as="select"
+              value={roleModal}
+              onChange={(e) => setRoleModal(e.target.value)}
+            >
+              <option value="buyer">Buyer (Người mua)</option>
+              <option value="seller">Seller (Người bán)</option>
+            </Form.Control>
+          </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
