@@ -20,7 +20,7 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-
+  const [role, setRole] = useState('buyer')
   const [showModal, setShowModal] = useState(false)
   const [passwordModal, setPasswordModal] = useState('')
   const [googleUser, setGoogleUser] = useState(null)
@@ -75,7 +75,7 @@ const RegisterScreen = () => {
         googleUser.name,
         googleUser.email,
         passwordModal,
-        'buyer'
+        role
       )
     )
 
@@ -136,14 +136,26 @@ const RegisterScreen = () => {
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-        />
+        />  
+<Form.Group className="mb-2" controlId="role">
+  <Form.Label>Role:</Form.Label>
+  <Form.Control
+    as="select"
+    value={role}
+    onChange={(e) => setRole(e.target.value)}
+  >
+    <option value="buyer">Buyer (Người mua)</option>
+    <option value="seller">Seller (Người bán)</option>
+  </Form.Control>
+</Form.Group>
+        
 
         <Button type="submit">Register</Button>
       </Form>
 
       <Row className="py-3">
         <Col>
-          Already have account? <Link to="/login">Login</Link>
+          Already have account? <Link to="/login" className="fw-bold text-primary text-decoration-none">Login</Link>
         </Col>
       </Row>
 
@@ -162,6 +174,17 @@ const RegisterScreen = () => {
             value={passwordModal}
             onChange={(e) => setPasswordModal(e.target.value)}
           />
+          <Form.Group className="mb-3" controlId="roleModal">
+      <Form.Label>Role:</Form.Label>
+      <Form.Control
+        as="select"
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+      >
+        <option value="buyer">Buyer (Người mua)</option>
+        <option value="seller">Seller (Người bán)</option>
+      </Form.Control>
+    </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>

@@ -49,10 +49,8 @@ const LoginScreen = () => {
       const existsRes = await dispatch(checkEmailExists(email))
 
       if (existsRes?.exists) {
-        // ✅ ĐÃ CÓ TÀI KHOẢN → LOGIN BẰNG PASS TỪ API
         dispatch(loginWithPasswordFromApi(email))
       } else {
-        // 🆕 CHƯA CÓ → MODAL NHẬP PASSWORD
         setGoogleUser({ email, name })
         setShowModal(true)
       }
@@ -139,11 +137,14 @@ const LoginScreen = () => {
         <Button type="submit">Login</Button>
       </Form>
 
-      <Row className="py-3">
-        <Col>
-          New Customer? <Link to="/register">Register</Link>
-        </Col>
-      </Row>
+<Row className="py-3">
+  <Col>
+    New Customer?{' '}
+    <Link to="/register" className="fw-bold text-primary text-decoration-none">
+      Register
+    </Link>
+  </Col>
+</Row>
 
       {/* GOOGLE REGISTER MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
