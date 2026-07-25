@@ -50,6 +50,9 @@ const LayoutWrapper = ({ children }) => {
   const location = useLocation();
   const isChat = location.pathname === "/chat";
   const [appHeight, setAppHeight] = useState(window.innerHeight);
+  
+  // Lấy trạng thái đăng nhập để check xem có userInfo hay không
+  const { userInfo } = useSelector((state) => state.userLogin);
 
   useEffect(() => {
     const updateHeight = () => {
@@ -72,14 +75,15 @@ const LayoutWrapper = ({ children }) => {
         style={
           isChat
             ? {
-              height: appHeight,
-              minHeight: 0,
-              overflow: "hidden",
-            }
+                height: appHeight,
+                minHeight: 0,
+                overflow: "hidden",
+              }
             : {
-              paddingTop: "76px",
-              minHeight: "85vh",
-            }
+
+                paddingTop: userInfo ? "100px" : "50px",
+                minHeight: "85vh",
+              }
         }
       >
         {children}
@@ -121,51 +125,24 @@ const App = () => {
             <Route path="/payment" element={<PaymentScreen />} />
             <Route path="/placeorder" element={<PlaceOrderScreen />} />
             <Route path="/order/:id" element={<OrderScreen />} />
-
             <Route path="/admin/userlist" element={<UserListScreen />} />
             <Route path="/admin/user/:id/edit" element={<UserEditScreen />} />
             <Route path="/admin/orderlist" element={<OrderListScreen />} />
             <Route path="/admin/productlist" element={<AdminProductList />} />
-            <Route
-              path="/admin/product/:id/edit"
-              element={<ProductEditScreen />}
-            />
-
-            <Route
-              path="/seller/products"
-              element={<ProductListScreen />}
-            />
-            <Route
-              path="/seller/products/:id/edit"
-              element={<ProductEditScreen />}
-            />
+            <Route path="/admin/product/:id/edit" element={<ProductEditScreen />} />
+            <Route path="/seller/products" element={<ProductListScreen />} />
+            <Route path="/seller/products/:id/edit" element={<ProductEditScreen />} />
             <Route path="/seller/orders" element={<SellOrdersScreen />} />
-
             <Route path="/search/:keyword" element={<HomeScreen />} />
-            <Route
-              path="/forgot-password"
-              element={<ForgotPassword />}
-            />
-            <Route
-              path="/reset-password/:id/:token"
-              element={<ResetPassword />}
-            />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
             <Route path="/orders" element={<BuyOrdersScreen />} />
             <Route path="/chatbot" element={<Chatbot />} />
-            <Route
-              path="/discounts"
-              element={<DiscountListScreen />}
-            />
-            <Route
-              path="/admin/discount/create"
-              element={<DiscountCreateScreen />}
-            />
-
+            <Route path="/discounts" element={<DiscountListScreen />} />
+            <Route path="/admin/discount/create" element={<DiscountCreateScreen />} />
             <Route
               path="/chat"
-              element={
-                userInfo ? <ChatLayout /> : <Navigate to="/login" />
-              }
+              element={userInfo ? <ChatLayout /> : <Navigate to="/login" />}
             />
           </Routes>
         </LayoutWrapper>
