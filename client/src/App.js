@@ -42,28 +42,22 @@ import DiscountCreateScreen from "./pages/DiscountCreateScreen";
 
 const Header = () => {
   const location = useLocation();
-
   if (location.pathname === "/chat") return null;
-
   return <NavBar />;
 };
 
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
   const isChat = location.pathname === "/chat";
-
   const [appHeight, setAppHeight] = useState(window.innerHeight);
 
   useEffect(() => {
     const updateHeight = () => {
       setAppHeight(window.innerHeight);
     };
-
     updateHeight();
-
     window.addEventListener("resize", updateHeight);
     window.addEventListener("orientationchange", updateHeight);
-
     return () => {
       window.removeEventListener("resize", updateHeight);
       window.removeEventListener("orientationchange", updateHeight);
@@ -73,22 +67,23 @@ const LayoutWrapper = ({ children }) => {
   return (
     <>
       <Header />
-
       <main
-        className={isChat ? "chat-main" : ""}
+        className={isChat ? "chat-main" : "main-content"}
         style={
           isChat
             ? {
-              height: window.innerHeight,
+              height: appHeight,
               minHeight: 0,
-              overflow: "hidden"
+              overflow: "hidden",
             }
-            : {}
+            : {
+              paddingTop: "80px",
+              minHeight: "85vh",
+            }
         }
       >
         {children}
       </main>
-
       {!isChat && <Footer />}
     </>
   );
@@ -100,14 +95,11 @@ const App = () => {
 
   useEffect(() => {
     if (!userInfo) return;
-
     socket.connect();
     socket.emit("addUser", userInfo._id);
-
     socket.on("newNotification", (notification) => {
       dispatch(addNotification(notification));
     });
-
     return () => {
       socket.off("newNotification");
       socket.disconnect();

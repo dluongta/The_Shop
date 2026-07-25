@@ -24,8 +24,14 @@ const SearchBar = () => {
           onChange={(e) => setKeyword(e.target.value)}
           placeholder='Search Products...'
           className='me-2'
+          style={{ height: '42px' }} 
         ></FormControl>
-        <Button type='submit' variant='outline-success' className='p-2'>
+        <Button 
+          type='submit' 
+          variant='outline-success' 
+          className='p-2'
+          style={{ height: '42px', display: 'flex', alignItems: 'center' }}
+        >
           Search
         </Button>
       </Form>
