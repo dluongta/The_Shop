@@ -30,7 +30,7 @@ const OrderScreen = () => {
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
 
-  if (!loading) {
+  if (!loading && order) {
     const addDecimals = (num) => {
       return (Math.round(num * 100) / 100).toFixed(2)
     }
@@ -72,7 +72,6 @@ const OrderScreen = () => {
   }, [dispatch, orderId, successPay, successDeliver, order, userInfo, navigate, paypalClientId])
 
   const successPaymentHandler = (paymentResult) => {
-    console.log(paymentResult)
     dispatch(payOrder(orderId, paymentResult))
   }
 
@@ -81,7 +80,7 @@ const OrderScreen = () => {
   }
 
   const markAsPaidHandler = () => {
-    dispatch(payOrder(orderId, {})) // Call payOrder with empty object since no payment result is needed for manual marking as paid
+    dispatch(payOrder(orderId, {})) 
   }
 
   return loading ? (
@@ -96,9 +95,7 @@ const OrderScreen = () => {
           <ListGroup variant="flush">
             <ListGroup.Item>
               <h2>Shipping</h2>
-              <p>
-                <strong>Name: </strong> {order.user.name}
-              </p>
+              <p><strong>Name: </strong> {order.user.name}</p>
               <p>
                 <strong>Email: </strong>{' '}
                 <a href={`mailto:${order.user.email}`}>{order.user.email}</a>
@@ -106,8 +103,7 @@ const OrderScreen = () => {
               <p>
                 <strong>Address:</strong>
                 {order.shippingAddress.address}, {order.shippingAddress.city}{' '}
-                {order.shippingAddress.postalCode},{' '}
-                {order.shippingAddress.country}
+                {order.shippingAddress.postalCode}, {order.shippingAddress.country}
               </p>
               {order.isDelivered ? (
                 <Message variant="success">Delivered on {order.deliveredAt}</Message>
@@ -163,6 +159,7 @@ const OrderScreen = () => {
             </ListGroup.Item>
           </ListGroup>
         </Col>
+
         <Col md={4}>
           <Card>
             <ListGroup variant="flush">
@@ -187,10 +184,21 @@ const OrderScreen = () => {
                   <Col>${order.taxPrice}</Col>
                 </Row>
               </ListGroup.Item>
+
+              {/* PHẦN HIỂN THỊ MÃ VÀ SỐ TIỀN GIẢM GIÁ ĐÃ LƯU TRONG DB */}
+              {order.discountAmount && order.discountAmount > 0 ? (
+                <ListGroup.Item>
+                  <Row>
+                    <Col>Discount {order.discountCode ? `(${order.discountCode})` : ''}</Col>
+                    <Col style={{ color: 'green', fontWeight: 'bold' }}>-${order.discountAmount}</Col>
+                  </Row>
+                </ListGroup.Item>
+              ) : null}
+
               <ListGroup.Item>
                 <Row>
-                  <Col>Total</Col>
-                  <Col>${order.totalPrice}</Col>
+                  <Col><strong>Total</strong></Col>
+                  <Col><strong>${order.totalPrice}</strong></Col>
                 </Row>
               </ListGroup.Item>
 
@@ -201,7 +209,7 @@ const OrderScreen = () => {
                     {loadingDeliver && <Loader />}
                     <Button
                       type="button"
-                      className="btn btn-block"
+                      className="btn btn-block w-100"
                       onClick={deliverHandler}
                     >
                       Mark As Delivered
@@ -215,7 +223,7 @@ const OrderScreen = () => {
                   <ListGroup.Item>
                     <Button
                       type="button"
-                      className="btn btn-block"
+                      className="btn btn-block w-100"
                       onClick={markAsPaidHandler}
                     >
                       Mark As Paid

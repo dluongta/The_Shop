@@ -1,102 +1,87 @@
 import React from 'react'
 import { Pagination } from 'react-bootstrap'
-import { LinkContainer } from 'react-router-bootstrap'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-const Paginate = ({ pages, page, isAdmin = false, keyword = '' }) => {
-  let items = [];
-  const firstPage = 1;
-  const lastPage = pages;
-  const currentPage = page;
+const Paginate = ({ pages, page }) => {
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  // Handle First and Previous buttons
+  // Hàm xử lý chuyển trang
+  const handleNavigate = (num) => {
+    const searchParams = new URLSearchParams(location.search)
+    searchParams.set('pageNumber', num)
+    
+    navigate({
+      pathname: location.pathname,
+      search: `?${searchParams.toString()}`,
+    })
+  }
+
+  if (pages <= 1) return null
+
+  let items = []
+  const firstPage = 1
+  const lastPage = pages
+  const currentPage = page
+
+  // Nút Đầu & Trang Trước
   items.push(
-    <LinkContainer
-      key="first"
-      to={
-        !isAdmin
-          ? keyword
-            ? `/search/${keyword}/page/${1}`
-            : `/page/${1}`
-          : `/admin/productlist/${1}`
-      }
-    >
-      <Pagination.First key="first" disabled={currentPage === firstPage} />
-    </LinkContainer>
-  );
+    <Pagination.First 
+      key="first" 
+      disabled={currentPage === firstPage} 
+      onClick={() => handleNavigate(firstPage)}
+    />
+  )
   items.push(
-    <LinkContainer
-      key="prev"
-      to={
-        !isAdmin
-          ? keyword
-            ? `/search/${keyword}/page/${currentPage - 1}`
-            : `/page/${currentPage - 1}`
-          : `/admin/productlist/${currentPage - 1}`
-      }
-    >
-      <Pagination.Prev key="prev" disabled={currentPage === firstPage} />
-    </LinkContainer>
-  );
+    <Pagination.Prev 
+      key="prev" 
+      disabled={currentPage === firstPage} 
+      onClick={() => handleNavigate(currentPage - 1)}
+    />
+  )
 
-  // Handle numbered buttons and Ellipsis
+  // Danh sách số trang & Dấu ba chấm
   for (let number = firstPage; number <= lastPage; number++) {
-    if (number === currentPage || number === firstPage || number === lastPage || (number >= currentPage - 2 && number <= currentPage + 2)) {
+    if (
+      number === currentPage ||
+      number === firstPage ||
+      number === lastPage ||
+      (number >= currentPage - 2 && number <= currentPage + 2)
+    ) {
       items.push(
-        <LinkContainer
-          key={number}
-          to={
-            !isAdmin
-              ? keyword
-                ? `/search/${keyword}/page/${number}`
-                : `/page/${number}`
-              : `/admin/productlist/${number}`
-          }
+        <Pagination.Item 
+          key={number} 
+          active={number === currentPage}
+          onClick={() => handleNavigate(number)}
         >
-          <Pagination.Item key={number} active={number === currentPage}>
-            {number}
-          </Pagination.Item>
-        </LinkContainer>,
-      );
+          {number}
+        </Pagination.Item>
+      )
     } else if (number === currentPage - 3 || number === currentPage + 3) {
-      items.push(<Pagination.Ellipsis key={number} />);
+      items.push(<Pagination.Ellipsis key={`ellipsis-${number}`} />)
     }
   }
 
-  // Handle Next and Last buttons
+  // Nút Trang Sau & Cuối
   items.push(
-    <LinkContainer
-      key="next"
-      to={
-        !isAdmin
-          ? keyword
-            ? `/search/${keyword}/page/${currentPage + 1}`
-            : `/page/${currentPage + 1}`
-          : `/admin/productlist/${currentPage + 1}`
-      }
-    >
-      <Pagination.Next key="next" disabled={currentPage === lastPage} />
-    </LinkContainer>
-  );
+    <Pagination.Next 
+      key="next" 
+      disabled={currentPage === lastPage} 
+      onClick={() => handleNavigate(currentPage + 1)}
+    />
+  )
   items.push(
-    <LinkContainer
-      key="last"
-      to={
-        !isAdmin
-          ? keyword
-            ? `/search/${keyword}/page/${lastPage}`
-            : `/page/${lastPage}`
-          : `/admin/productlist/${lastPage}`
-      }
-    >
-      <Pagination.Last key="last" disabled={currentPage === lastPage} />
-    </LinkContainer>
-  );
+    <Pagination.Last 
+      key="last" 
+      disabled={currentPage === lastPage} 
+      onClick={() => handleNavigate(lastPage)}
+    />
+  )
+
   return (
-    pages > 1 && (
-      <Pagination className="justify-content-center">
-        {items}
-      </Pagination>
-    )
+    <Pagination className="justify-content-center my-4">
+      {items}
+    </Pagination>
   )
 }
 

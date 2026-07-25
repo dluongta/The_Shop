@@ -8,8 +8,7 @@ export const useApi = () => {
   const { currentUser } = useAuth();
 
   const createHeader = () => {
-    const token = currentUser.token;
-
+    const token = currentUser?.token; // Thêm dấu hỏi chấm đề phòng token undefined
     return {
       headers: {
         "Content-Type": "application/json",
@@ -19,20 +18,15 @@ export const useApi = () => {
   };
 
   const initiateSocketConnection = () => {
-    const token = currentUser.token;
-
+    const token = currentUser?.token;
     const socket = io("http://localhost:5000", {
-      auth: {
-        token,
-      },
+      auth: { token },
     });
-
     return socket;
   };
 
   const getAllUsers = async () => {
     const header = createHeader();
-
     try {
       const res = await axios.get(`${baseURL}/users`, header);
       return res.data;
@@ -43,7 +37,6 @@ export const useApi = () => {
 
   const getUser = async (userId) => {
     const header = createHeader();
-
     try {
       const res = await axios.get(`${baseURL}/users/${userId}`, header);
       return res.data;
@@ -54,7 +47,6 @@ export const useApi = () => {
 
   const getChatRooms = async (userId) => {
     const header = createHeader();
-
     try {
       const res = await axios.get(`${baseURL}/room/${userId}`, header);
       return res.data;
@@ -65,12 +57,8 @@ export const useApi = () => {
 
   const getChatRoomOfUsers = async (firstUserId, secondUserId) => {
     const header = createHeader();
-
     try {
-      const res = await axios.get(
-        `${baseURL}/room/${firstUserId}/${secondUserId}`,
-        header
-      );
+      const res = await axios.get(`${baseURL}/room/${firstUserId}/${secondUserId}`, header);
       return res.data;
     } catch (e) {
       console.error(e);
@@ -78,8 +66,9 @@ export const useApi = () => {
   };
 
   const markAllMessagesAsRead = async (chatRoomId) => {
+    const header = createHeader();
     try {
-      await axios.put(`/api/message/mark-as-read/${chatRoomId}`);
+      await axios.put(`${baseURL}/message/mark-as-read/${chatRoomId}`, {}, header);
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
@@ -87,7 +76,6 @@ export const useApi = () => {
 
   const createChatRoom = async (data) => {
     const header = createHeader();
-
     try {
       const res = await axios.post(`${baseURL}/room/${data.isGroup ? "group" : ""}`, data, header);
       return res.data;
@@ -96,10 +84,8 @@ export const useApi = () => {
     }
   };
 
-
   const getMessagesOfChatRoom = async (chatRoomId) => {
     const header = createHeader();
-
     try {
       const res = await axios.get(`${baseURL}/message/${chatRoomId}`, header);
       return res.data;
@@ -110,7 +96,6 @@ export const useApi = () => {
 
   const sendMessage = async (messageBody) => {
     const header = createHeader();
-
     try {
       const res = await axios.post(`${baseURL}/message`, messageBody, header);
       return res.data;
@@ -118,22 +103,38 @@ export const useApi = () => {
       console.error(e);
     }
   };
-const markMessagesAsRead = (chatRoomId, userId) => {
-  return axios.put(`/chatMessage/mark-as-read/${chatRoomId}`, { userId });
-};
-const leaveGroupChat = async (roomId, userId) => {
-  const header = createHeader();
 
-  const res = await axios.put(
-    `${baseURL}/room/leave/${roomId}`,
-    { userId },
-    header
-  );
+  const markMessagesAsRead = async (chatRoomId, userId) => {
+    const header = createHeader();
+    try {
+      const res = await axios.put(`${baseURL}/chatMessage/mark-as-read/${chatRoomId}`, { userId }, header);
+      return res.data;
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-  return res.data;
-};
+  const leaveGroupChat = async (roomId, userId) => {
+    const header = createHeader();
+    try {
+      const res = await axios.put(`${baseURL}/room/leave/${roomId}`, { userId }, header);
+      return res.data;
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-
+  // ĐÃ SỬA: Sửa lại đường dẫn dùng baseURL và Header Authorization
+  const revokeMessageApi = async (messageId, userId) => {
+    const header = createHeader();
+    try {
+      const res = await axios.put(`${baseURL}/message/${messageId}/revoke`, { userId }, header);
+      return res.data;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
 
   return {
     initiateSocketConnection,
@@ -146,7 +147,7 @@ const leaveGroupChat = async (roomId, userId) => {
     sendMessage,
     markAllMessagesAsRead,
     markMessagesAsRead,
-    leaveGroupChat
+    leaveGroupChat,
+    revokeMessageApi,
   };
 };
-

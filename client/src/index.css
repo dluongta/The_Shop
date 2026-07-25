@@ -2,8 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-main {
+/* main {
   min-height: 100vh;
+} */
+
+main:not(.chat-main){
+    min-height:100vh;
 }
 
 h3 {
@@ -24,7 +28,6 @@ h2 {
   margin: 0.1rem;
 }
 
-/* carousel */
 .carousel-item {
   height: 65vh;
   min-height: 350px;
@@ -35,7 +38,6 @@ h2 {
   background-size: cover;
 }
 
-/* animated dropdown */
 @media (min-width: 768px) {
   .animate {
     animation-duration: 0.3s;
@@ -84,13 +86,15 @@ h2 {
   animation-name: slideIn;
 }
 
-li::marker{font-size:0;}
+li::marker {
+  font-size: 0;
+}
 
 #orders-dropdown {
-  background-color: transparent !important; /* Set background to black */
-  color: white !important; /* Set text color to white */
-  border: none; /* Remove border */
-  box-shadow: none; /* Remove box shadow */
+  background-color: transparent !important;
+  color: white !important;
+  border: none;
+  box-shadow: none;
 }
 
 
@@ -101,26 +105,26 @@ li::marker{font-size:0;}
 
 
 .navbar-nav .nav-link:hover {
-  color: white; 
+  color: white;
 }
 
 .navbar-nav .nav-link.active {
-  color: white; 
+  color: white;
 }
 
 .dropdown-menu {
-  background-color: #343a40; 
-  border: none; 
+  background-color: #343a40;
+  border: none;
 }
 
 .dropdown-item {
-  color: white; 
-  transition: background-color 0.3s ease; 
+  color: white;
+  transition: background-color 0.3s ease;
 }
 
 .dropdown-item:hover {
-  background-color: #007bff; 
-  color: white; 
+  background-color: #007bff;
+  color: white;
 }
 
 
@@ -133,14 +137,12 @@ li::marker{font-size:0;}
   color: white;
 }
 
-/* Toàn bộ dropdown notification */
 .notification-menu {
   background-color: #404953 !important;
   border: none !important;
   padding: 0 !important;
 }
 
-/* Item rỗng */
 .notification-empty {
   background-color: #404953 !important;
   color: #ffffff !important;
@@ -148,15 +150,6 @@ li::marker{font-size:0;}
   padding: 12px 16px;
 }
 
-/* Tắt hover / active / focus */
-.notification-empty:hover,
-.notification-empty:active,
-.notification-empty:focus {
-  background-color: #404953 !important;
-  color: #ffffff !important;
-}
-
-/* Nếu có divider */
 .notification-menu .dropdown-divider {
   border-top: 1px solid #404953 !important;
   margin: 0 !important;
@@ -164,18 +157,129 @@ li::marker{font-size:0;}
 
 .notification-action {
   background-color: #212529 !important;
-  color: #4dabf7 !important; /* xanh nhạt dễ đọc */
+  color: #4dabf7 !important;
   cursor: pointer;
 }
 
-.notification-action:hover,
-.notification-action:focus {
-  background-color: #2c3034 !important; /* tối hơn nền 1 chút */
-  color: #74c0fc !important; /* chữ sáng hơn */
-}
-
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
+}
+
+
+.footer-custom {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 30px 0;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #212529;
+}
+
+.footer-brand i,
+.footer-brand svg {
+  font-size: 22px;
+}
+
+.footer-custom h5 {
+  margin-bottom: 12px;
+  font-size: 26px;
+}
+
+.footer-custom p {
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #6c757d;
+  line-height: 1.7;
+}
+
+.footer-custom p:last-child {
+  margin-bottom: 0;
+}
+
+.no-caret::after,
+.no-caret .dropdown-toggle::after {
+  display: none !important;
+}
+
+.notification-unread {
+  background-color: #0368f5 !important;
+  font-weight: bold !important;
+  color: #000 !important;
+  white-space: normal;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0 !important;
+}
+
+.notification-unread:hover,
+.notification-unread:focus,
+.notification-unread:active {
+  background-color: #0368f5 !important;
+  color: #000 !important;
+}
+
+.notification-read {
+  background-color: #87CEFA !important;
+  font-weight: normal !important;
+  color: #000 !important;
+  white-space: normal;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0 !important;
+}
+
+.notification-read:hover,
+.notification-read:focus,
+.notification-read:active {
+  background-color: #87CEFA !important;
+  color: #000 !important;
+}
+
+.notification-menu {
+  padding: 0 !important;
+  background-color: #fff;
+}
+
+.notification-menu .dropdown-item {
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.notification-menu .dropdown-item.notification-unread {
+  background-color: #0368f5 !important;
+  font-weight: bold !important;
+  color: #000 !important;
+  white-space: normal;
+  border-bottom: 1px solid #ddd;
+}
+
+.notification-menu .dropdown-item.notification-unread:hover,
+.notification-menu .dropdown-item.notification-unread:focus,
+.notification-menu .dropdown-item.notification-unread:active {
+  background-color: #0368f5 !important;
+  color: #000 !important;
+}
+
+.notification-menu .dropdown-item.notification-read {
+  background-color: #87CEFA !important;
+  font-weight: normal !important;
+  color: #000 !important;
+  white-space: normal;
+  border-bottom: 1px solid #ddd;
+}
+
+.notification-menu .dropdown-item.notification-read:hover,
+.notification-menu .dropdown-item.notification-read:focus,
+.notification-menu .dropdown-item.notification-read:active {
+  background-color: #87CEFA !important;
+  color: #000 !important;
 }

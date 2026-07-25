@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap'
+import { Button, Row, Col, ListGroup, Image, Card, Form, InputGroup } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
+import axios from 'axios'
 import Message from '../components/Message'
 import CheckoutSteps from '../components/CheckoutSteps'
 import { createOrder } from '../actions/orderActions'
@@ -11,9 +12,18 @@ import { USER_DETAILS_RESET } from '../constants/userConstants'
 const PlaceOrderScreen = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  
   const cart = useSelector((state) => state.cart)
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin 
 
   const errorRef = useRef(null)
+
+  const [discountCodeInput, setDiscountCodeInput] = useState('')
+  // CẬP NHẬT: Đổi `percent` thành `amount` và thêm `discountType` vào state
+  const [appliedDiscount, setAppliedDiscount] = useState({ code: '', amount: 0, discountType: 'percent' })
+  const [discountError, setDiscountError] = useState(null)
+  const [discountSuccess, setDiscountSuccess] = useState(null)
 
   if (!cart.shippingAddress.address) {
     navigate('/shipping')
@@ -29,11 +39,26 @@ const PlaceOrderScreen = () => {
   cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100)
   cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)))
 
-  cart.totalPrice = (
+  let calculatedDiscountAmount = 0
+  if (appliedDiscount.amount > 0) {
+    if (appliedDiscount.discountType === 'fixed') {
+      calculatedDiscountAmount = Number(appliedDiscount.amount)
+    } else {
+      // Tính theo phần trăm
+      calculatedDiscountAmount = (Number(cart.itemsPrice) * appliedDiscount.amount) / 100
+    }
+  }
+  
+  const finalDiscountAmount = Number(calculatedDiscountAmount.toFixed(2))
+
+  // Đảm bảo tổng tiền không bị âm nếu mã giảm giá fixed lớn hơn tổng đơn hàng
+  let calculatedTotal = (
     Number(cart.itemsPrice) +
     Number(cart.shippingPrice) +
-    Number(cart.taxPrice)
-  ).toFixed(2)
+    Number(cart.taxPrice) -
+    finalDiscountAmount
+  )
+  cart.totalPrice = calculatedTotal > 0 ? calculatedTotal.toFixed(2) : "0.00"
 
   const orderCreate = useSelector((state) => state.orderCreate)
   const { order, success, error } = orderCreate
@@ -51,6 +76,45 @@ const PlaceOrderScreen = () => {
       errorRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [error])
+
+  const applyDiscountHandler = async (e) => {
+    e.preventDefault()
+    if (!discountCodeInput.trim()) return
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      }
+      
+      const { data } = await axios.post('/api/discounts/apply', { code: discountCodeInput }, config)
+
+      // Cập nhật state với loại giảm giá (discountType) trả về từ server
+      setAppliedDiscount({ 
+        code: data.code, 
+        amount: data.amount, 
+        discountType: data.discountType || 'percent' 
+      })
+
+      // Thông báo linh hoạt theo loại giảm giá
+      const successMsg = data.discountType === 'fixed' 
+        ? `Đã áp dụng mã giảm $${data.amount} thành công!`
+        : `Đã áp dụng mã giảm ${data.amount}% thành công!`
+      
+      setDiscountSuccess(successMsg)
+      setDiscountError(null)
+    } catch (err) {
+      setDiscountError(
+        err.response && err.response.data.message
+          ? err.response.data.message
+          : err.message
+      )
+      setAppliedDiscount({ code: '', amount: 0, discountType: 'percent' })
+      setDiscountSuccess(null)
+    }
+  }
 
   const placeOrderHandler = () => {
     dispatch({ type: ORDER_CREATE_RESET })
@@ -72,16 +136,11 @@ const PlaceOrderScreen = () => {
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
+        discountCode: appliedDiscount.code, 
+        discountAmount: finalDiscountAmount,
       })
     )
   }
-
-  const getOutOfStockProductName = (errorMessage) => {
-    const match = errorMessage?.match(/Not enough stock for product: (.+)/)
-    return match ? match[1] : null
-  }
-
-  const outOfStockProductName = getOutOfStockProductName(error)
 
   return (
     <>
@@ -110,38 +169,24 @@ const PlaceOrderScreen = () => {
                 <Message>Your cart is empty</Message>
               ) : (
                 <ListGroup variant='flush'>
-                  {cart.cartItems.map((item, index) => {
-                    const isOutOfStock = outOfStockProductName === item.name
-
-                    return (
-                      <ListGroup.Item key={index}>
-                        <Row>
-                          <Col md={1}>
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fluid
-                              rounded
-                            />
-                          </Col>
-                          <Col>
-                            <Link to={`/product/${item.product}`}>
-                              {item.name}
-                            </Link>
-                            {isOutOfStock && (
-                              <div style={{ color: 'red', fontWeight: 'bold' }}>
-                                This product is out of stock
-                              </div>
-                            )}
-                          </Col>
-                          <Col md={4}>
-                            {item.qty} x ${item.price} = $
-                            {(item.qty * item.price).toFixed(2)}
-                          </Col>
-                        </Row>
-                      </ListGroup.Item>
-                    )
-                  })}
+                  {cart.cartItems.map((item, index) => (
+                    <ListGroup.Item key={index}>
+                      <Row>
+                        <Col md={1}>
+                          <Image src={item.image} alt={item.name} fluid rounded />
+                        </Col>
+                        <Col>
+                          <Link to={`/product/${item.product}`}>
+                            {item.name}
+                          </Link>
+                        </Col>
+                        <Col md={4}>
+                          {item.qty} x ${item.price} = $
+                          {(item.qty * item.price).toFixed(2)}
+                        </Col>
+                      </Row>
+                    </ListGroup.Item>
+                  ))}
                 </ListGroup>
               )}
             </ListGroup.Item>
@@ -154,6 +199,25 @@ const PlaceOrderScreen = () => {
               <ListGroup.Item>
                 <h2>Order Summary</h2>
               </ListGroup.Item>
+
+              <ListGroup.Item>
+                <Form onSubmit={applyDiscountHandler}>
+                  <InputGroup>
+                    <Form.Control
+                      type='text'
+                      placeholder='Nhập mã giảm giá...'
+                      value={discountCodeInput}
+                      onChange={(e) => setDiscountCodeInput(e.target.value)}
+                    />
+                    <Button type='submit' variant='dark'>
+                      Áp dụng
+                    </Button>
+                  </InputGroup>
+                </Form>
+                {discountError && <Message variant='danger' className='mt-2 mb-0'>{discountError}</Message>}
+                {discountSuccess && <Message variant='success' className='mt-2 mb-0'>{discountSuccess}</Message>}
+              </ListGroup.Item>
+
               <ListGroup.Item>
                 <Row>
                   <Col>Items</Col>
@@ -172,10 +236,25 @@ const PlaceOrderScreen = () => {
                   <Col>${cart.taxPrice}</Col>
                 </Row>
               </ListGroup.Item>
+
+              {/* CẬP NHẬT: Hiển thị Đơn vị giảm giá cho phù hợp */}
+              {appliedDiscount.amount > 0 && (
+                <ListGroup.Item>
+                  <Row>
+                    <Col>
+                      Discount {appliedDiscount.discountType === 'fixed' 
+                        ? `($${appliedDiscount.amount})` 
+                        : `(${appliedDiscount.amount}%)`}
+                    </Col>
+                    <Col style={{ color: 'green', fontWeight: 'bold' }}>-${finalDiscountAmount}</Col>
+                  </Row>
+                </ListGroup.Item>
+              )}
+
               <ListGroup.Item>
                 <Row>
-                  <Col>Total</Col>
-                  <Col>${cart.totalPrice}</Col>
+                  <Col><strong>Total</strong></Col>
+                  <Col><strong>${cart.totalPrice}</strong></Col>
                 </Row>
               </ListGroup.Item>
 

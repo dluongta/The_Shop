@@ -1,4 +1,3 @@
-// UserLayout.jsx
 import photo from "../assets/dinosaur.png";
 
 export default function UserLayout({ user, onlineUsersId, isRead }) {

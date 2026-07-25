@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 const orderSchema = mongoose.Schema(
   {
-    // Reference to the user who created the order (customer)
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -14,17 +13,15 @@ const orderSchema = mongoose.Schema(
         qty: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
-        // Product reference for each item
         product: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
           ref: 'Product',
         },
-        // Seller reference for each item
         seller: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
-          ref: 'User', // This references the seller (User model)
+          ref: 'User',
         },
       },
     ],
@@ -54,11 +51,29 @@ const orderSchema = mongoose.Schema(
       required: true,
       default: 0.0,
     },
+    itemsPrice: {
+      type: Number,
+      required: true,
+      default: 0.0,
+    },
     totalPrice: {
       type: Number,
       required: true,
       default: 0.0,
     },
+    
+    // ==========================================
+    // 2 TRƯỜNG NÀY RẤT QUAN TRỌNG ĐỂ LƯU DISCOUNT
+    // ==========================================
+    discountCode: {
+      type: String,
+      default: '',
+    },
+    discountAmount: {
+      type: Number,
+      default: 0.0,
+    },
+
     isPaid: {
       type: Boolean,
       required: true,
@@ -81,7 +96,6 @@ const orderSchema = mongoose.Schema(
   }
 );
 
-// Create the Order model
 const Order = mongoose.model('Order', orderSchema);
 
 export default Order;

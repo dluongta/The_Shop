@@ -28,10 +28,10 @@ const userSchema = mongoose.Schema(
       default: 'buyer',  // Default role is buyer
     },
     // Default discounts for a new user
-    discounts: {
-      type: [String],  // An array of discount codes
-      default: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'], // Default discount codes
-    },
+    // discounts: {
+    //   type: [String],  // An array of discount codes
+    //   default: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'], // Default discount codes
+    // },
     paypalClientId: {
       type: String,  // New field for PayPal Client ID
       required: false,  // Optionally required, depending on your logic

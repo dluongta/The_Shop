@@ -16,6 +16,7 @@ const ProductEditScreen = () => {
   const [name, setName] = useState('')
   const [price, setPrice] = useState(0)
   const [images, setImages] = useState([]) // mảng các url ảnh
+  const [imageUrl, setImageUrl] = useState('') // state mới để chứa url ảnh nhập từ mạng
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState('')
   const [countInStock, setCountInStock] = useState(0)
@@ -53,6 +54,7 @@ const ProductEditScreen = () => {
     }
   }, [dispatch, navigate, productId, product, successUpdate])
 
+  // Xử lý upload ảnh từ máy tính
   const uploadFileHandler = async (e) => {
     const files = Array.from(e.target.files)
 
@@ -77,16 +79,30 @@ const ProductEditScreen = () => {
       }
 
       const { data } = await axios.post('/api/upload', formData, config)
-      // data.paths là mảng đường dẫn ảnh trả về từ backend
       const newPaths = data.paths || []
 
-      // gộp với state trước đó
       setImages((prev) => [...prev, ...newPaths])
     } catch (error) {
       console.error(error)
     } finally {
       setUploading(false)
+      // Reset input file để có thể chọn lại file cũ nếu muốn
+      e.target.value = null 
     }
+  }
+
+  // Xử lý thêm ảnh từ URL mạng
+  const addImageUrlHandler = (e) => {
+    e.preventDefault() // Ngăn form submit
+    if (!imageUrl.trim()) return
+
+    if (images.length >= 5) {
+      alert('You can upload up to 5 images only')
+      return
+    }
+
+    setImages((prev) => [...prev, imageUrl.trim()])
+    setImageUrl('') // Reset ô input url
   }
 
   const removeImage = (index) => {
@@ -144,21 +160,46 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId='images'>
+            {/* --- KHU VỰC CHỈNH SỬA ẢNH --- */}
+            <Form.Group controlId='images' className="mt-3">
               <Form.Label>Product Images (Max 5)</Form.Label>
+              
+              {/* Option 1: Upload từ máy */}
               <Form.Control
                 type='file'
                 multiple
                 onChange={uploadFileHandler}
+                disabled={images.length >= 5} // Khóa lại nếu đã đủ 5 ảnh
+                className="mb-2"
               />
               {uploading && <Loader />}
 
+              {/* Option 2: Add từ URL mạng */}
+              <div className="d-flex align-items-center">
+                <Form.Control
+                  type='text'
+                  placeholder='Enter Image URL'
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  disabled={images.length >= 5} // Khóa lại nếu đã đủ 5 ảnh
+                />
+                <Button 
+                  variant="secondary" 
+                  className="ms-2" 
+                  onClick={addImageUrlHandler}
+                  disabled={images.length >= 5 || !imageUrl.trim()}
+                >
+                  Add
+                </Button>
+              </div>
+
+              {/* Khu vực Preview Ảnh */}
               <div
                 className='image-preview-container'
                 style={{
                   display: 'flex',
                   gap: '10px',
-                  marginTop: '10px',
+                  marginTop: '15px',
                   flexWrap: 'wrap',
                 }}
               >
@@ -194,8 +235,9 @@ const ProductEditScreen = () => {
                 ))}
               </div>
             </Form.Group>
+            {/* --- KẾT THÚC KHU VỰC CHỈNH SỬA ẢNH --- */}
 
-            <Form.Group controlId='brand'>
+            <Form.Group controlId='brand' className="mt-3">
               <Form.Label>Brand</Form.Label>
               <Form.Control
                 type='text'
@@ -205,7 +247,7 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId='countInStock'>
+            <Form.Group controlId='countInStock' className="mt-3">
               <Form.Label>Count In Stock</Form.Label>
               <Form.Control
                 type='number'
@@ -215,7 +257,7 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId='category'>
+            <Form.Group controlId='category' className="mt-3">
               <Form.Label>Category</Form.Label>
               <Form.Control
                 type='text'
@@ -225,7 +267,7 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId='description'>
+            <Form.Group controlId='description' className="mt-3 mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
                 as='textarea'

@@ -141,20 +141,33 @@ export default function AllUsers({
                   >
                     {room.isGroup ? room.name : getDisplayName(otherUserId)}
                   </p>
-                  {room.lastMessage ? (
+                  {/* KIỂM TRA ĐIỀU KIỆN: Phải có lastMessage và phải có nội dung message thật */}
+                  {room.lastMessage && room.lastMessage.message ? (
                     <p className={classNames(
-                      "text-xs truncate",
+                      "text-xs truncate flex gap-1",
                       hasUnread(room) ? "text-blue-500 font-medium" : "text-gray-500"
                     )}>
-                      {room.lastMessage.sender === currentUser._id ? "You: " : ""}
-                      {room.lastMessage.message}
+                      {/* ✅ LOGIC HIỂN THỊ TÊN NGƯỜI GỬI */}
+                      {room.lastMessage.sender === currentUser._id ? (
+                        <span>You:</span>
+                      ) : room.isGroup && room.lastMessage.sender ? ( // Thêm check chắc chắn có sender
+                        <span className="font-semibold text-gray-700">
+                          {getDisplayName(room.lastMessage.sender)}:
+                        </span>
+                      ) : null}
+                      
+                      {/* ✅ NỘI DUNG TIN NHẮN */}
+                      <span className="truncate">
+                        {room.lastMessage.message}
+                      </span>
                     </p>
                   ) : (
-                    !room.isGroup && (
-                      <p className="text-[10px] text-gray-400 truncate">
-                        {users.find(u => u._id === otherUserId)?.email}
-                      </p>
-                    )
+                    /* ✅ NẾU PHÒNG CHƯA CÓ TIN NHẮN NÀO */
+                    <p className="text-[10px] text-gray-400 truncate italic">
+                      {!room.isGroup 
+                        ? users.find(u => u._id === otherUserId)?.email 
+                        : "Nhóm mới - Chưa có tin nhắn"}
+                    </p>
                   )}
                 </div>
               </div>

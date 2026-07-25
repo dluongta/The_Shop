@@ -498,3 +498,26 @@ export const getAllUsers = () => async (dispatch, getState) => {
   }
 };
 
+/* =========================
+   GOOGLE LOGIN (DIRECT)
+========================= */
+export const googleLoginDirect = (email) => async (dispatch) => {
+  try {
+    dispatch({ type: USER_LOGIN_REQUEST })
+
+    // Gọi trực tiếp đến API đăng nhập bằng Google
+    const { data } = await axios.post(
+      '/api/users/google-login',
+      { email },
+      { headers: { 'Content-Type': 'application/json' } }
+    )
+
+    dispatch({ type: USER_LOGIN_SUCCESS, payload: data })
+    localStorage.setItem('userInfo', JSON.stringify(data))
+  } catch (error) {
+    dispatch({
+      type: USER_LOGIN_FAIL,
+      payload: error.response?.data?.message || error.message,
+    })
+  }
+}

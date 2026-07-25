@@ -6,6 +6,7 @@ const ChatMessageSchema = mongoose.Schema(
     sender: String,
     message: String,
     isRead: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

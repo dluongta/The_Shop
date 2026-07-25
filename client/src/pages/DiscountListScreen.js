@@ -1,22 +1,19 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col, Card, Button } from 'react-bootstrap';
-import Message from '../components/Message';  // Assuming you have this Message component
+import Message from '../components/Message';  
 import { getDiscounts } from '../actions/discountActions';
 
 const DiscountListScreen = () => {
   const dispatch = useDispatch();
 
-  // Fetch the discount list from the Redux store
   const discountList = useSelector((state) => state.discountList || {});
-  console.log(discountList);
   const { discounts = [], loading, error } = discountList;
 
   useEffect(() => {
-    dispatch(getDiscounts());  // Dispatch action to fetch discounts
+    dispatch(getDiscounts());  
   }, [dispatch]);
 
-  // Function to handle copying discount code to clipboard
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code)
       .then(() => {
@@ -28,12 +25,17 @@ const DiscountListScreen = () => {
       });
   };
 
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  };
+
   return (
     <div>
       <h1>Available Discount Codes</h1>
 
-      {loading && <Message variant="info">Loading...</Message>}  {/* Show loading message */}
-      {error && <Message variant="danger">{error}</Message>}    {/* Show error message */}
+      {loading && <Message variant="info">Loading...</Message>}  
+      {error && <Message variant="danger">{error}</Message>}    
 
       <Row>
         {discounts.length > 0 ? (
@@ -45,11 +47,16 @@ const DiscountListScreen = () => {
                   <Card.Text>
                     {discount.description}
                     <br />
-                    Discount: {discount.amount}%
+                    {/* Kiểm tra discountType để render định dạng hiển thị phù hợp */}
+                    Discount: {
+                      discount.discountType === 'fixed' 
+                        ? formatCurrency(discount.amount) 
+                        : `${discount.amount}%`
+                    }
                   </Card.Text>
                   <Button
                     variant="primary"
-                    onClick={() => handleCopyCode(discount.code)}  // Trigger copy code function
+                    onClick={() => handleCopyCode(discount.code)}  
                   >
                     Copy Code
                   </Button>

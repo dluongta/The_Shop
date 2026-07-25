@@ -1,17 +1,21 @@
 import React, { useEffect } from 'react'
-import { Button, Row, Col, Container, Table } from 'react-bootstrap' // Added Table import here
+import { Button, Row, Col, Container, Table } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import { listProducts, deleteProduct, createProduct } from '../actions/productActions'
 import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
-import { useNavigate, useParams } from 'react-router-dom' // Added useParams here
-import { LinkContainer } from 'react-router-bootstrap' // Added LinkContainer import here
+import { useNavigate, useLocation } from 'react-router-dom'
+import { LinkContainer } from 'react-router-bootstrap'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import Paginate from '../components/Paginate'
 
 const ProductListScreen = () => {
-  const { pageNumber = 1 } = useParams()  // Get page number from URL
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Đọc pageNumber từ URL (VD: /seller/products?pageNumber=2)
+  const searchParams = new URLSearchParams(location.search)
+  const pageNumber = searchParams.get('pageNumber') || 1 
 
   const dispatch = useDispatch()
 
@@ -37,8 +41,7 @@ const ProductListScreen = () => {
     if (successCreate) {
       navigate(`/seller/products/${createdProduct._id}/edit`);
     } else {
-      // Pass the userInfo._id to the listProducts action to fetch products for the current user
-      dispatch(listProducts('', pageNumber, userInfo._id)); // User ID added here
+      dispatch(listProducts('', pageNumber, userInfo._id));
     }
   }, [dispatch, navigate, userInfo, successDelete, successCreate, createdProduct, pageNumber]);
   
@@ -111,7 +114,8 @@ const ProductListScreen = () => {
               ))}
             </tbody>
           </Table>
-          <Paginate pages={pages} page={page} isAdmin={false} />
+          
+          <Paginate pages={pages} page={page} />
         </>
       )}
     </Container>

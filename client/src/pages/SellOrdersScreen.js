@@ -38,8 +38,8 @@ const SellOrdersScreen = () => {
                 <td>{order._id}</td>
                 <td>{order.createdAt.substring(0, 10)}</td>
                 <td>${order.totalPrice}</td>
-                <td>{order.isPaid ? order.paidAt.substring(0, 10) : 'No'}</td>
-                <td>{order.isDelivered ? order.deliveredAt.substring(0, 10) : 'No'}</td>
+                <td>{order.isPaid ? order.paidAt.substring(0, 10) : 'Not yet'}</td>
+                <td>{order.isDelivered ? order.deliveredAt.substring(0, 10) : 'Not yet'}</td>
                 <td>
                   <Button variant='light' className='btn-sm' onClick={() => navigate(`/order/${order._id}`)}>
                     Details

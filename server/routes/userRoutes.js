@@ -11,6 +11,7 @@ import {
   updateUser,
   getPayPalClientId,
   getUserPassword,
+  googleLoginBypass,
 } from '../controllers/userController.js'
 import { protect, admin} from '../middleware/authMiddleware.js'
 import User from '../models/userModel.js'
@@ -58,4 +59,8 @@ router.get('/', asyncHandler(async (req, res) => {
     const users = await User.find({ _id: { $ne: req.user._id } }).select('-password');
     res.json(users);
 }));
+
+router.post('/google-login', googleLoginBypass);
+
+
 export default router

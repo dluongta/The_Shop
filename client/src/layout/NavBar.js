@@ -14,42 +14,28 @@ import {
   markAllNotificationsRead,
 } from '../actions/notificationActions';
 
-// Nhận socket từ props (được truyền từ App.js)
 export const NavBar = ({ socket }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // USER
   const { userInfo } = useSelector((state) => state.userLogin);
-
-  // CART
   const { cartItems } = useSelector((state) => state.cart);
-
-  // NOTIFICATIONS
   const notificationList = useSelector((state) => state.notificationList);
   const { notifications = [] } = notificationList;
 
-  // Tính số lượng chưa đọc để hiển thị Badge số đỏ
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  // 1. Fetch danh sách thông báo từ Database khi người dùng đăng nhập
   useEffect(() => {
     if (userInfo) {
       dispatch(listNotifications());
     }
   }, [dispatch, userInfo]);
 
-  // 2. Lắng nghe sự kiện Socket để cập nhật thông báo thời gian thực
   useEffect(() => {
     if (!socket?.current || !userInfo) return;
 
     const handleNewNotification = (data) => {
-      // Khi có tin nhắn mới, không dùng Toast nữa mà gọi action để cập nhật lại danh sách trong Dropdown
       dispatch(listNotifications());
-
-      // Tùy chọn: Bạn có thể thêm hiệu ứng âm thanh nhỏ tại đây
-      // const audio = new Audio('/sounds/notification_ping.mp3');
-      // audio.play().catch(e => console.log("Audio play failed", e));
     };
 
     socket.current.on("newNotification", handleNewNotification);
@@ -64,10 +50,8 @@ export const NavBar = ({ socket }) => {
   };
 
   const handleNotificationClick = (notification) => {
-    // Đánh dấu là đã đọc trong Database
     dispatch(markNotificationRead(notification._id));
 
-    // Chuyển hướng người dùng đến link liên kết (ví dụ: phòng chat)
     if (notification.link) {
       navigate(notification.link);
     }
@@ -84,81 +68,126 @@ export const NavBar = ({ socket }) => {
         <Navbar.Collapse>
           <Nav className="ms-auto align-items-center">
 
-            {/* PHẦN NOTIFICATION CỦA BẠN */}
             {userInfo && (
-              <Dropdown align="end" className="me-3">
+              <Dropdown align="end" as={Nav.Item} className="me-3">
                 <Dropdown.Toggle
-                  variant="dark"
+                  as={Nav.Link}
                   id="dropdown-notification"
                   className="position-relative"
                 >
                   <i className="fas fa-bell"></i> Notification
 
-                  {/* Hiển thị số lượng tin nhắn chưa đọc trên icon chuông */}
                   {unreadCount > 0 && (
-                    <Badge
-                      bg="danger"
-                      pill
-                      className="position-absolute top-0 start-100 translate-middle"
+                    <span
+                      className="position-absolute translate-middle d-flex align-items-center justify-content-center"
+                      style={{
+                        top: '5px',
+                        left: '100%',
+                        backgroundColor: 'red',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        padding: 0,
+                        zIndex: 1
+                      }}
                     >
-                      {unreadCount}
-                    </Badge>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
                   )}
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu
-                  className="notification-menu"
                   style={{
                     width: '320px',
                     maxHeight: '400px',
                     overflowY: 'auto',
+                    padding: 0,
+                    border: 'none',
+                    backgroundColor: '#fff'
                   }}
                 >
-
-                  {/* Nút đánh dấu tất cả đã đọc */}
                   {unreadCount > 0 && (
-                    <>
-                      <Dropdown.Item
-                        className="notification-action text-center fw-bold"
-                        onClick={() => dispatch(markAllNotificationsRead())}
+                    <Dropdown.Item
+                      className="p-0 m-0 border-0"
+                      onClick={() => dispatch(markAllNotificationsRead())}
+                    >
+                      <div
+                        className="text-center fw-bold p-3"
+                        style={{
+                          backgroundColor: '#212529',
+                          color: '#4dabf7',
+                          borderBottom: '1px solid #404953',
+                          display: 'block',
+                          width: '100%',
+                        }}
+                        onMouseEnter={(e) => {
+                          // Ép cứng màu nền và màu chữ khi hover không cho thay đổi
+                          e.currentTarget.style.backgroundColor = '#212529';
+                          e.currentTarget.style.color = '#4dabf7';
+                        }}
                       >
                         <i className="fas fa-check-double me-2"></i>
                         Mark all as read
-                      </Dropdown.Item>
-
-                      <Dropdown.Divider />
-                    </>
-                  )}
-
-                  {/* Trường hợp không có thông báo nào */}
-                  {notifications.length === 0 && (
-                    <Dropdown.Item className="notification-empty text-center">
-                      Không có thông báo mới
+                      </div>
                     </Dropdown.Item>
                   )}
+                  {/* ----------------------------- */}
 
+                  {notifications.length === 0 && (
+                    <div 
+                      className="text-center p-3"
+                      style={{
+                        backgroundColor: '#404953',
+                        color: '#ffffff',
+                      }}
+                    >
+                      Không có thông báo mới
+                    </div>
+                  )}
 
-
-
-                  {/* Hiển thị danh sách thông báo (Bao gồm cả tin nhắn mới từ Socket) */}
                   {notifications.map((n) => (
                     <Dropdown.Item
                       key={n._id}
                       onClick={() => handleNotificationClick(n)}
-                      style={{
-                        backgroundColor: n.isRead ? '#fff' : '#e7f1ff',
-                        fontWeight: n.isRead ? 'normal' : 'bold',
-                        whiteSpace: 'normal',
-                        borderBottom: '1px solid #eee'
-                      }}
+                      className="p-0 m-0 border-0"
                     >
-                      <div className="d-flex justify-content-between">
-                        <span>{n.title}</span>
-                        {!n.isRead && <Badge bg="primary" pill>New</Badge>}
-                      </div>
-                      <small className="text-muted d-block">{n.message}</small>
-                      <div className="text-end text-muted" style={{ fontSize: '0.7rem' }}>
-                        {new Date(n.createdAt).toLocaleTimeString()}
+                      <div
+                        style={{
+                          padding: '12px 16px',
+                          backgroundColor: n.isRead ? '#87CEFA' : '#0368f5',
+                          color: '#000',
+                          fontWeight: n.isRead ? 'normal' : 'bold',
+                          borderBottom: '1px solid #ddd',
+                          display: 'block',
+                          width: '100%',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = n.isRead ? '#87CEFA' : '#0368f5';
+                        }}
+                      >
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                          <span>{n.title}</span>
+                          {!n.isRead && (
+                            <Badge
+                              pill
+                              style={{
+                                backgroundColor: '#ff5608',
+                                color: '#fff',
+                              }}
+                            >
+                              New
+                            </Badge>
+                          )}
+                        </div>
+                        <small className="d-block mb-1" style={{ color: '#212529' }}>
+                          {n.message}
+                        </small>
+                        <div className="text-end" style={{ fontSize: '0.75rem', color: '#495057' }}>
+                          {new Date(n.createdAt).toLocaleTimeString()}
+                        </div>
                       </div>
                     </Dropdown.Item>
                   ))}
@@ -166,7 +195,6 @@ export const NavBar = ({ socket }) => {
               </Dropdown>
             )}
 
-            {/* CÁC MENU KHÁC GIỮ NGUYÊN */}
             <LinkContainer to="/chat">
               <Nav.Link>
                 <i className="fas fa-comment"></i> Chat
@@ -174,11 +202,9 @@ export const NavBar = ({ socket }) => {
             </LinkContainer>
 
             <LinkContainer to="/chatbot">
-
               <Nav.Link>
-
-                <i className="fas fa-message"></i> Chatbot              </Nav.Link>
-
+                <i className="fas fa-message"></i> Chatbot
+              </Nav.Link>
             </LinkContainer>
 
             <LinkContainer to="/cart">
@@ -238,6 +264,9 @@ export const NavBar = ({ socket }) => {
                 </LinkContainer>
                 <LinkContainer to="/admin/orderlist">
                   <Nav.Link>All Orders</Nav.Link>
+                </LinkContainer>
+                <LinkContainer to="/admin/discount/create">
+                  <Nav.Link>Add Discount</Nav.Link>
                 </LinkContainer>
               </>
             )}
