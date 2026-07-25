@@ -77,7 +77,7 @@ const LayoutWrapper = ({ children }) => {
               overflow: "hidden",
             }
             : {
-              paddingTop: "80px",
+              paddingTop: "76px",
               minHeight: "85vh",
             }
         }
