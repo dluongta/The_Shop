@@ -43,7 +43,6 @@ const AdminProductList = () => {
       return
     }
 
-    // ✅ CREATE XONG → REDIRECT SANG EDIT
     if (successCreate && createdProduct?._id) {
       navigate(`/admin/product/${createdProduct._id}/edit`)
       dispatch({ type: PRODUCT_CREATE_RESET })

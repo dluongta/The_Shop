@@ -20,21 +20,17 @@ export default function AllUsers({
   const [selectedChat, setSelectedChat] = useState(null);
   const { createChatRoom } = useApi();
 
-  // 1. Hàm lấy tên hiển thị thông minh (Ưu tiên Name > Email)
   const getDisplayName = (userId) => {
     if (userId === currentUser._id) return "You";
     const user = users.find((u) => u._id === userId);
     if (!user) return "Unknown User";
     
-    // Nếu có name và name không chỉ toàn khoảng trắng thì dùng name, ngược lại dùng email
     return user.name && user.name.trim() !== "" ? user.name : user.email;
   };
 
-  // 2. Logic xử lý danh sách hiển thị
   const displayList = useMemo(() => {
     const q = normalize(searchQuery);
 
-    // Bước A: Lọc các phòng chat hiện có (Recent Chats)
     const filteredRooms = chatRooms.filter((room) => {
       if (room.isGroup) return normalize(room.name).includes(q);
       
@@ -46,7 +42,6 @@ export default function AllUsers({
       return normalize(nameToSearch).includes(q) || normalize(emailToSearch).includes(q);
     });
 
-    // Bước B: Xác định ID của những người ĐÃ có phòng chat 1-1
     const existingContactIds = new Set();
     chatRooms.forEach((room) => {
       if (!room.isGroup) {
@@ -56,7 +51,6 @@ export default function AllUsers({
       }
     });
 
-    // Bước C: Lọc những người dùng CHƯA có phòng chat (Available Users)
     const availableUsers = users.filter((u) => {
       const isNotMe = u._id !== currentUser._id;
       const notInRecent = !existingContactIds.has(u._id);
@@ -67,7 +61,6 @@ export default function AllUsers({
     return { filteredRooms, availableUsers };
   }, [chatRooms, users, searchQuery, currentUser._id]);
 
-  // 3. Xử lý tạo phòng chat mới
   const handleStartNewChat = async (targetUser) => {
     const data = {
       senderId: currentUser._id,
@@ -95,7 +88,6 @@ export default function AllUsers({
     <div className="flex flex-col h-full bg-white select-none">
       <div className="overflow-y-auto flex-1">
         
-        {/* SECTION 1: RECENT CHATS */}
         <div className="bg-gray-50 px-4 py-2 border-b border-t first:border-t-0">
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             Recent Chats ({displayList.filteredRooms.length})
@@ -141,13 +133,11 @@ export default function AllUsers({
                   >
                     {room.isGroup ? room.name : getDisplayName(otherUserId)}
                   </p>
-                  {/* KIỂM TRA ĐIỀU KIỆN: Phải có lastMessage và phải có nội dung message thật */}
                   {room.lastMessage && room.lastMessage.message ? (
                     <p className={classNames(
                       "text-xs truncate flex gap-1",
                       hasUnread(room) ? "text-blue-500 font-medium" : "text-gray-500"
                     )}>
-                      {/* ✅ LOGIC HIỂN THỊ TÊN NGƯỜI GỬI */}
                       {room.lastMessage.sender === currentUser._id ? (
                         <span>You:</span>
                       ) : room.isGroup && room.lastMessage.sender ? ( // Thêm check chắc chắn có sender
@@ -156,13 +146,11 @@ export default function AllUsers({
                         </span>
                       ) : null}
                       
-                      {/* ✅ NỘI DUNG TIN NHẮN */}
                       <span className="truncate">
                         {room.lastMessage.message}
                       </span>
                     </p>
                   ) : (
-                    /* ✅ NẾU PHÒNG CHƯA CÓ TIN NHẮN NÀO */
                     <p className="text-[10px] text-gray-400 truncate italic">
                       {!room.isGroup 
                         ? users.find(u => u._id === otherUserId)?.email 
@@ -175,7 +163,6 @@ export default function AllUsers({
           );
         })}
 
-        {/* SECTION 2: ALL USERS (DIRECTORY) */}
         <div className="bg-gray-50 px-4 py-2 border-b border-t mt-2">
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             All Users ({displayList.availableUsers.length})

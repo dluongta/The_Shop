@@ -94,15 +94,14 @@ export default function Message({ message, self, users = [], onRevoke }) {
   return (
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-2`}>
       <div
-        className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow ${
+        className={`max-w-xs px-4 py-2 rounded-lg text-sm border ${
           message.isDeleted
-            ? "bg-gray-200 text-black border border-gray-400 italic" // ✅ Nền xám, chữ đen, có viền cho tin nhắn thu hồi
+            ? "bg-gray-200 text-black border border-gray-400 italic"
             : isSelf
             ? "bg-blue-500 text-white"
             : "bg-gray-200 text-gray-900"
         }`}
       >
-        {/* HIỂN THỊ TÊN / EMAIL */}
         <p
           className={`text-xs font-semibold mb-1 ${
             message.isDeleted
@@ -115,7 +114,6 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {senderUser?.email || senderUser?.name || "Former member"}
         </p>
 
-        {/* NỘI DUNG TIN NHẮN */}
         <p className={`break-words ${message.isDeleted ? "text-black font-medium" : ""}`}>
           {message.isDeleted ? "Tin nhắn đã bị thu hồi" : message.message}
         </p>
@@ -132,7 +130,6 @@ export default function Message({ message, self, users = [], onRevoke }) {
             <span></span>
           )}
 
-          {/* Thời gian */}
           <span 
             className={`text-[10px] text-right whitespace-nowrap ${
               message.isDeleted ? "text-black font-medium opacity-100" : "opacity-70" // ✅ Thời gian màu đen, đậm hơn khi thu hồi
