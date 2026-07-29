@@ -26,7 +26,7 @@ import Order from './models/orderModel.js';
 
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import sendEmail from './utils/sendEmail.js'; // Đảm bảo file này tồn tại
+import sendEmail from './utils/sendEmail.js';
 dotenv.config();
 connectDB();
 
@@ -51,7 +51,6 @@ app.use('/api/discounts', discountRoutes);
 app.use('/api/notifications', notificationRoutes);
 // ================= RESET PASSWORD SYSTEM =================
 
-// 1. API: Gửi email yêu cầu reset mật khẩu
 app.post("/api/forgot-password", asyncHandler(async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ status: "Email là bắt buộc" });
@@ -60,7 +59,6 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
   const oldUser = await User.findOne({ email: cleanEmail });
 
   if (!oldUser) {
-    // Trả về 404 để frontend hiển thị đúng thông báo
     return res.status(404).json({ status: "User Not Exists!!" });
   }
 
@@ -68,7 +66,6 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
   const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret, { expiresIn: "10m" });
   const link = `https://the-digital-shop.onrender.com/api/reset-password/${oldUser._id}/${token}`;
 
-  // BẮT BUỘC dùng try-catch ở đây để bắt lỗi từ sendEmail
   try {
     await sendEmail({
       to: cleanEmail,
@@ -77,13 +74,11 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
     });
     res.json({ status: "Reset Link Sent" });
   } catch (error) {
-    // In lỗi ra Render Console để bạn xem được "thủ phạm" thật sự
     console.error("LỖI GỬI MAIL CHI TIẾT:", error.message);
     res.status(500).json({ status: "Lỗi hệ thống gửi mail", detail: error.message });
   }
 }));
 
-// 2. API: Xác thực link từ Email và Redirect về Frontend
 app.get("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
   const { id, token } = req.params;
 
@@ -95,14 +90,12 @@ app.get("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
   const secret = process.env.JWT_SECRET + oldUser.password;
   try {
     jwt.verify(token, secret);
-    // Điều hướng người dùng về trang đổi mật khẩu ở Frontend
     res.redirect(`/reset-password/${id}/${token}`);
   } catch (error) {
     res.status(403).send("Liên kết đã hết hạn hoặc không hợp lệ.");
   }
 }));
 
-// 3. API: Thực hiện cập nhật mật khẩu mới vào Database
 app.post("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
   const { id, token } = req.params;
   const { password } = req.body;
@@ -116,13 +109,12 @@ app.post("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
   try {
     jwt.verify(token, secret);
     
-    // Mã hóa mật khẩu mới (Nếu bạn muốn lưu mật khẩu thô như yêu cầu trước, bỏ bước hash này)
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
 
     await User.updateOne(
       { _id: id },
-      { $set: { password: password } } // Dùng password nếu muốn lưu thô
+      { $set: { password: password } }
     );
 
     res.json({ status: "Password Updated Succeeded" });
@@ -131,7 +123,6 @@ app.post("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
   }
 }));
 // ================= CHATBOT =================
-// Khởi tạo NLP Manager
 const manager = new NlpManager({ languages: ['vi'], forceNER: true });
 
 const trainChatbot = async () => {
@@ -143,20 +134,17 @@ const trainChatbot = async () => {
       Order.find()
     ]);
 
-    // 1. Huấn luyện thông tin sản phẩm (Dữ liệu từ DB)
     products.forEach((p) => {
       manager.addDocument('vi', `Sản phẩm ${p.name} là gì`, 'product.info');
       manager.addDocument('vi', `Thông tin ${p.name}`, 'product.info');
       manager.addAnswer('vi', 'product.info', `${p.name}: ${p.description}, Giá: ${p.price.toLocaleString()} VNĐ`);
     });
 
-    // 2. Huấn luyện mã giảm giá
     discounts.forEach((d) => {
       manager.addDocument('vi', `Mã giảm giá ${d.code}`, 'discount.info');
       manager.addAnswer('vi', 'discount.info', `Mã ${d.code}: ${d.description}`);
     });
 
-    // 3. Huấn luyện danh tính & Người tạo
     manager.addDocument('vi', 'bạn là ai', 'bot.identity');
     manager.addDocument('vi', 'tên bạn là gì', 'bot.identity');
     manager.addAnswer('vi', 'bot.identity', 'Mình là The Shop Chatbot, trợ lý thông minh của cửa hàng!');
@@ -165,7 +153,6 @@ const trainChatbot = async () => {
     manager.addDocument('vi', 'ai tạo ra bạn', 'bot.creator');
     manager.addAnswer('vi', 'bot.creator', 'Mình được phát triển và xây dựng bởi DLUONGTA.');
 
-    // 4. Huấn luyện các Ý định (Intents) để xử lý động (Không gán câu trả lời tĩnh ở đây)
     manager.addDocument('vi', 'có bao nhiêu sản phẩm', 'shop.stats.products');
     manager.addDocument('vi', 'có bao nhiêu đơn hàng', 'shop.stats.orders');
     manager.addDocument('vi', 'có bao nhiêu mã giảm giá', 'shop.stats.discounts');
@@ -187,20 +174,17 @@ const trainChatbot = async () => {
   }
 };
 
-// Route Train Chatbot
 app.post('/api/train', asyncHandler(async (req, res) => {
   await trainChatbot();
   res.json({ message: 'Chatbot trained successfully' });
 }));
 
-// Route Xử lý Chat chính (Logic Động)
 app.post('/api/chat', asyncHandler(async (req, res) => {
   const { message, userId } = req.body; // Frontend nên gửi kèm userId nếu đã login
   const response = await manager.process('vi', message);
   
   let finalAnswer = response.answer;
 
-  // Xử lý động dựa trên Intent đã nhận diện
   switch (response.intent) {
     case 'shop.stats.products':
       const pCount = await Product.countDocuments();
@@ -277,69 +261,6 @@ const server = app.listen(
   )
 );
 
-// // ================= SOCKET.IO =================
-// const io = new Server(server, {
-//   cors: {
-//     origin: 'http://localhost:3000',
-//     credentials: true,
-//   },
-// });
-// global.io = io;
-
-// global.onlineUsers = new Map();
-
-// const removeUserBySocketId = (socketId) => {
-//   for (let [userId, sId] of onlineUsers.entries()) {
-//     if (sId === socketId) {
-//       onlineUsers.delete(userId);
-//       break;
-//     }
-//   }
-// };
-
-// io.on('connection', (socket) => {
-//   console.log('Socket connected:', socket.id);
-
-//   socket.on('addUser', (userId) => {
-//     if (!userId) return;
-//     onlineUsers.set(userId.toString(), socket.id);
-//     io.emit('getUsers', Array.from(onlineUsers.keys()));
-//   });
-
-//   socket.on('joinRoom', (roomId) => {
-//     if (roomId) socket.join(roomId);
-//   });
-
-//   socket.on('sendMessage', ({ senderId, receiverId, message }) => {
-//     const receiverSocketId = onlineUsers.get(receiverId?.toString());
-//     if (receiverSocketId) {
-//       io.to(receiverSocketId).emit('getMessage', { senderId, message });
-//     }
-//   });
-
-//   socket.on('sendMessageInRoom', ({ chatRoomId, senderId, message }) => {
-//     if (chatRoomId) {
-//       io.to(chatRoomId).emit('getMessage', {
-//         senderId,
-//         message,
-//         chatRoomId,
-//       });
-//     }
-//   });
-
-//   socket.on('sendNotification', ({ userId, notification }) => {
-//     const socketId = onlineUsers.get(userId?.toString());
-//     if (socketId) {
-//       io.to(socketId).emit('newNotification', notification);
-//     }
-//   });
-
-//   socket.on('disconnect', () => {
-//     removeUserBySocketId(socket.id);
-//     io.emit('getUsers', Array.from(onlineUsers.keys()));
-//     console.log('Socket disconnected:', socket.id);
-//   });
-// });
 // ================= SOCKET.IO =================
 const io = new Server(server, {
   cors: {
@@ -381,7 +302,7 @@ io.on('connection', (socket) => {
     if (roomId) socket.join(roomId);
   });
 
-  // ===== LEAVE ROOM (Thêm mới để giải phóng socket) =====
+  // ===== LEAVE ROOM =====
   socket.on('leaveRoom', (roomId) => {
     if (roomId) socket.leave(roomId);
   });
@@ -399,7 +320,6 @@ io.on('connection', (socket) => {
   });
 
   // ===== ROOM MESSAGE =====
-  // Đã SỬA: Nhận thêm biến `_id` từ client và phát lại để các máy đồng bộ ID với Database
   socket.on('sendMessageInRoom', ({ _id, chatRoomId, senderId, message }) => {
     if (chatRoomId) {
       io.to(chatRoomId).emit('getMessage', {
@@ -411,10 +331,9 @@ io.on('connection', (socket) => {
     }
   });
 
-  // ===== THU HỒI TIN NHẮN (THÊM MỚI) =====
+  // ===== THU HỒI TIN NHẮN =====
   socket.on('revokeMessageInRoom', ({ chatRoomId, messageId }) => {
     if (chatRoomId) {
-      // .to() sẽ gửi cho mọi người trong room ngoại trừ người gửi (socket.emit)
       socket.to(chatRoomId).emit('messageRevoked', {
         chatRoomId,
         messageId,
