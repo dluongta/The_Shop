@@ -21,7 +21,7 @@ const timeAgo = (date) => {
   if (interval > 1) return Math.floor(interval) + " giờ trước";
   interval = seconds / 60;
   if (interval > 1) return Math.floor(interval) + " phút trước";
-  return "Vừa xong";
+  return "vừa xong";
 };
 
 export default function AllUsers({
