@@ -157,9 +157,9 @@ export default function AllUsers({
                     {!room.isGroup && (
                       <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
                         {isOnline ? (
-                          <span className="text-green-500 font-medium">Đang Online</span>
+                          <span className="text-green-500 font-medium">Đang hoạt động</span>
                         ) : otherUserObj?.lastSeen ? (
-                          `Online ${timeAgo(otherUserObj.lastSeen)}`
+                          `Hoạt động ${timeAgo(otherUserObj.lastSeen)}`
                         ) : ""}
                       </span>
                     )}
@@ -230,9 +230,9 @@ export default function AllUsers({
                 {/* Hiển thị Online / Last seen */}
                 <p className="text-[11px] text-gray-500 truncate mt-0.5">
                   {isOnline ? (
-                    <span className="text-green-500 font-medium">Đang Online</span>
+                    <span className="text-green-500 font-medium">Đang hoạt động</span>
                   ) : user.lastSeen ? (
-                    `Online ${timeAgo(user.lastSeen)}`
+                    `Hoạt động ${timeAgo(user.lastSeen)}`
                   ) : (
                     user.email
                   )}

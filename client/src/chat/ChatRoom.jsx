@@ -103,9 +103,9 @@ export default function ChatRoom({
           </span>
           <span className="text-xs text-gray-500 truncate mt-0.5">
             {isOnline ? (
-              <span className="text-green-500 font-medium">Đang Online</span>
+              <span className="text-green-500 font-medium">Đang hoạt động</span>
             ) : otherUser?.lastSeen ? (
-              `Online ${timeAgo(otherUser.lastSeen)}`
+              `Hoạt động ${timeAgo(otherUser.lastSeen)}`
             ) : (
               "Ngoại tuyến"
             )}
