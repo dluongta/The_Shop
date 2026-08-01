@@ -122,6 +122,7 @@ app.post("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
     res.status(500).json({ status: "Đã có lỗi xảy ra hoặc link hết hạn." });
   }
 }));
+
 // ================= CHATBOT =================
 const manager = new NlpManager({ languages: ['vi'], forceNER: true });
 
@@ -180,7 +181,7 @@ app.post('/api/train', asyncHandler(async (req, res) => {
 }));
 
 app.post('/api/chat', asyncHandler(async (req, res) => {
-  const { message, userId } = req.body; // Frontend nên gửi kèm userId nếu đã login
+  const { message, userId } = req.body; 
   const response = await manager.process('vi', message);
   
   let finalAnswer = response.answer;
@@ -351,9 +352,32 @@ io.on('connection', (socket) => {
   });
 
   // ===== DISCONNECT =====
-  socket.on('disconnect', () => {
-    removeUserBySocketId(socket.id);
-    io.emit('getUsers', Array.from(onlineUsers.keys()));
+  socket.on('disconnect', async () => {
+    let disconnectedUserId = null;
+
+    // Tìm và xóa user khỏi danh sách online, đồng thời lấy userId
+    for (let [userId, sId] of onlineUsers.entries()) {
+      if (sId === socket.id) {
+        disconnectedUserId = userId;
+        onlineUsers.delete(userId);
+        break;
+      }
+    }
+
+    if (disconnectedUserId) {
+      const lastSeenTime = new Date();
+      
+      try {
+        await User.findByIdAndUpdate(disconnectedUserId, { lastSeen: lastSeenTime });
+      } catch (error) {
+        console.error("Lỗi cập nhật lastSeen:", error);
+      }
+
+      io.emit('getUsers', Array.from(onlineUsers.keys()));
+      io.emit('userOffline', { userId: disconnectedUserId, lastSeen: lastSeenTime });
+    }
+
     console.log('Socket disconnected:', socket.id);
   });
+
 });

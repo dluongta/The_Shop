@@ -36,6 +36,10 @@ const userSchema = mongoose.Schema(
       type: String,  // New field for PayPal Client ID
       required: false,  // Optionally required, depending on your logic
     },
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,

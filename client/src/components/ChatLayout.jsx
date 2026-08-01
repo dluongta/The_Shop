@@ -58,6 +58,15 @@ export default function ChatLayout() {
       });
     });
 
+    // Lắng nghe sự kiện userOffline để cập nhật lastSeen
+    socket.current.on("userOffline", ({ userId, lastSeen }) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, lastSeen: lastSeen } : user
+        )
+      );
+    });
+
     return () => socket.current?.disconnect();
   }, [currentUser?._id]);
 

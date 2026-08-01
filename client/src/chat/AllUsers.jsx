@@ -8,6 +8,22 @@ function classNames(...classes) {
 
 const normalize = (str = "") => str.toLowerCase();
 
+const timeAgo = (date) => {
+  if (!date) return "";
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " năm trước";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " tháng trước";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " ngày trước";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " giờ trước";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " phút trước";
+  return "Vừa xong";
+};
+
 export default function AllUsers({
   users,
   chatRooms,
@@ -98,6 +114,9 @@ export default function AllUsers({
           const otherUserId = !room.isGroup
             ? room.members.find((id) => id !== currentUser._id)
             : null;
+          
+          const otherUserObj = users.find(u => u._id === otherUserId);
+          const isOnline = onlineUsersId.includes(otherUserId);
 
           return (
             <div
@@ -125,14 +144,27 @@ export default function AllUsers({
                   />
                 )}
                 <div className="truncate flex-1">
-                  <p
-                    className={classNames(
-                      "truncate text-sm",
-                      hasUnread(room) ? "font-bold text-blue-600" : "font-semibold text-gray-900"
+                  <div className="flex justify-between items-center">
+                    <p
+                      className={classNames(
+                        "truncate text-sm",
+                        hasUnread(room) ? "font-bold text-blue-600" : "font-semibold text-gray-900"
+                      )}
+                    >
+                      {room.isGroup ? room.name : getDisplayName(otherUserId)}
+                    </p>
+                    
+                    {!room.isGroup && (
+                      <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
+                        {isOnline ? (
+                          <span className="text-green-500 font-medium">Đang Online</span>
+                        ) : otherUserObj?.lastSeen ? (
+                          `Online ${timeAgo(otherUserObj.lastSeen)}`
+                        ) : ""}
+                      </span>
                     )}
-                  >
-                    {room.isGroup ? room.name : getDisplayName(otherUserId)}
-                  </p>
+                  </div>
+                  
                   {room.lastMessage && room.lastMessage.message ? (
                     <p className={classNames(
                       "text-xs truncate flex gap-1",
@@ -140,7 +172,7 @@ export default function AllUsers({
                     )}>
                       {room.lastMessage.sender === currentUser._id ? (
                         <span>You:</span>
-                      ) : room.isGroup && room.lastMessage.sender ? ( // Thêm check chắc chắn có sender
+                      ) : room.isGroup && room.lastMessage.sender ? (
                         <span className="font-semibold text-gray-700">
                           {getDisplayName(room.lastMessage.sender)}:
                         </span>
@@ -153,7 +185,7 @@ export default function AllUsers({
                   ) : (
                     <p className="text-[10px] text-gray-400 truncate italic">
                       {!room.isGroup 
-                        ? users.find(u => u._id === otherUserId)?.email 
+                        ? otherUserObj?.email 
                         : "Nhóm mới - Chưa có tin nhắn"}
                     </p>
                   )}
@@ -173,31 +205,45 @@ export default function AllUsers({
           <p className="p-8 text-center text-gray-400 text-sm">No users found</p>
         )}
 
-        {displayList.availableUsers.map((user) => (
-          <div
-            key={user._id}
-            onClick={() => handleStartNewChat(user)}
-            className="px-4 py-3 cursor-pointer border-b hover:bg-gray-50 flex items-center gap-3 transition-colors group"
-          >
-            <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                {(user.name || user.email).charAt(0).toUpperCase()}
+        {displayList.availableUsers.map((user) => {
+          const isOnline = onlineUsersId.includes(user._id);
+          
+          return (
+            <div
+              key={user._id}
+              onClick={() => handleStartNewChat(user)}
+              className="px-4 py-3 cursor-pointer border-b hover:bg-gray-50 flex items-center gap-3 transition-colors group"
+            >
+              <div className="relative shrink-0">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  {(user.name || user.email).charAt(0).toUpperCase()}
+                </div>
+                {isOnline && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                )}
               </div>
-              {onlineUsersId.includes(user._id) && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-              )}
+              <div className="truncate flex-1">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {user.name || "No Name"}
+                </p>
+                
+                {/* Hiển thị Online / Last seen */}
+                <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                  {isOnline ? (
+                    <span className="text-green-500 font-medium">Đang Online</span>
+                  ) : user.lastSeen ? (
+                    `Online ${timeAgo(user.lastSeen)}`
+                  ) : (
+                    user.email
+                  )}
+                </p>
+              </div>
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                 <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-bold">CHAT</span>
+              </div>
             </div>
-            <div className="truncate flex-1">
-              <p className="text-sm font-semibold text-gray-900 truncate">
-                {user.name || "No Name"}
-              </p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
-            </div>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-               <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-bold">CHAT</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
