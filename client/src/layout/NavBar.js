@@ -84,6 +84,22 @@ export const NavBar = ({ socket }) => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto align-items-center text-center">
 
+            {/* Đưa Username (Profile) hoặc Sign In lên đầu tiên */}
+            {userInfo ? (
+              <LinkContainer to="/profile">
+                <Nav.Link onClick={handleCloseMenu} className="fw-bold me-lg-2">
+                  <i className="fas fa-user me-1"></i> {userInfo.name}
+                </Nav.Link>
+              </LinkContainer>
+            ) : (
+              <LinkContainer to="/login">
+                <Nav.Link onClick={handleCloseMenu} className="me-lg-2">
+                  <i className="fas fa-user"></i> Sign In
+                </Nav.Link>
+              </LinkContainer>
+            )}
+
+            {/* Khối Notification nằm ngay sau Username */}
             {userInfo && (
               <Dropdown align="end" as={Nav.Item} className="me-lg-3">
                 <Dropdown.Toggle
@@ -98,7 +114,7 @@ export const NavBar = ({ socket }) => {
                       <span
                         className="position-absolute translate-middle d-flex align-items-center justify-content-center"
                         style={{
-                          top: '3px',
+                          top: '0px',
                           left: '110%',
                           backgroundColor: 'red',
                           color: 'white',
@@ -280,19 +296,11 @@ export const NavBar = ({ socket }) => {
               </>
             )}
 
-            {userInfo ? (
-              <>
-                <LinkContainer to="/profile">
-                  <Nav.Link onClick={handleCloseMenu}>{userInfo.name}</Nav.Link>
-                </LinkContainer>
-                <Nav.Link onClick={logoutHandler}>Logout</Nav.Link>
-              </>
-            ) : (
-              <LinkContainer to="/login">
-                <Nav.Link onClick={handleCloseMenu}>
-                  <i className="fas fa-user"></i> Sign In
-                </Nav.Link>
-              </LinkContainer>
+            {/* Nút Logout được đưa xuống vị trí cuối cùng trong menu nếu đã đăng nhập */}
+            {userInfo && (
+              <Nav.Link onClick={logoutHandler}>
+                <i className="fas fa-sign-out-alt"></i> Logout
+              </Nav.Link>
             )}
 
           </Nav>
