@@ -89,10 +89,8 @@ export const NavBar = ({ socket }) => {
                 <Dropdown.Toggle
                   as={Nav.Link}
                   id="dropdown-notification"
-                  /* 1. THÊM align-items-center ở dòng dưới để tam giác nằm ngang hàng với chữ */
                   className="d-flex justify-content-center align-items-center"
                 >
-                  {/* 2. ĐỔI pe-2 thành me-3 để đẩy tam giác ra xa khỏi cục mụn đỏ */}
                   <span className="position-relative d-inline-block me-3">
                     <i className="fas fa-bell"></i> Notification
 
@@ -123,9 +121,10 @@ export const NavBar = ({ socket }) => {
                   className="mx-auto text-start"
                   style={{
                     width: '320px',
-                    maxWidth: '100vw', // Chống tràn viền trên mobile
+                    maxWidth: '100vw',
                     maxHeight: '400px',
                     overflowY: 'auto',
+                    overflowX: 'hidden', 
                     padding: 0,
                     border: 'none',
                     backgroundColor: '#fff'
@@ -175,7 +174,7 @@ export const NavBar = ({ socket }) => {
                     <Dropdown.Item
                       key={n._id}
                       onClick={() => handleNotificationClick(n)}
-                      className="p-0 m-0 border-0"
+                      className="p-0 m-0 border-0 text-wrap"
                     >
                       <div
                         style={{
@@ -186,6 +185,8 @@ export const NavBar = ({ socket }) => {
                           borderBottom: '1px solid #ddd',
                           display: 'block',
                           width: '100%',
+                          whiteSpace: 'normal',    
+                          wordBreak: 'break-word', 
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = n.isRead ? '#87CEFA' : '#0368f5';
@@ -279,7 +280,6 @@ export const NavBar = ({ socket }) => {
               </>
             )}
 
-            {/* Đã đưa mục Profile, Logout và Sign In xuống DƯỚI CÙNG tại đây */}
             {userInfo ? (
               <>
                 <LinkContainer to="/profile">
