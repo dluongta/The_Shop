@@ -51,7 +51,6 @@ const LayoutWrapper = ({ children }) => {
   const isChat = location.pathname === "/chat";
   const [appHeight, setAppHeight] = useState(window.innerHeight);
   
-  // Lấy trạng thái đăng nhập để check xem có userInfo hay không
   const { userInfo } = useSelector((state) => state.userLogin);
 
   useEffect(() => {

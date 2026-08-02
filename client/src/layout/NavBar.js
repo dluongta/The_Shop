@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
@@ -15,6 +15,8 @@ import {
 } from '../actions/notificationActions';
 
 export const NavBar = ({ socket }) => {
+  const [expanded, setExpanded] = useState(false); // Thêm state quản lý menu
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -45,8 +47,13 @@ export const NavBar = ({ socket }) => {
     };
   }, [socket, userInfo, dispatch]);
 
+  const handleCloseMenu = () => {
+    setExpanded(false); // Đóng menu
+  };
+
   const logoutHandler = () => {
     dispatch(logout());
+    handleCloseMenu();
   };
 
   const handleNotificationClick = (notification) => {
@@ -55,53 +62,68 @@ export const NavBar = ({ socket }) => {
     if (notification.link) {
       navigate(notification.link);
     }
+    handleCloseMenu();
   };
 
   return (
-    <Navbar expand="lg" variant="dark" bg="dark" fixed="top" className="mb-5">
+    <Navbar
+      expand="lg"
+      variant="dark"
+      bg="dark"
+      fixed="top"
+      className="mb-5"
+      expanded={expanded}
+      onToggle={(isExpanded) => setExpanded(isExpanded)}
+    >
       <div className="container">
-        <LinkContainer to="/">
+        <LinkContainer to="/" onClick={handleCloseMenu}>
           <Navbar.Brand>The Shop</Navbar.Brand>
         </LinkContainer>
 
-        <Navbar.Toggle />
-        <Navbar.Collapse>
-          <Nav className="ms-auto align-items-center">
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="ms-auto align-items-center text-center">
 
             {userInfo && (
-              <Dropdown align="end" as={Nav.Item} className="me-3">
+              <Dropdown align="end" as={Nav.Item} className="me-lg-3 w-100">
                 <Dropdown.Toggle
                   as={Nav.Link}
                   id="dropdown-notification"
-                  className="position-relative"
+                  /* 1. THÊM align-items-center ở dòng dưới để tam giác nằm ngang hàng với chữ */
+                  className="d-flex justify-content-center align-items-center"
                 >
-                  <i className="fas fa-bell"></i> Notification
+                  {/* 2. ĐỔI pe-2 thành me-3 để đẩy tam giác ra xa khỏi cục mụn đỏ */}
+                  <span className="position-relative d-inline-block me-3">
+                    <i className="fas fa-bell"></i> Notification
 
-                  {unreadCount > 0 && (
-                    <span
-                      className="position-absolute translate-middle d-flex align-items-center justify-content-center"
-                      style={{
-                        top: '5px',
-                        left: '100%',
-                        backgroundColor: 'red',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        padding: 0,
-                        zIndex: 1
-                      }}
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
+                    {unreadCount > 0 && (
+                      <span
+                        className="position-absolute translate-middle d-flex align-items-center justify-content-center"
+                        style={{
+                          top: '0px',
+                          left: '110%',
+                          backgroundColor: 'red',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: '20px',
+                          height: '20px',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          padding: 0,
+                          zIndex: 1
+                        }}
+                      >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </span>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu
+                  className="mx-auto text-start"
                   style={{
                     width: '320px',
+                    maxWidth: '100vw', // Chống tràn viền trên mobile
                     maxHeight: '400px',
                     overflowY: 'auto',
                     padding: 0,
@@ -112,7 +134,10 @@ export const NavBar = ({ socket }) => {
                   {unreadCount > 0 && (
                     <Dropdown.Item
                       className="p-0 m-0 border-0"
-                      onClick={() => dispatch(markAllNotificationsRead())}
+                      onClick={() => {
+                        dispatch(markAllNotificationsRead());
+                        handleCloseMenu();
+                      }}
                     >
                       <div
                         className="text-center fw-bold p-3"
@@ -124,7 +149,6 @@ export const NavBar = ({ socket }) => {
                           width: '100%',
                         }}
                         onMouseEnter={(e) => {
-                          // Ép cứng màu nền và màu chữ khi hover không cho thay đổi
                           e.currentTarget.style.backgroundColor = '#212529';
                           e.currentTarget.style.color = '#4dabf7';
                         }}
@@ -134,10 +158,9 @@ export const NavBar = ({ socket }) => {
                       </div>
                     </Dropdown.Item>
                   )}
-                  {/* ----------------------------- */}
 
                   {notifications.length === 0 && (
-                    <div 
+                    <div
                       className="text-center p-3"
                       style={{
                         backgroundColor: '#404953',
@@ -196,80 +219,82 @@ export const NavBar = ({ socket }) => {
             )}
 
             <LinkContainer to="/chat">
-              <Nav.Link>
+              <Nav.Link onClick={handleCloseMenu}>
                 <i className="fas fa-comment"></i> Chat
               </Nav.Link>
             </LinkContainer>
 
             <LinkContainer to="/chatbot">
-              <Nav.Link>
+              <Nav.Link onClick={handleCloseMenu}>
                 <i className="fas fa-message"></i> Chatbot
               </Nav.Link>
             </LinkContainer>
 
             <LinkContainer to="/cart">
-              <Nav.Link>
+              <Nav.Link onClick={handleCloseMenu}>
                 <i className="fas fa-shopping-cart"></i>{' '}
                 Cart {userInfo && `(${cartItems.reduce((a, c) => a + c.qty, 0)})`}
               </Nav.Link>
             </LinkContainer>
 
             <LinkContainer to="/discounts">
-              <Nav.Link>
+              <Nav.Link onClick={handleCloseMenu}>
                 <i className="fas fa-tag"></i> Discounts
               </Nav.Link>
             </LinkContainer>
 
             {userInfo?.role === 'seller' && (
               <LinkContainer to="/seller/products">
-                <Nav.Link>My Products</Nav.Link>
+                <Nav.Link onClick={handleCloseMenu}>My Products</Nav.Link>
               </LinkContainer>
             )}
 
             {userInfo && (
-              <NavDropdown title="Orders">
+              <NavDropdown title="Orders" id="orders-dropdown">
                 <LinkContainer to="/orders">
-                  <NavDropdown.Item>My Orders</NavDropdown.Item>
+                  <NavDropdown.Item onClick={handleCloseMenu}>My Orders</NavDropdown.Item>
                 </LinkContainer>
                 {userInfo.role === 'seller' && (
                   <LinkContainer to="/seller/orders">
-                    <NavDropdown.Item>My Sales</NavDropdown.Item>
+                    <NavDropdown.Item onClick={handleCloseMenu}>My Sales</NavDropdown.Item>
                   </LinkContainer>
                 )}
               </NavDropdown>
             )}
 
+            {userInfo?.isAdmin && (
+              <>
+                <LinkContainer to="/admin/userlist">
+                  <Nav.Link onClick={handleCloseMenu}>Shoppers</Nav.Link>
+                </LinkContainer>
+                <LinkContainer to="/admin/productlist">
+                  <Nav.Link onClick={handleCloseMenu}>All Products</Nav.Link>
+                </LinkContainer>
+                <LinkContainer to="/admin/orderlist">
+                  <Nav.Link onClick={handleCloseMenu}>All Orders</Nav.Link>
+                </LinkContainer>
+                <LinkContainer to="/admin/discount/create">
+                  <Nav.Link onClick={handleCloseMenu}>Add Discount</Nav.Link>
+                </LinkContainer>
+              </>
+            )}
+
+            {/* Đã đưa mục Profile, Logout và Sign In xuống DƯỚI CÙNG tại đây */}
             {userInfo ? (
               <>
                 <LinkContainer to="/profile">
-                  <Nav.Link>{userInfo.name}</Nav.Link>
+                  <Nav.Link onClick={handleCloseMenu}>{userInfo.name}</Nav.Link>
                 </LinkContainer>
                 <Nav.Link onClick={logoutHandler}>Logout</Nav.Link>
               </>
             ) : (
               <LinkContainer to="/login">
-                <Nav.Link>
+                <Nav.Link onClick={handleCloseMenu}>
                   <i className="fas fa-user"></i> Sign In
                 </Nav.Link>
               </LinkContainer>
             )}
 
-            {userInfo?.isAdmin && (
-              <>
-                <LinkContainer to="/admin/userlist">
-                  <Nav.Link>Shoppers</Nav.Link>
-                </LinkContainer>
-                <LinkContainer to="/admin/productlist">
-                  <Nav.Link>All Products</Nav.Link>
-                </LinkContainer>
-                <LinkContainer to="/admin/orderlist">
-                  <Nav.Link>All Orders</Nav.Link>
-                </LinkContainer>
-                <LinkContainer to="/admin/discount/create">
-                  <Nav.Link>Add Discount</Nav.Link>
-                </LinkContainer>
-              </>
-            )}
           </Nav>
         </Navbar.Collapse>
       </div>
