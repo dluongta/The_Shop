@@ -79,14 +79,14 @@ function Chatbot() {
       <div className="chat-box">
         <h1>Chatbot</h1>
 
-        <button onClick={handleTrainBot} disabled={isTraining}>
+        <button onClick={handleTrainBot} disabled={isTraining} className="train-button">
           {isTraining ? "Đang huấn luyện..." : "Huấn luyện lại bot"}
         </button>
 
         <div className="chat-history">
-          {chatHistory.map((message, index) => (
-            <div key={index} className={`message ${message.sender}`}>
-              {message.text}
+          {chatHistory.map((msg, index) => (
+            <div key={index} className={`message ${msg.sender}`}>
+              {msg.text}
             </div>
           ))}
         </div>
