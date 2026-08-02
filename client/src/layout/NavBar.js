@@ -98,7 +98,7 @@ export const NavBar = ({ socket }) => {
                       <span
                         className="position-absolute translate-middle d-flex align-items-center justify-content-center"
                         style={{
-                          top: '0px',
+                          top: '3px',
                           left: '110%',
                           backgroundColor: 'red',
                           color: 'white',
