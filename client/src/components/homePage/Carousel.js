@@ -41,7 +41,7 @@ const Carousel = () => {
             <div className='carousel-caption'>
               <h5>THE SHOP</h5>
               <p>
-                The Shop, but Online
+                The Shop
               </p>
             </div>
           </div>
