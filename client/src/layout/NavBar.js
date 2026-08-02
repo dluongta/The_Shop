@@ -299,7 +299,7 @@ export const NavBar = ({ socket }) => {
             {/* Nút Logout được đưa xuống vị trí cuối cùng trong menu nếu đã đăng nhập */}
             {userInfo && (
               <Nav.Link onClick={logoutHandler}>
-                <i className="fas fa-sign-out-alt"></i> Logout
+                <i className="fas fa-sign-out-alt"></i> Log Out
               </Nav.Link>
             )}
 
