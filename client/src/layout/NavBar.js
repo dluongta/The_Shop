@@ -85,7 +85,7 @@ export const NavBar = ({ socket }) => {
           <Nav className="ms-auto align-items-center text-center">
 
             {userInfo && (
-              <Dropdown align="end" as={Nav.Item} className="me-lg-3 w-100">
+              <Dropdown align="end" as={Nav.Item} className="me-lg-3">
                 <Dropdown.Toggle
                   as={Nav.Link}
                   id="dropdown-notification"
