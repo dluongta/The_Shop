@@ -44,20 +44,18 @@ h1 {
 
 .train-button:disabled {
   background-color: transparent;
-  color: #999;
+  color: #000;
   cursor: not-allowed;
   text-decoration: none;
 }
 
 .train-button:disabled {
-  background-color: #94d3a2;
   cursor: not-allowed;
 }
 
-/* Sửa lỗi hiển thị tin nhắn */
 .chat-history {
-  display: flex; /* Bắt buộc để căn chỉnh các tin nhắn bên trong */
-  flex-direction: column; /* Sắp xếp tin nhắn từ trên xuống dưới */
+  display: flex; 
+  flex-direction: column;
   flex-grow: 1;
   overflow-y: auto;
   margin-bottom: 20px;
