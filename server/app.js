@@ -114,7 +114,7 @@ app.post("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
 
     await User.updateOne(
       { _id: id },
-      { $set: { password: password } }
+      { $set: { password: encryptedPassword } }
     );
 
     res.json({ status: "Password Updated Succeeded" });
