@@ -11,7 +11,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   // State mới để quản lý việc đếm ngược
   const [isSuccess, setIsSuccess] = useState(false);
   const [countdown, setCountdown] = useState(5);
@@ -31,20 +31,22 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    setMessage("");
+
     if (password !== confirmPassword) {
       setMessage("Mật khẩu xác nhận không khớp.");
       return;
     }
 
     setLoading(true);
+
     try {
       const response = await axios.post(`/api/reset-password/${id}/${token}`, {
         password,
       });
 
       if (response.data.status === "Password Updated Succeeded") {
-        // Thay vì navigate ngay, ta kích hoạt trạng thái thành công
         setIsSuccess(true);
         setMessage("Đổi mật khẩu thành công! Đang chuyển hướng sau vài giây...");
       } else {
@@ -68,9 +70,9 @@ const ResetPassword = () => {
 
         {message && (
           <div className={isSuccess ? "" : "animate-pulse"}>
-             <Message variant={isSuccess || message.includes("thành công") ? 'success' : 'danger'}>
-                {message} {isSuccess && `(${countdown}s)`}
-             </Message>
+            <Message variant={isSuccess || message.includes("thành công") ? 'success' : 'danger'}>
+              {message} {isSuccess && `(${countdown}s)`}
+            </Message>
           </div>
         )}
 
@@ -88,7 +90,7 @@ const ResetPassword = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
               <input
@@ -107,23 +109,12 @@ const ResetPassword = () => {
             <button
               type="submit"
               disabled={loading || isSuccess}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white transition-all transform active:scale-95 ${
-                isSuccess 
-                  ? 'bg-green-500' 
-                  : loading 
-                    ? 'bg-blue-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'
-              }`}
+              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white transition-all transform active:scale-95 ${loading || isSuccess
+                  ? "bg-blue-600 opacity-60 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg"
+                }`}
             >
-              {loading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Đang xử lý...
-                </span>
-              ) : isSuccess ? "Thành công!" : "Cập nhật mật khẩu"}
+              Cập nhật mật khẩu
             </button>
           </div>
         </form>
