@@ -64,11 +64,6 @@ const ResetPassword = () => {
           <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
             Thiết lập mật khẩu mới
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-500">
-            {isSuccess 
-              ? `Tự động chuyển về trang đăng nhập sau ${countdown}s` 
-              : "Vui lòng nhập mật khẩu mới bảo mật hơn để tiếp tục."}
-          </p>
         </div>
 
         {message && (
