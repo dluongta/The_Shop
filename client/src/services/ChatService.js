@@ -8,7 +8,7 @@ export const useApi = () => {
   const { currentUser } = useAuth();
 
   const createHeader = () => {
-    const token = currentUser?.token; // Thêm dấu hỏi chấm đề phòng token undefined
+    const token = currentUser?.token;
     return {
       headers: {
         "Content-Type": "application/json",
@@ -124,11 +124,47 @@ export const useApi = () => {
     }
   };
 
-  // ĐÃ SỬA: Sửa lại đường dẫn dùng baseURL và Header Authorization
   const revokeMessageApi = async (messageId, userId) => {
     const header = createHeader();
     try {
       const res = await axios.put(`${baseURL}/message/${messageId}/revoke`, { userId }, header);
+      return res.data;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
+
+  // ================= CÁC HÀM QUẢN LÝ NHÓM MỚI =================
+  const kickMemberApi = async (roomId, adminId, memberToRemoveId) => {
+    const header = createHeader();
+    try {
+      const res = await axios.put(`${baseURL}/room/group/remove`, { roomId, adminId, memberToRemoveId }, header);
+      return res.data;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
+
+  const addMembersToGroupApi = async (roomId, adminId, newMemberIds) => {
+    const header = createHeader();
+    try {
+      const res = await axios.put(`${baseURL}/room/group/add`, { roomId, adminId, newMemberIds }, header);
+      return res.data;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
+
+  const dissolveGroupApi = async (roomId, adminId) => {
+    const header = createHeader();
+    try {
+      const res = await axios.delete(`${baseURL}/room/group/dissolve`, { 
+        ...header, 
+        data: { roomId, adminId } 
+      });
       return res.data;
     } catch (e) {
       console.error(e);
@@ -149,5 +185,8 @@ export const useApi = () => {
     markMessagesAsRead,
     leaveGroupChat,
     revokeMessageApi,
+    kickMemberApi,          
+    addMembersToGroupApi,   
+    dissolveGroupApi        
   };
 };

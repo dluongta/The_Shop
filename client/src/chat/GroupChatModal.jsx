@@ -4,14 +4,11 @@ import { useApi } from "../services/ChatService";
 export default function GroupChatModal({ users, currentUser, onClose, onCreated }) {
   const [name, setName] = useState("");
   const [selected, setSelected] = useState([]);
-  // Thêm state để lưu từ khóa tìm kiếm
   const [searchTerm, setSearchTerm] = useState(""); 
   const { createChatRoom } = useApi();
 
-  // Lọc bỏ currentUser khỏi danh sách
   const filteredUsers = users.filter(u => u._id !== currentUser._id);
 
-  // Lọc tiếp danh sách user dựa trên từ khóa tìm kiếm (không phân biệt chữ hoa chữ thường)
   const displayedUsers = filteredUsers.filter(u => 
     u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -29,7 +26,13 @@ export default function GroupChatModal({ users, currentUser, onClose, onCreated 
     }
     try {
       const memberIds = [currentUser._id, ...selected];
-      const res = await createChatRoom({ name, memberIds, isGroup: true });
+      // Gửi thêm adminId là currentUser._id
+      const res = await createChatRoom({ 
+        name, 
+        memberIds, 
+        isGroup: true, 
+        adminId: currentUser._id 
+      });
       onCreated(res);
     } catch (error) {
       console.error("Error creating group chat:", error);
@@ -48,7 +51,6 @@ export default function GroupChatModal({ users, currentUser, onClose, onCreated 
           className="border border-gray-300 rounded px-3 py-2 w-full mb-4 focus:outline-none focus:border-blue-500"
         />
 
-        {/* Ô Input dùng để search email */}
         <input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
