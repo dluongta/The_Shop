@@ -144,7 +144,7 @@ export default function ChatRoom({
             <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">
               {currentChat.name}
             </h3>
-            <span className="text-[13px] text-gray-500 leading-none">
+            <span className="text-[13px] text-gray-500 leading-none translate-y-1">
               {currentChat.members?.length || 0} thành viên
             </span>
           </div>
