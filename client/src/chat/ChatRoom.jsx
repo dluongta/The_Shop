@@ -28,6 +28,9 @@ export default function ChatRoom({
   const [visibleCount, setVisibleCount] = useState(10);
   const [showSettings, setShowSettings] = useState(false); // Trạng thái mở menu cài đặt nhóm
 
+  // Ref dùng để nhận diện khu vực "Cài đặt nhóm" (Nút bấm + Menu xổ xuống)
+  const settingsRef = useRef(null);
+
   // State cho Modal thêm thành viên
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [memberSearchTerm, setMemberSearchTerm] = useState("");
@@ -41,6 +44,25 @@ export default function ChatRoom({
 
   // Kiểm tra xem user hiện tại có phải Nhóm trưởng không
   const isAdmin = currentChat?.admin === currentUser._id;
+
+  // ================= XỬ LÝ CLICK RA NGOÀI MENU ĐỂ ĐÓNG =================
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Nếu click vào một phần tử KHÔNG NẰM TRONG settingsRef thì đóng menu
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setShowSettings(false);
+      }
+    };
+
+    // Lắng nghe sự kiện chuột (PC) và chạm (Mobile)
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   // ================= HÀM XỬ LÝ QUẢN LÝ NHÓM =================
   const handleKick = async (memberId) => {
@@ -116,92 +138,92 @@ export default function ChatRoom({
     // NẾU LÀ NHÓM CHAT
     if (currentChat.isGroup) {
       return (
-        <div className="flex flex-col w-full relative">
-          <div className="flex justify-between items-center">
-            {/* Đã thêm justify-center, leading-none và margin-bottom để ép sát và căn giữa */}
-            <div className="flex flex-col justify-center translate-y">
-              <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">
-                {currentChat.name}
-              </h3>
-              <span className="text-[13px] text-gray-500 leading-none -translate-y-1.5">
-                {currentChat.members?.length || 0} thành viên
-              </span>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 px-3 py-1.5 text-sm rounded-md font-medium border"
-              >
-                Cài đặt nhóm
-              </button>
-            </div>
+        <div className="flex justify-between items-center w-full">
+          {/* Thông tin nhóm */}
+          <div className="flex flex-col justify-center translate-y">
+            <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">
+              {currentChat.name}
+            </h3>
+            <span className="text-[13px] text-gray-500 leading-none -translate-y-1.5">
+              {currentChat.members?.length || 0} thành viên
+            </span>
           </div>
 
-          {/* ... (Phần Popup showSettings giữ nguyên bên dưới) ... */}
-          {showSettings && (
-            <div className="absolute right-0 top-12 w-64 bg-white shadow-xl border rounded p-4 z-50">
-              <h4 className="font-bold mb-2 text-sm text-gray-800">Thành viên</h4>
-              <ul className="max-h-40 overflow-y-auto mb-3">
-                {currentChat.members.map(memberId => {
-                  const member = users.find(u => u._id === memberId);
-                  const isMemberAdmin = currentChat.admin === memberId;
+          {/* Bọc Nút Cài đặt và Popup vào chung 1 khối có ref */}
+          <div className="relative flex gap-2" ref={settingsRef}>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 px-3 py-1.5 text-sm rounded-md font-medium border"
+            >
+              Cài đặt nhóm
+            </button>
 
-                  return (
-                    <li key={memberId} className="flex justify-between items-center text-sm py-1.5 border-b last:border-0">
-                      <span className="truncate flex items-center gap-1">
-                        {member?.email || "Unknown"}
-                        {isMemberAdmin && (
-                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded ml-1 whitespace-nowrap">
-                            Trưởng nhóm
-                          </span>
+            {/* Popup Menu */}
+            {showSettings && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white shadow-xl border rounded p-4 z-50">
+                <h4 className="font-bold mb-2 text-sm text-gray-800">Thành viên</h4>
+                <ul className="max-h-40 overflow-y-auto mb-3">
+                  {currentChat.members.map(memberId => {
+                    const member = users.find(u => u._id === memberId);
+                    const isMemberAdmin = currentChat.admin === memberId;
+
+                    return (
+                      <li key={memberId} className="flex justify-between items-center text-sm py-1.5 border-b last:border-0">
+                        <span className="truncate flex items-center gap-1">
+                          {member?.email || "Unknown"}
+                          {isMemberAdmin && (
+                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded ml-1 whitespace-nowrap">
+                              Trưởng nhóm
+                            </span>
+                          )}
+                        </span>
+                        {isAdmin && !isMemberAdmin && (
+                          <button
+                            onClick={() => handleKick(memberId)}
+                            className="text-red-500 hover:text-red-700 text-xs ml-2 shrink-0 font-medium"
+                          >
+                            Xóa
+                          </button>
                         )}
-                      </span>
-                      {isAdmin && !isMemberAdmin && (
-                        <button
-                          onClick={() => handleKick(memberId)}
-                          className="text-red-500 hover:text-red-700 text-xs ml-2 shrink-0 font-medium"
-                        >
-                          Xóa
-                        </button>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
+                      </li>
+                    )
+                  })}
+                </ul>
 
-              {isAdmin && (
-                <div className="flex flex-col gap-2 mt-3 border-t pt-3">
-                  <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">
-                    + Thêm thành viên
-                  </button>
-                  <button onClick={handleDissolve} className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded w-full transition-colors">
-                    Giải tán nhóm
-                  </button>
-                </div>
-              )}
+                {isAdmin && (
+                  <div className="flex flex-col gap-2 mt-3 border-t pt-3">
+                    <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">
+                      + Thêm thành viên
+                    </button>
+                    <button onClick={handleDissolve} className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded w-full transition-colors">
+                      Giải tán nhóm
+                    </button>
+                  </div>
+                )}
 
-              {!isAdmin && (
-                <div className="mt-3 border-t pt-3">
-                  <button
-                    onClick={async () => {
-                      if (window.confirm("Bạn có chắc muốn rời nhóm?")) {
-                        await leaveGroupChat(currentChat._id, currentUser._id);
-                        setChatRooms((prev) => prev.filter((room) => room._id !== currentChat._id));
-                        setCurrentChat(null);
-                      }
-                    }}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xs py-1.5 rounded w-full transition-colors"
-                  >
-                    Rời khỏi nhóm
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+                {!isAdmin && (
+                  <div className="mt-3 border-t pt-3">
+                    <button
+                      onClick={async () => {
+                        if (window.confirm("Bạn có chắc muốn rời nhóm?")) {
+                          await leaveGroupChat(currentChat._id, currentUser._id);
+                          setChatRooms((prev) => prev.filter((room) => room._id !== currentChat._id));
+                          setCurrentChat(null);
+                        }
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white text-xs py-1.5 rounded w-full transition-colors"
+                    >
+                      Rời khỏi nhóm
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       );
     }
+    
     // NẾU LÀ CHAT 1-1
     const otherUserId = currentChat.members.find(id => id !== currentUser._id);
     const otherUser = users.find(u => u._id === otherUserId);
@@ -295,53 +317,21 @@ export default function ChatRoom({
   }, [socket, currentChat]);
 
   // ================= 4. GỬI & THU HỒI TIN NHẮN =================
-  // const handleFormSubmit = async (message) => {
-  //   if (!message.trim()) return;
-  //   try {
-  //     const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
-  //     if (!res || !res._id) return;
-
-  //     socket.emit("sendMessageInRoom", {
-  //       _id: res._id, chatRoomId: currentChat._id, senderId: currentUser._id, message, createdAt: res.createdAt
-  //     });
-
-  //     setMessages((prev) => [res, ...prev]);
-  //     setVisibleCount((prev) => prev + 1);
-
-  //     setChatRooms((prev) =>
-  //       prev.map((room) =>
-  //         room._id === currentChat._id
-  //           ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } }
-  //           : room
-  //       )
-  //     );
-
-  //     setTimeout(() => {
-  //       if (scrollRef.current) {
-  //         scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
-  //       }
-  //     }, 50);
-
-  //   } catch (error) {
-  //     console.error("Lỗi gửi tin nhắn:", error);
-  //   }
-  // };
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
     try {
       const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
       if (!res || !res._id) return;
 
-      // ĐÃ SỬA: Gửi kèm tên người gửi, cờ nhóm (isGroup) và tên nhóm (roomName)
       socket.emit("sendMessageInRoom", {
         _id: res._id,
         chatRoomId: currentChat._id,
         senderId: currentUser._id,
-        senderEmail: currentUser.name || currentUser.email, // Gửi tên hoặc email người gửi
+        senderEmail: currentUser.name || currentUser.email,
         message,
         createdAt: res.createdAt,
-        isGroup: currentChat.isGroup, // Cờ báo cho hệ thống biết đây là tin nhắn nhóm
-        roomName: currentChat.name    // Tên của nhóm chat
+        isGroup: currentChat.isGroup,
+        roomName: currentChat.name
       });
 
       setMessages((prev) => [res, ...prev]);

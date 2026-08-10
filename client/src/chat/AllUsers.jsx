@@ -148,6 +148,7 @@ export default function AllUsers({
                     <p
                       className={classNames(
                         "truncate text-sm",
+                        // Tên người dùng/Tên nhóm khi có tin nhắn mới: Xanh dương và bôi đậm
                         hasUnread(room) ? "font-bold text-blue-600" : "font-semibold text-gray-900"
                       )}
                     >
@@ -168,7 +169,8 @@ export default function AllUsers({
                   {room.lastMessage && room.lastMessage.message ? (
                     <p className={classNames(
                       "text-xs truncate flex gap-1",
-                      hasUnread(room) ? "text-blue-500 font-medium" : "text-gray-500"
+                      // Nội dung preview tin nhắn mới: Màu đen đậm
+                      hasUnread(room) ? "text-black font-semibold" : "text-gray-500"
                     )}>
                       {room.lastMessage.sender === currentUser._id ? (
                         <span>You:</span>
