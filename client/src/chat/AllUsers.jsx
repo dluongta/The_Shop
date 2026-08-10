@@ -92,6 +92,7 @@ export default function AllUsers({
     }
   };
 
+  // Hàm kiểm tra tin nhắn chưa đọc
   const hasUnread = (room) => {
     return (
       room.lastMessage &&
@@ -117,6 +118,7 @@ export default function AllUsers({
           
           const otherUserObj = users.find(u => u._id === otherUserId);
           const isOnline = onlineUsersId.includes(otherUserId);
+          const isUnread = hasUnread(room); // Biến kiểm tra unread cho room hiện tại
 
           return (
             <div
@@ -149,7 +151,7 @@ export default function AllUsers({
                       className={classNames(
                         "truncate text-sm",
                         // Tên người dùng/Tên nhóm khi có tin nhắn mới: Xanh dương và bôi đậm
-                        hasUnread(room) ? "font-bold text-blue-600" : "font-semibold text-gray-900"
+                        isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
                       )}
                     >
                       {room.isGroup ? room.name : getDisplayName(otherUserId)}
@@ -168,19 +170,26 @@ export default function AllUsers({
                   
                   {room.lastMessage && room.lastMessage.message ? (
                     <p className={classNames(
-                      "text-xs truncate flex gap-1",
-                      // Nội dung preview tin nhắn mới: Màu đen đậm
-                      hasUnread(room) ? "text-black font-semibold" : "text-gray-500"
+                      "text-xs truncate flex gap-1 mt-0.5",
+                      // Cả khối preview sẽ đen và đậm nếu có tin nhắn mới
+                      isUnread ? "text-black font-bold" : "text-gray-500"
                     )}>
                       {room.lastMessage.sender === currentUser._id ? (
                         <span>You:</span>
                       ) : room.isGroup && room.lastMessage.sender ? (
-                        <span className="font-semibold text-gray-700">
+                        <span className={classNames(
+                          // Người gửi trong nhóm cũng đen và đậm
+                          isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
+                        )}>
                           {getDisplayName(room.lastMessage.sender)}:
                         </span>
                       ) : null}
                       
-                      <span className="truncate">
+                      <span className={classNames(
+                        "truncate", 
+                        // Nội dung tin nhắn đen và đậm
+                        isUnread ? "text-black font-bold" : ""
+                      )}>
                         {room.lastMessage.message}
                       </span>
                     </p>
