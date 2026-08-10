@@ -114,13 +114,12 @@ export default function ChatRoom({
     if (!currentChat) return null;
 
     // NẾU LÀ NHÓM CHAT
-    // NẾU LÀ NHÓM CHAT
     if (currentChat.isGroup) {
       return (
         <div className="flex flex-col w-full relative">
           <div className="flex justify-between items-center">
             {/* Đã thêm justify-center, leading-none và margin-bottom để ép sát và căn giữa */}
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center translate-y">
               <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">
                 {currentChat.name}
               </h3>
@@ -296,14 +295,53 @@ export default function ChatRoom({
   }, [socket, currentChat]);
 
   // ================= 4. GỬI & THU HỒI TIN NHẮN =================
+  // const handleFormSubmit = async (message) => {
+  //   if (!message.trim()) return;
+  //   try {
+  //     const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
+  //     if (!res || !res._id) return;
+
+  //     socket.emit("sendMessageInRoom", {
+  //       _id: res._id, chatRoomId: currentChat._id, senderId: currentUser._id, message, createdAt: res.createdAt
+  //     });
+
+  //     setMessages((prev) => [res, ...prev]);
+  //     setVisibleCount((prev) => prev + 1);
+
+  //     setChatRooms((prev) =>
+  //       prev.map((room) =>
+  //         room._id === currentChat._id
+  //           ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } }
+  //           : room
+  //       )
+  //     );
+
+  //     setTimeout(() => {
+  //       if (scrollRef.current) {
+  //         scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+  //       }
+  //     }, 50);
+
+  //   } catch (error) {
+  //     console.error("Lỗi gửi tin nhắn:", error);
+  //   }
+  // };
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
     try {
       const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
       if (!res || !res._id) return;
 
+      // ĐÃ SỬA: Gửi kèm tên người gửi, cờ nhóm (isGroup) và tên nhóm (roomName)
       socket.emit("sendMessageInRoom", {
-        _id: res._id, chatRoomId: currentChat._id, senderId: currentUser._id, message, createdAt: res.createdAt
+        _id: res._id,
+        chatRoomId: currentChat._id,
+        senderId: currentUser._id,
+        senderEmail: currentUser.name || currentUser.email, // Gửi tên hoặc email người gửi
+        message,
+        createdAt: res.createdAt,
+        isGroup: currentChat.isGroup, // Cờ báo cho hệ thống biết đây là tin nhắn nhóm
+        roomName: currentChat.name    // Tên của nhóm chat
       });
 
       setMessages((prev) => [res, ...prev]);

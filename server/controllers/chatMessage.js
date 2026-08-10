@@ -1,12 +1,13 @@
 import ChatMessage from "../models/ChatMessage.js";
-import ChatRoom from "../models/ChatRoom.js"; // Import model ChatRoom
-import Notification from "../models/notificationModel.js"; // Import model Notification
+import ChatRoom from "../models/ChatRoom.js";
+import Notification from "../models/notificationModel.js";
 import User from "../models/userModel.js";
+
 export const getMessages = async (req, res) => {
   try {
     const messages = await ChatMessage.find({
       chatRoomId: req.params.chatRoomId,
-    }).sort({ createdAt: -1 }); 
+    }).sort({ createdAt: -1 });
 
     res.status(200).json(messages);
   } catch (error) {
@@ -17,7 +18,7 @@ export const getMessages = async (req, res) => {
 };
 
 export const createMessage = async (req, res) => {
-  const { chatRoomId, sender, message } = req.body; 
+  const { chatRoomId, sender, message } = req.body;
 
   try {
     const newMessage = new ChatMessage({
@@ -26,7 +27,7 @@ export const createMessage = async (req, res) => {
       message,
       isRead: false,
     });
-    
+
     const savedMessage = await newMessage.save();
 
     await ChatRoom.findByIdAndUpdate(chatRoomId, {
@@ -40,26 +41,35 @@ export const createMessage = async (req, res) => {
 
     const senderInfo = await User.findById(sender);
     const room = await ChatRoom.findById(chatRoomId);
-    
+
     if (room && senderInfo) {
       const receivers = room.members.filter(
         (memberId) => memberId.toString() !== sender.toString()
       );
 
       for (const receiverId of receivers) {
+
+        // KIỂM TRA: NẾU LÀ NHÓM THÌ HIỂN THỊ THÊM TÊN NHÓM
+        let notifTitle = "Tin nhắn mới";
+        let notifMessage = `Bạn có tin nhắn mới từ: ${senderInfo.email}`;
+
+        if (room.isGroup) {
+          notifTitle = `Tin nhắn mới - Nhóm ${room.name}`;
+          notifMessage = `Bạn có tin nhắn mới từ: ${senderInfo.email} - Nhóm ${room.name}`;
+        }
+
         const newNotification = new Notification({
           user: receiverId,
-          title: "Tin nhắn mới",
-          message: `Bạn có tin nhắn mới từ: ${senderInfo.email}`, 
+          title: notifTitle,
+          message: notifMessage,
           type: "new_message",
-          link: "/chat", 
+          link: "/chat",
         });
         await newNotification.save();
 
         const receiverSocketId = global.onlineUsers.get(receiverId.toString());
         if (receiverSocketId) {
           global.io.to(receiverSocketId).emit("newNotification", newNotification);
-          
 
           global.io.to(receiverSocketId).emit("getMessage", {
             _id: savedMessage._id,
@@ -71,7 +81,7 @@ export const createMessage = async (req, res) => {
         }
       }
     }
-    
+
     res.status(201).json(savedMessage);
   } catch (error) {
     console.error("Lỗi createMessage:", error);
@@ -109,7 +119,7 @@ export const revokeMessage = async (req, res) => {
 
   try {
     const message = await ChatMessage.findById(messageId);
-    
+
     if (!message) return res.status(404).json({ message: "Không tìm thấy tin nhắn" });
     if (message.sender.toString() !== userId.toString()) {
       return res.status(403).json({ message: "Bạn không có quyền thu hồi tin nhắn này" });

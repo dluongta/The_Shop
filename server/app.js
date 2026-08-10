@@ -108,7 +108,7 @@ app.post("/api/reset-password/:id/:token", asyncHandler(async (req, res) => {
   const secret = process.env.JWT_SECRET + oldUser.password;
   try {
     jwt.verify(token, secret);
-    
+
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
 
@@ -157,10 +157,10 @@ const trainChatbot = async () => {
     manager.addDocument('vi', 'có bao nhiêu sản phẩm', 'shop.stats.products');
     manager.addDocument('vi', 'có bao nhiêu đơn hàng', 'shop.stats.orders');
     manager.addDocument('vi', 'có bao nhiêu mã giảm giá', 'shop.stats.discounts');
-    
+
     manager.addDocument('vi', 'sản phẩm nào rẻ nhất', 'product.min_price');
     manager.addDocument('vi', 'giá thấp nhất', 'product.min_price');
-    
+
     manager.addDocument('vi', 'sản phẩm nào đắt nhất', 'product.max_price');
     manager.addDocument('vi', 'giá cao nhất', 'product.max_price');
 
@@ -181,9 +181,9 @@ app.post('/api/train', asyncHandler(async (req, res) => {
 }));
 
 app.post('/api/chat', asyncHandler(async (req, res) => {
-  const { message, userId } = req.body; 
+  const { message, userId } = req.body;
   const response = await manager.process('vi', message);
-  
+
   let finalAnswer = response.answer;
 
   switch (response.intent) {
@@ -204,14 +204,14 @@ app.post('/api/chat', asyncHandler(async (req, res) => {
 
     case 'product.min_price':
       const minP = await Product.findOne().sort({ price: 1 });
-      finalAnswer = minP 
+      finalAnswer = minP
         ? `Sản phẩm rẻ nhất là ${minP.name} với giá chỉ ${minP.price.toLocaleString()} VNĐ.`
         : "Hiện tại không có sản phẩm nào.";
       break;
 
     case 'product.max_price':
       const maxP = await Product.findOne().sort({ price: -1 });
-      finalAnswer = maxP 
+      finalAnswer = maxP
         ? `Sản phẩm đắt nhất là ${maxP.name} với giá ${maxP.price.toLocaleString()} VNĐ.`
         : "Hiện tại không có sản phẩm nào.";
       break;
@@ -221,15 +221,15 @@ app.post('/api/chat', asyncHandler(async (req, res) => {
         finalAnswer = "Bạn vui lòng đăng nhập để mình có thể kiểm tra trạng thái đơn hàng giúp bạn nhé!";
       } else {
         const lastOrder = await Order.findOne({ user: userId }).sort({ createdAt: -1 });
-        finalAnswer = lastOrder 
+        finalAnswer = lastOrder
           ? `Đơn hàng mới nhất của bạn (#${lastOrder._id.toString().slice(-6)}) đang ở trạng thái: ${lastOrder.status}.`
           : "Bạn chưa có đơn hàng nào tại hệ thống.";
       }
       break;
   }
 
-  res.json({ 
-    answer: finalAnswer || "Bạn có thể hỏi về sản phẩm, giá cả hoặc đơn hàng của mình!" 
+  res.json({
+    answer: finalAnswer || "Bạn có thể hỏi về sản phẩm, giá cả hoặc đơn hàng của mình!"
   });
 }));
 
@@ -266,8 +266,8 @@ const server = app.listen(
 const io = new Server(server, {
   cors: {
     origin: [
-      "https://the-digital-shop.onrender.com", 
-      "http://localhost:3000", 
+      "https://the-digital-shop.onrender.com",
+      "http://localhost:3000",
       "http://localhost:5000",
       "http://127.0.0.1:3000",
       "http://127.0.0.1:5000"
@@ -312,23 +312,30 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', ({ senderId, receiverId, chatRoomId, message }) => {
     const receiverSocketId = onlineUsers.get(receiverId?.toString());
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit('getMessage', { 
-        senderId, 
-        message, 
-        chatRoomId 
+      io.to(receiverSocketId).emit('getMessage', {
+        senderId,
+        message,
+        chatRoomId
       });
     }
   });
 
   // ===== ROOM MESSAGE =====
-  socket.on('sendMessageInRoom', ({ _id, chatRoomId, senderId, message }) => {
-    if (chatRoomId) {
-      io.to(chatRoomId).emit('getMessage', {
-        _id,
-        senderId,
-        message,
-        chatRoomId,
-      });
+  // socket.on('sendMessageInRoom', ({ _id, chatRoomId, senderId, message }) => {
+  //   if (chatRoomId) {
+  //     io.to(chatRoomId).emit('getMessage', {
+  //       _id,
+  //       senderId,
+  //       message,
+  //       chatRoomId,
+  //     });
+  //   }
+  // });
+
+  socket.on('sendMessageInRoom', (data) => {
+    if (data.chatRoomId) {
+      // Gửi nguyên vẹn cục data (lúc này sẽ chứa cả isGroup, roomName, senderEmail...)
+      io.to(data.chatRoomId).emit('getMessage', data);
     }
   });
 
@@ -366,7 +373,7 @@ io.on('connection', (socket) => {
 
     if (disconnectedUserId) {
       const lastSeenTime = new Date();
-      
+
       try {
         await User.findByIdAndUpdate(disconnectedUserId, { lastSeen: lastSeenTime });
       } catch (error) {

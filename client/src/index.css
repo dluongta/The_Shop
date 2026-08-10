@@ -283,3 +283,7 @@ body,
   background-color: #87CEFA !important;
   color: #000 !important;
 }
+
+.translate-y {
+  transform: translateY(-7px);
+}
