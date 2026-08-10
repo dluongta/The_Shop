@@ -45,9 +45,6 @@ export default function Header() {
           </div>
         </div>
       </nav>
-
-      {/* Logout modal */}
-      {/* {modal && <Logout modal={modal} setModal={setModal} />} */}
     </>
   );
 }
