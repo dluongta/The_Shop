@@ -153,7 +153,6 @@ export default function ChatLayout() {
           currentUser={currentUser}
           onClose={() => setShowGroupModal(false)}
           onCreated={(room) => {
-            setChatRooms((prev) => [...prev, room]);
             setCurrentChat(room);
             setShowGroupModal(false);
           }}
