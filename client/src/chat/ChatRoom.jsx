@@ -210,12 +210,12 @@ export default function ChatRoom({
                         <span className="truncate flex flex-wrap items-center gap-1">
                           {member?.email || "Unknown"}
                           {isMemberAdmin && (
-                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
+                            <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md whitespace-nowrap font-bold border border-purple-200">
                               Trưởng nhóm
                             </span>
                           )}
                           {isMemberDeputy && (
-                            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
+                            <span className="text-[10px] bg-green-100 text-green-700 border border-green-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
                               Phó nhóm
                             </span>
                           )}
@@ -239,7 +239,7 @@ export default function ChatRoom({
                                   Xóa
                                 </button>
                               </div>
-                              <button onClick={() => handleTransferAdmin(memberId)} className="text-green-600 hover:text-green-800 text-[10px] font-bold">
+                              <button onClick={() => handleTransferAdmin(memberId)} className="text-green-600 hover:text-green-800 text-[10px] font-medium border border-green-200 px-1 rounded">
                                 Chuyển quyền Trưởng nhóm
                               </button>
                             </div>
