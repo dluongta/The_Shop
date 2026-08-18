@@ -210,12 +210,12 @@ export default function ChatRoom({
                         <span className="truncate flex flex-wrap items-center gap-1">
                           {member?.email || "Unknown"}
                           {isMemberAdmin && (
-                            <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md whitespace-nowrap font-bold border border-purple-200">
+                            <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
                               Trưởng nhóm
                             </span>
                           )}
                           {isMemberDeputy && (
-                            <span className="text-[10px] bg-green-100 text-green-700 border border-green-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
+                            <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
                               Phó nhóm
                             </span>
                           )}
