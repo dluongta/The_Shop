@@ -7,7 +7,10 @@ import {
   leaveGroupChat,
   removeMember,
   addMembers,
-  dissolveGroup
+  dissolveGroup,
+  transferAdmin,
+  addDeputy,
+  removeDeputy
 } from "../controllers/chatRoom.js";
 
 const router = express.Router();
@@ -18,9 +21,12 @@ router.get("/:firstUserId/:secondUserId", getChatRoomOfUsers);
 router.post("/group", createGroupChat);
 router.put("/leave/:roomId", leaveGroupChat);
 
-// Các route quản lý nhóm mới
+// Các route quản lý nhóm
 router.put("/group/remove", removeMember);
 router.put("/group/add", addMembers);
 router.delete("/group/dissolve", dissolveGroup);
+router.put("/group/transfer-admin", transferAdmin);
+router.put("/group/add-deputy", addDeputy);
+router.put("/group/remove-deputy", removeDeputy);
 
 export default router;
