@@ -24,6 +24,8 @@ const LoginScreen = () => {
   const [passwordModal, setPasswordModal] = useState('')
   const [googleUser, setGoogleUser] = useState(null)
   const [role, setRole] = useState('buyer')
+  const [paypalClientId, setPaypalClientId] = useState('') // Thêm PayPal state
+  
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
@@ -86,13 +88,15 @@ const LoginScreen = () => {
         googleUser.name,
         googleUser.email,
         passwordModal,
-        role
+        role,
+        paypalClientId // Truyền thêm PayPal Client ID
       )
     )
 
     dispatch(login(googleUser.email, passwordModal))
     setShowModal(false)
     setPasswordModal('')
+    setPaypalClientId('')
   }
 
   /* =========================
@@ -156,7 +160,8 @@ const LoginScreen = () => {
 
       {/* GOOGLE REGISTER MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
+        {/* Đã xóa closeButton tại đây */}
+        <Modal.Header>
           <Modal.Title>Create account</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -179,6 +184,16 @@ const LoginScreen = () => {
               <option value="seller">Seller (Người bán)</option>
             </Form.Control>
           </Form.Group>
+
+          {/* Thêm trường PayPal cho Modal */}
+          <Form.Control
+            className="mt-3"
+            type="text"
+            placeholder="PayPal Client ID (Optional)"
+            value={paypalClientId}
+            onChange={(e) => setPaypalClientId(e.target.value)}
+          />
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>

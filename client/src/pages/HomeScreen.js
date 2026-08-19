@@ -22,17 +22,18 @@ import {
 } from '../actions/userActions'
 
 const HomeScreen = () => {
-  const { keyword } = useParams() // Chỉ cần lấy keyword từ Params
+  const { keyword } = useParams() 
   const location = useLocation()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [role, setRole] = useState('buyer')
+  const [paypalClientId, setPaypalClientId] = useState('') // Thêm state cho PayPal Client ID
 
   /* =========================
      FILTER & PAGINATION STATE
   ========================= */
   const searchParams = new URLSearchParams(location.search)
-  const pageNumber = searchParams.get('pageNumber') || 1 // Đọc pageNumber từ URL ?pageNumber=...
+  const pageNumber = searchParams.get('pageNumber') || 1 
   
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
@@ -94,7 +95,8 @@ const HomeScreen = () => {
         googleUser.name,
         googleUser.email,
         passwordModal,
-        role
+        role,
+        paypalClientId // Truyền thêm paypalClientId
       )
     )
 
@@ -103,6 +105,7 @@ const HomeScreen = () => {
     setShowModal(false)
     setPasswordModal('')
     setGoogleUser(null)
+    setPaypalClientId('')
   }
 
   /* =========================
@@ -194,7 +197,8 @@ const HomeScreen = () => {
 
       {/* MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
+        {/* Đã xóa closeButton tại đây */}
+        <Modal.Header>
           <Modal.Title>Create account</Modal.Title>
         </Modal.Header>
 
@@ -218,6 +222,16 @@ const HomeScreen = () => {
               <option value="seller">Seller (Người bán)</option>
             </Form.Control>
           </Form.Group>
+
+          {/* Trường PayPal Client ID */}
+          <Form.Control
+            className="mt-3"
+            type="text"
+            placeholder="PayPal Client ID (Optional)"
+            value={paypalClientId}
+            onChange={(e) => setPaypalClientId(e.target.value)}
+          />
+
         </Modal.Body>
         
         <Modal.Footer>

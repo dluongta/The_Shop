@@ -157,7 +157,6 @@ const RegisterScreen = () => {
           </Form.Control>
         </Form.Group>
 
-        {/* Trường nhập PayPal Client ID đã được chuyển xuống dưới cùng */}
         <Form.Control
           className="mb-3"
           type="text"
@@ -177,7 +176,8 @@ const RegisterScreen = () => {
 
       {/* GOOGLE REGISTER MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
+        {/* Đã xóa closeButton tại đây */}
+        <Modal.Header>
           <Modal.Title>Create account</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -203,7 +203,6 @@ const RegisterScreen = () => {
             </Form.Control>
           </Form.Group>
 
-          {/* Trường nhập PayPal Client ID đã được chuyển xuống dưới cùng trong Modal */}
           <Form.Control
             className="mb-3"
             type="text"
