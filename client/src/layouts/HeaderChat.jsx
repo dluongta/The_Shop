@@ -16,7 +16,8 @@ export default function Header() {
             {currentUser && (
               <Link
                 to="/"
-                className="text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors duration-200"
+                // Thay đổi class ở dòng dưới đây:
+                className="text-gray-900 md:text-white dark:text-white hover:bg-gray-200 md:hover:bg-gray-700 dark:hover:bg-gray-700 rounded-full p-2 transition-colors duration-200"
               >
                 <ArrowLeftIcon className="h-6 w-6" />
               </Link>
