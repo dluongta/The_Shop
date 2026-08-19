@@ -19,7 +19,8 @@ export default function SearchUsers({ handleSearch }) {
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
           <SearchIcon
-            className="h-5 w-5 text-white"
+            // Sửa class ở đây: màu đen ở nền sáng, màu trắng ở nền tối
+            className="h-5 w-5 text-gray-900 dark:text-white"
             aria-hidden="true"
           />
         </div>
@@ -41,7 +42,8 @@ export default function SearchUsers({ handleSearch }) {
             aria-label="Clear search"
           >
             <XIcon
-              className="h-5 w-5 text-white cursor-pointer"
+              // Sửa class ở đây
+              className="h-5 w-5 cursor-pointer text-gray-900 dark:text-white"
               aria-hidden="true"
             />
           </button>
