@@ -231,9 +231,13 @@ export default function ChatRoom({
                                     Thêm Phó nhóm
                                   </button>
                                 ) : (
-                                  <button onClick={() => handleRemoveDeputy(memberId)} className="text-orange-500 hover:text-orange-700 text-[10px] font-medium border border-orange-200 px-1 rounded">
+                                  <button
+                                    onClick={() => handleRemoveDeputy(memberId)}
+                                    className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded"
+                                  >
                                     Gỡ Phó nhóm
                                   </button>
+
                                 )}
                                 <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">
                                   Xóa
@@ -248,7 +252,7 @@ export default function ChatRoom({
                           {/* Quyền của Phó Nhóm (Chỉ hiện nút xóa người thường) */}
                           {isDeputy && !isMemberAdmin && !isMemberDeputy && !isAdmin && (
                             <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">
-                              Xóa khỏi nhóm
+                              Xóa
                             </button>
                           )}
                         </div>
