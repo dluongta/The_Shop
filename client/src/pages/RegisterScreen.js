@@ -22,6 +22,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState('buyer')
+  const [paypalClientId, setPaypalClientId] = useState('') // Thêm state cho PayPal Client ID
   const [showModal, setShowModal] = useState(false)
   const [passwordModal, setPasswordModal] = useState('')
   const [googleUser, setGoogleUser] = useState(null)
@@ -32,12 +33,6 @@ const RegisterScreen = () => {
 
   const redirect = new URLSearchParams(location.search).get('redirect') || '/'
 
-  // const userRegister = useSelector((state) => state.userRegister)
-  // const { loading, error, userInfo } = userRegister
-
-  // useEffect(() => {
-  //   if (userInfo) navigate(redirect)
-  // }, [userInfo, navigate, redirect])
   const userRegister = useSelector((state) => state.userRegister)
   const { loading, error } = userRegister 
 
@@ -49,6 +44,7 @@ const RegisterScreen = () => {
       navigate(redirect)
     }
   }, [userInfo, navigate, redirect])
+
   /* =========================
      GOOGLE HANDLER
   ========================= */
@@ -86,7 +82,8 @@ const RegisterScreen = () => {
         googleUser.name,
         googleUser.email,
         passwordModal,
-        role
+        role,
+        paypalClientId 
       )
     )
 
@@ -101,7 +98,7 @@ const RegisterScreen = () => {
     e.preventDefault()
 
     if (password !== confirmPassword) return
-    dispatch(register(name, email, password, role))
+    dispatch(register(name, email, password, role, paypalClientId))
   }
 
   return (
@@ -148,18 +145,26 @@ const RegisterScreen = () => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />  
-<Form.Group className="mb-2" controlId="role">
-  {/* <Form.Label>Role:</Form.Label> */}
-  <Form.Control
-    as="select"
-    value={role}
-    onChange={(e) => setRole(e.target.value)}
-  >
-    <option value="buyer">Buyer (Người mua)</option>
-    <option value="seller">Seller (Người bán)</option>
-  </Form.Control>
-</Form.Group>
         
+        <Form.Group className="mb-3" controlId="role">
+          <Form.Control
+            as="select"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <option value="buyer">Buyer (Người mua)</option>
+            <option value="seller">Seller (Người bán)</option>
+          </Form.Control>
+        </Form.Group>
+
+        {/* Trường nhập PayPal Client ID đã được chuyển xuống dưới cùng */}
+        <Form.Control
+          className="mb-3"
+          type="text"
+          placeholder="PayPal Client ID (Optional)"
+          value={paypalClientId}
+          onChange={(e) => setPaypalClientId(e.target.value)}
+        />
 
         <Button type="submit">Register</Button>
       </Form>
@@ -180,22 +185,33 @@ const RegisterScreen = () => {
             Please enter a password to create your account <strong>{googleUser?.email}</strong>.
           </p>
           <Form.Control
+            className="mb-2"
             type="password"
             placeholder="Set password"
             value={passwordModal}
             onChange={(e) => setPasswordModal(e.target.value)}
           />
+
           <Form.Group className="mb-3" controlId="roleModal">
-      {/* <Form.Label>Role:</Form.Label> */}
-      <Form.Control
-        as="select"
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
-      >
-        <option value="buyer">Buyer (Người mua)</option>
-        <option value="seller">Seller (Người bán)</option>
-      </Form.Control>
-    </Form.Group>
+            <Form.Control
+              as="select"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="buyer">Buyer (Người mua)</option>
+              <option value="seller">Seller (Người bán)</option>
+            </Form.Control>
+          </Form.Group>
+
+          {/* Trường nhập PayPal Client ID đã được chuyển xuống dưới cùng trong Modal */}
+          <Form.Control
+            className="mb-3"
+            type="text"
+            placeholder="PayPal Client ID (Optional)"
+            value={paypalClientId}
+            onChange={(e) => setPaypalClientId(e.target.value)}
+          />
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>

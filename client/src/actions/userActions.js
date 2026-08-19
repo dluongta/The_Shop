@@ -1,89 +1,3 @@
-// import axios from 'axios'
-// import {
-//   USER_DETAILS_FAIL,
-//   USER_DETAILS_REQUEST,
-//   USER_DETAILS_SUCCESS,
-//   USER_LOGIN_FAIL,
-//   USER_LOGIN_REQUEST,
-//   USER_LOGIN_SUCCESS,
-//   USER_LOGOUT,
-//   USER_REGISTER_FAIL,
-//   USER_REGISTER_REQUEST,
-//   USER_REGISTER_SUCCESS,
-//   USER_UPDATE_PROFILE_FAIL,
-//   USER_UPDATE_PROFILE_REQUEST,
-//   USER_UPDATE_PROFILE_SUCCESS,
-//   USER_DETAILS_RESET,
-//   USER_LIST_FAIL,
-//   USER_LIST_SUCCESS,
-//   USER_LIST_REQUEST,
-//   USER_LIST_RESET,
-//   USER_DELETE_REQUEST,
-//   USER_DELETE_SUCCESS,
-//   USER_DELETE_FAIL,
-//   USER_UPDATE_FAIL,
-//   USER_UPDATE_SUCCESS,
-//   USER_UPDATE_REQUEST,
-//   USER_CHECK_EMAIL_REQUEST,
-//   USER_CHECK_EMAIL_SUCCESS,
-//   USER_CHECK_EMAIL_FAIL,
-//   USER_GET_PASSWORD_REQUEST,
-//   USER_GET_PASSWORD_SUCCESS,
-//   USER_GET_PASSWORD_FAIL,
-//   USER_LIST_ALL_REQUEST,
-//   USER_LIST_ALL_SUCCESS,
-//   USER_LIST_ALL_FAIL
-// } from '../constants/userConstants'
-// import { ORDER_LIST_MY_RESET } from '../constants/orderConstants'
-// import { GoogleLogin, googleLogout, useGoogleOneTapLogin } from '@react-oauth/google';
-
-// export const login = (email, password) => async (dispatch) => {
-//   try {
-//     dispatch({
-//       type: USER_LOGIN_REQUEST,
-//     })
-
-//     const config = {
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//     }
-
-//     const { data } = await axios.post(
-//       '/api/users/login',
-//       { email, password },
-//       config
-//     )
-
-//     dispatch({
-//       type: USER_LOGIN_SUCCESS,
-//       payload: data,
-//     })
-
-//     localStorage.setItem('userInfo', JSON.stringify(data))
-//   } catch (error) {
-//     dispatch({
-//       type: USER_LOGIN_FAIL,
-//       payload:
-//         error.response && error.response.data.message
-//           ? error.response.data.message
-//           : error.message,
-//     })
-//   }
-// }
-
-// export const logout = () => (dispatch) => {
-//   localStorage.removeItem('userInfo')
-//   localStorage.removeItem('cartItems')
-//   localStorage.removeItem('shippingAddress')
-//   localStorage.removeItem('paymentMethod')
-//   dispatch({ type: USER_LOGOUT })
-//   dispatch({ type: USER_DETAILS_RESET })
-//   dispatch({ type: ORDER_LIST_MY_RESET })
-//   dispatch({ type: USER_LIST_RESET })
-//   googleLogout();
-//   document.location.href = '/login'
-// }
 import axios from 'axios'
 import {
   USER_LOGIN_REQUEST,
@@ -147,6 +61,7 @@ export const googleLogin = (credential) => async (dispatch) => {
     })
   }
 }
+
 export const loginWithPasswordFromApi = (email) => async (dispatch) => {
   try {
     dispatch({ type: USER_LOGIN_REQUEST })
@@ -171,7 +86,6 @@ export const loginWithPasswordFromApi = (email) => async (dispatch) => {
     })
   }
 }
-
 
 /* =========================
    NORMAL LOGIN
@@ -210,6 +124,10 @@ export const logout = () => (dispatch) => {
   document.location.href = '/login'
 }
 
+/* =========================
+   REGISTER
+========================= */
+// Đã thêm paypalClientId chính xác
 export const register = (name, email, password, role, paypalClientId) => async (dispatch) => {
   try {
     dispatch({
@@ -224,7 +142,7 @@ export const register = (name, email, password, role, paypalClientId) => async (
 
     const { data } = await axios.post(
       '/api/users',
-      { name, email, password, role, paypalClientId }, // Include the role and PayPal Client ID in the request body
+      { name, email, password, role, paypalClientId }, // Truyền thành công paypalClientId vào req.body
       config
     )
 
@@ -249,7 +167,6 @@ export const register = (name, email, password, role, paypalClientId) => async (
     })
   }
 }
-
 
 export const getUserDetails = (id) => async (dispatch, getState) => {
   try {
@@ -423,12 +340,13 @@ export const updateUser = (user) => async (dispatch, getState) => {
     })
   }
 }
+
 // Action to check if email exists
 export const checkEmailExists = (email) => async (dispatch) => {
   try {
     const { data } = await axios.get(`/api/users/exists/${email}`);
-    dispatch({ type: 'USER_CHECK_EMAIL_EXISTS_SUCCESS', payload: data }); // Ensure the response is correctly handled
-    return data; // Return the response to use in the component
+    dispatch({ type: 'USER_CHECK_EMAIL_EXISTS_SUCCESS', payload: data }); 
+    return data; 
   } catch (error) {
     dispatch({
       type: 'USER_CHECK_EMAIL_EXISTS_FAIL',
@@ -440,11 +358,6 @@ export const checkEmailExists = (email) => async (dispatch) => {
   }
 };
 
-
-
-
-
-
 // Action to get password by email (hashed)
 export const getPasswordByEmail = (email) => async (dispatch) => {
   try {
@@ -454,7 +367,7 @@ export const getPasswordByEmail = (email) => async (dispatch) => {
 
     dispatch({
       type: USER_GET_PASSWORD_SUCCESS,
-      payload: data.password, // Returning the hashed password
+      payload: data.password, 
     });
   } catch (error) {
     dispatch({
@@ -505,7 +418,6 @@ export const googleLoginDirect = (email) => async (dispatch) => {
   try {
     dispatch({ type: USER_LOGIN_REQUEST })
 
-    // Gọi trực tiếp đến API đăng nhập bằng Google
     const { data } = await axios.post(
       '/api/users/google-login',
       { email },
