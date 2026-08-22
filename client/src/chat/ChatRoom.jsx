@@ -90,9 +90,7 @@ export default function ChatRoom({
         await transferAdminApi(currentChat._id, currentUser._id, newAdminId);
 
         setCurrentChat(prev => {
-          // Xóa người mới khỏi danh sách phó nhóm (nếu có)
           let newDeputies = prev.deputies ? prev.deputies.filter(id => id !== newAdminId) : [];
-          // Thêm cựu trưởng nhóm (chính mình) vào danh sách phó nhóm
           if (!newDeputies.includes(currentUser._id)) {
             newDeputies.push(currentUser._id);
           }
@@ -177,6 +175,16 @@ export default function ChatRoom({
     if (!currentChat) return null;
 
     if (currentChat.isGroup) {
+      // === LOGIC TÍNH THỜI GIAN VÀ TRẠNG THÁI CỦA NHÓM ===
+      const otherMembers = currentChat.members.filter(id => id !== currentUser._id);
+      const isGroupOnline = otherMembers.some(id => onlineUsersId.includes(id));
+      
+      // Tìm thời gian hoạt động bằng tin nhắn mới nhất trong nhóm
+      const groupLastActivity = messages.length > 0 
+        ? messages[0].createdAt 
+        : currentChat.lastMessage?.createdAt;
+      // ====================================================
+
       return (
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-col justify-center translate-y">
@@ -185,6 +193,15 @@ export default function ChatRoom({
             </h3>
             <span className="text-[13px] text-gray-500 leading-none translate-y-1">
               {currentChat.members?.length || 0} thành viên
+              <span className="mx-1.5">•</span>
+              {/* HIỂN THỊ TRẠNG THÁI HOẠT ĐỘNG BÊN CẠNH SỐ THÀNH VIÊN */}
+              {isGroupOnline ? (
+                <span className="text-green-500 font-medium">Đang hoạt động</span>
+              ) : groupLastActivity ? (
+                `Hoạt động ${timeAgo(groupLastActivity)}`
+              ) : (
+                "Nhóm mới"
+              )}
             </span>
           </div>
 
@@ -231,15 +248,11 @@ export default function ChatRoom({
                                     Thêm Phó nhóm
                                   </button>
                                 ) : (
-                                  <button
-                                    onClick={() => handleRemoveDeputy(memberId)}
-                                    className="text-red-500 hover:text-red-400 text-[10px] font-medium border border-red-200 px-1 rounded transition-colors"
-                                  >
+                                  <button onClick={() => handleRemoveDeputy(memberId)} className="text-orange-500 hover:text-orange-700 text-[10px] font-medium border border-orange-200 px-1 rounded">
                                     Gỡ Phó nhóm
                                   </button>
-
                                 )}
-                                <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-400 text-[10px] font-medium border border-red-200 px-1 rounded transition-colors">
+                                <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">
                                   Xóa
                                 </button>
                               </div>
@@ -251,8 +264,8 @@ export default function ChatRoom({
 
                           {/* Quyền của Phó Nhóm (Chỉ hiện nút xóa người thường) */}
                           {isDeputy && !isMemberAdmin && !isMemberDeputy && !isAdmin && (
-                            <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-400 text-[10px] font-medium border border-red-200 px-1 rounded transition-colors">
-                              Xóa
+                            <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">
+                              Xóa khỏi nhóm
                             </button>
                           )}
                         </div>
@@ -315,7 +328,7 @@ export default function ChatRoom({
         </div>
       </div>
     );
-  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy]);
+  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages]); // THÊM `messages` VÀO DEPENDENCY ĐỂ TỰ UPDATE REAL-TIME
 
   const availableUsersToAdd = useMemo(() => {
     if (!currentChat) return [];

@@ -118,7 +118,23 @@ export default function AllUsers({
           
           const otherUserObj = users.find(u => u._id === otherUserId);
           const isOnline = onlineUsersId.includes(otherUserId);
-          const isUnread = hasUnread(room); // Biến kiểm tra unread cho room hiện tại
+          const isUnread = hasUnread(room); 
+
+          // === LOGIC KIỂM TRA ONLINE & HOẠT ĐỘNG GẦN NHẤT CỦA NHÓM ===
+          let isGroupOnline = false;
+          let groupLastActivity = null;
+
+          if (room.isGroup) {
+            const otherMembers = room.members.filter(id => id !== currentUser._id);
+            // Kiểm tra xem có ai khác trong nhóm đang online không
+            isGroupOnline = otherMembers.some(id => onlineUsersId.includes(id));
+            
+            // Lấy thời gian hoạt động dựa trên tin nhắn mới nhất
+            if (room.lastMessage && room.lastMessage.createdAt) {
+              groupLastActivity = room.lastMessage.createdAt;
+            }
+          }
+          // =========================================================
 
           return (
             <div
@@ -134,8 +150,14 @@ export default function AllUsers({
             >
               <div className="flex items-center gap-3 truncate w-full">
                 {room.isGroup ? (
-                  <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
-                    {room.name.charAt(0).toUpperCase()}
+                  <div className="relative shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm">
+                      {room.name.charAt(0).toUpperCase()}
+                    </div>
+                    {/* CHẤM XANH CHO NHÓM */}
+                    {isGroupOnline && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                    )}
                   </div>
                 ) : (
                   <Contact
@@ -150,35 +172,41 @@ export default function AllUsers({
                     <p
                       className={classNames(
                         "truncate text-sm",
-                        // Tên người dùng/Tên nhóm khi có tin nhắn mới: Xanh dương và bôi đậm
                         isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
                       )}
                     >
                       {room.isGroup ? room.name : getDisplayName(otherUserId)}
                     </p>
                     
-                    {!room.isGroup && (
-                      <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
-                        {isOnline ? (
+                    {/* TRẠNG THÁI HOẠT ĐỘNG CHO CẢ CÁ NHÂN LẪN NHÓM */}
+                    <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
+                      {room.isGroup ? (
+                        isGroupOnline ? (
+                          <span className="text-green-500 font-medium">Đang hoạt động</span>
+                        ) : groupLastActivity ? (
+                          `Hoạt động ${timeAgo(groupLastActivity)}`
+                        ) : (
+                          "Nhóm mới"
+                        )
+                      ) : (
+                        isOnline ? (
                           <span className="text-green-500 font-medium">Đang hoạt động</span>
                         ) : otherUserObj?.lastSeen ? (
                           `Hoạt động ${timeAgo(otherUserObj.lastSeen)}`
-                        ) : ""}
-                      </span>
-                    )}
+                        ) : ""
+                      )}
+                    </span>
                   </div>
                   
                   {room.lastMessage && room.lastMessage.message ? (
                     <p className={classNames(
                       "text-xs truncate flex gap-1 mt-0.5",
-                      // Cả khối preview sẽ đen và đậm nếu có tin nhắn mới
                       isUnread ? "text-black font-bold" : "text-gray-500"
                     )}>
                       {room.lastMessage.sender === currentUser._id ? (
                         <span>You:</span>
                       ) : room.isGroup && room.lastMessage.sender ? (
                         <span className={classNames(
-                          // Người gửi trong nhóm cũng đen và đậm
                           isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
                         )}>
                           {getDisplayName(room.lastMessage.sender)}:
@@ -187,7 +215,6 @@ export default function AllUsers({
                       
                       <span className={classNames(
                         "truncate", 
-                        // Nội dung tin nhắn đen và đậm
                         isUnread ? "text-black font-bold" : ""
                       )}>
                         {room.lastMessage.message}
@@ -237,8 +264,6 @@ export default function AllUsers({
                 <p className="text-sm font-semibold text-gray-900 truncate">
                   {user.name || "No Name"}
                 </p>
-                
-                {/* Hiển thị Online / Last seen */}
                 <p className="text-[11px] text-gray-500 truncate mt-0.5">
                   {isOnline ? (
                     <span className="text-green-500 font-medium">Đang hoạt động</span>
