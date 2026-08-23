@@ -321,24 +321,6 @@ io.on('connection', (socket) => {
   });
 
   // ===== ROOM MESSAGE =====
-  // socket.on('sendMessageInRoom', ({ _id, chatRoomId, senderId, message }) => {
-  //   if (chatRoomId) {
-  //     io.to(chatRoomId).emit('getMessage', {
-  //       _id,
-  //       senderId,
-  //       message,
-  //       chatRoomId,
-  //     });
-  //   }
-  // });
-
-  // socket.on('sendMessageInRoom', (data) => {
-  //   if (data.chatRoomId) {
-  //     // Gửi nguyên vẹn cục data (lúc này sẽ chứa cả isGroup, roomName, senderEmail...)
-  //     io.to(data.chatRoomId).emit('getMessage', data);
-  //   }
-  // });
-  // ===== ROOM MESSAGE =====
   socket.on('sendMessageInRoom', (data) => {
     if (data.chatRoomId) {
       io.to(data.chatRoomId).emit('getMessage', data);
