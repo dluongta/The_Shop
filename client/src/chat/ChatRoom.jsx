@@ -32,6 +32,8 @@ export default function ChatRoom({
   const [messages, setMessages] = useState([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [showSettings, setShowSettings] = useState(false);
+  
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const settingsRef = useRef(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
@@ -49,19 +51,15 @@ export default function ChatRoom({
   const isAdmin = currentChat?.admin === currentUser._id;
   const isDeputy = currentChat?.deputies?.includes(currentUser._id);
 
-  // KIỂM TRA PHÒNG CHỜ GROUP
   const isPendingMember = currentChat?.pendingMembers?.includes(currentUser._id);
 
-  // KIỂM TRA CHAT 1-1 CHƯA ACCEPT
   const isPendingPrivate = currentChat?.isGroup === false && currentChat?.isAccepted === false;
   const isReceiverOfPrivate = isPendingPrivate && currentChat?.requester !== currentUser._id;
   const isRequesterOfPrivate = isPendingPrivate && currentChat?.requester === currentUser._id;
 
-  // Đếm số tin nhắn đã nhắn (chỉ tính tin nhắn của requester, không tính log hệ thống)
   const requesterMessageCount = messages.filter(m => m.sender === currentUser._id && (!m.message || !m.message.startsWith("[SYS]:"))).length;
   const remainingMessages = Math.max(0, 10 - requesterMessageCount);
 
-  // LỌC DANH SÁCH NGƯỜI DÙNG ĐỂ THÊM VÀO NHÓM
   const availableUsersToAdd = useMemo(() => {
     if (!currentChat) return [];
     return users.filter(u =>
@@ -74,7 +72,6 @@ export default function ChatRoom({
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
 
-    // CHẶN 10 TIN NHẮN ĐỐI VỚI NGƯỜI BẮT ĐẦU CHAT 1-1
     if (isRequesterOfPrivate && remainingMessages <= 0) {
       alert("Bạn đã gửi tối đa 10 tin nhắn! Vui lòng chờ đối phương xác nhận để tiếp tục chat.");
       return;
@@ -95,6 +92,23 @@ export default function ChatRoom({
       setChatRooms((prev) => prev.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } } : room));
       setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" }); }, 50);
     } catch (error) { console.error("Lỗi gửi tin nhắn:", error); }
+  };
+
+  const handleTyping = () => {
+    if (!socket || !currentChat?._id) return;
+    socket.emit("typing", {
+      chatRoomId: currentChat._id,
+      senderId: currentUser._id,
+      senderName: currentUser.name || currentUser.email.split("@")[0]
+    });
+  };
+
+  const handleStopTyping = () => {
+    if (!socket || !currentChat?._id) return;
+    socket.emit("stopTyping", {
+      chatRoomId: currentChat._id,
+      senderId: currentUser._id
+    });
   };
 
   useEffect(() => {
@@ -232,7 +246,6 @@ export default function ChatRoom({
     }
   };
 
-  // HANDLER CHO LỜI MỜI GROUP
   const handleAcceptInvite = async () => {
     try {
       const updatedRoom = await acceptGroupInviteApi(currentChat._id, currentUser._id);
@@ -258,7 +271,6 @@ export default function ChatRoom({
     }
   };
 
-  // HANDLER CHO LỜI MỜI CHAT 1-1
   const handleAcceptPrivate = async () => {
     try {
       const updatedRoom = await acceptPrivateChatApi(currentChat._id);
@@ -286,6 +298,9 @@ export default function ChatRoom({
 
   useEffect(() => {
     if (!currentChat?._id) return;
+    
+    setTypingUsers([]); 
+    
     const fetchMessages = async () => {
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
@@ -300,8 +315,11 @@ export default function ChatRoom({
   useEffect(() => {
     if (!socket || !currentChat?._id) return;
     socket.emit("joinRoom", currentChat._id);
+
     const handleMessage = (data) => {
       if (data.chatRoomId !== currentChat?._id) return;
+
+      setTypingUsers((prev) => prev.filter((user) => user.senderId !== data.senderId));
 
       if (data.message && data.message.includes("đã đồng ý cuộc trò chuyện")) {
         setCurrentChat(prev => ({ ...prev, isAccepted: true }));
@@ -315,16 +333,34 @@ export default function ChatRoom({
       setVisibleCount((prev) => prev + 1);
       if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
     };
+
     const handleRevoke = (data) => {
       if (data.chatRoomId !== currentChat?._id) return;
       setMessages((prev) => prev.map((m) => (m._id === data.messageId ? { ...m, isDeleted: true } : m)));
     };
+
+    const onUserTyping = (data) => {
+      setTypingUsers((prev) => {
+        if (prev.some((u) => u.senderId === data.senderId)) return prev;
+        return [...prev, data];
+      });
+    };
+
+    const onUserStopTyping = (data) => {
+      setTypingUsers((prev) => prev.filter((u) => u.senderId !== data.senderId));
+    };
+
     socket.on("getMessage", handleMessage);
     socket.on("messageRevoked", handleRevoke);
+    socket.on("userTyping", onUserTyping);
+    socket.on("userStopTyping", onUserStopTyping);
+
     return () => {
       socket.emit("leaveRoom", currentChat._id);
       socket.off("getMessage", handleMessage);
       socket.off("messageRevoked", handleRevoke);
+      socket.off("userTyping", onUserTyping);
+      socket.off("userStopTyping", onUserStopTyping);
     };
   }, [socket, currentChat, setCurrentChat, setChatRooms]);
 
@@ -478,6 +514,13 @@ export default function ChatRoom({
   const visibleMessages = messages.slice(0, visibleCount);
   const hasRegularMessages = messages.some((m) => m.message && !m.message.startsWith("[SYS]: "));
 
+  const typingText = useMemo(() => {
+    if (typingUsers.length === 0) return null;
+    if (typingUsers.length === 1) return `${typingUsers[0].senderName} đang soạn tin...`;
+    if (typingUsers.length === 2) return `${typingUsers[0].senderName} và ${typingUsers[1].senderName} đang soạn tin...`;
+    return `Nhiều người đang soạn tin...`;
+  }, [typingUsers]);
+
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-white relative">
       <div className="flex items-center p-3 px-4 border-b bg-white shrink-0 z-10 h-[76px] relative">
@@ -487,7 +530,7 @@ export default function ChatRoom({
         <div className="flex-1 min-w-0">{headerContent}</div>
       </div>
 
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto bg-gray-50 p-4">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto bg-gray-50 p-4 relative">
         <div className="flex flex-col gap-3">
           {visibleMessages.map((m) => {
             if (!m?._id) return null;
@@ -520,7 +563,7 @@ export default function ChatRoom({
         </div>
       </div>
 
-      <div className="p-3 border-t bg-white shrink-0 z-10">
+      <div className="p-3 bg-white shrink-0 z-10 relative">
         {isPendingMember ? (
           <div className="flex flex-col items-center justify-center py-2">
             <p className="text-sm text-gray-600 mb-3 font-medium">Bạn được mời tham gia nhóm này. Bạn có muốn tham gia không?</p>
@@ -552,13 +595,19 @@ export default function ChatRoom({
             <p className="text-sm text-red-500 font-medium">Đã gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục.</p>
           </div>
         ) : (
-          <div className="flex flex-col">
+          <div className="flex flex-col relative w-full">
             {isRequesterOfPrivate && (
               <span className="text-xs text-orange-500 mb-2 font-medium italic text-center">
                 Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm {remainingMessages} tin nhắn.
               </span>
             )}
-            <ChatForm handleFormSubmit={handleFormSubmit} />
+            
+            <ChatForm 
+              handleFormSubmit={handleFormSubmit} 
+              onTyping={handleTyping}
+              onStopTyping={handleStopTyping}
+              typingText={typingText}
+            />
           </div>
         )}
       </div>

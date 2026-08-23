@@ -332,12 +332,42 @@ io.on('connection', (socket) => {
   //   }
   // });
 
+  // socket.on('sendMessageInRoom', (data) => {
+  //   if (data.chatRoomId) {
+  //     // Gửi nguyên vẹn cục data (lúc này sẽ chứa cả isGroup, roomName, senderEmail...)
+  //     io.to(data.chatRoomId).emit('getMessage', data);
+  //   }
+  // });
+  // ===== ROOM MESSAGE =====
   socket.on('sendMessageInRoom', (data) => {
     if (data.chatRoomId) {
-      // Gửi nguyên vẹn cục data (lúc này sẽ chứa cả isGroup, roomName, senderEmail...)
       io.to(data.chatRoomId).emit('getMessage', data);
     }
   });
+
+  // ===== THU HỒI TIN NHẮN =====
+  socket.on('revokeMessageInRoom', ({ chatRoomId, messageId }) => {
+    if (chatRoomId) {
+      socket.to(chatRoomId).emit('messageRevoked', { chatRoomId, messageId });
+    }
+  });
+
+  // ==========================================
+  // ===== THÊM 2 SỰ KIỆN TYPING Ở ĐÂY =====
+  // ==========================================
+  socket.on('typing', ({ chatRoomId, senderId, senderName }) => {
+    if (chatRoomId) {
+      // Gửi cho tất cả mọi người trong phòng TRỪ người đang gõ
+      socket.to(chatRoomId).emit('userTyping', { senderId, senderName });
+    }
+  });
+
+  socket.on('stopTyping', ({ chatRoomId, senderId }) => {
+    if (chatRoomId) {
+      socket.to(chatRoomId).emit('userStopTyping', { senderId });
+    }
+  });
+  // ==========================================
 
   // ===== THU HỒI TIN NHẮN =====
   socket.on('revokeMessageInRoom', ({ chatRoomId, messageId }) => {
