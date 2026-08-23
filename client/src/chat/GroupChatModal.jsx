@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { useApi } from "../services/ChatService";
 
+// Hàm hỗ trợ format hiển thị: Tên (Email)
+const getUserString = (user) => {
+  if (!user) return "Ai đó";
+  const name = user.name && user.name.trim() !== "" ? user.name : (user.email?.split("@")[0] || "Ai đó");
+  return user.email ? `${name} (${user.email})` : name;
+};
+
 export default function GroupChatModal({ users, currentUser, onClose, onCreated }) {
   const [name, setName] = useState("");
   const [selected, setSelected] = useState([]);
   const [searchTerm, setSearchTerm] = useState(""); 
-  const { createChatRoom } = useApi();
+  
+  // Gọi thêm sendMessage từ useApi
+  const { createChatRoom, sendMessage } = useApi();
 
   const filteredUsers = users.filter(u => u._id !== currentUser._id);
 
@@ -33,6 +42,32 @@ export default function GroupChatModal({ users, currentUser, onClose, onCreated 
         isGroup: true, 
         adminId: currentUser._id 
       });
+
+      // --- LOGIC GỬI TIN NHẮN HỆ THỐNG KHI TẠO NHÓM ---
+      const creatorString = getUserString(currentUser);
+
+      // 1. Gửi tin nhắn thông báo tạo nhóm
+      await sendMessage({
+        chatRoomId: res._id,
+        sender: currentUser._id,
+        message: `[SYS]: ${creatorString} đã tạo nhóm ${res.name}.`
+      });
+
+      // 2. Gửi tin nhắn thông báo những người được thêm vào nhóm
+      if (selected.length > 0) {
+        const addedStrings = selected.map(id => {
+          const u = users.find(user => user._id === id);
+          return getUserString(u);
+        }).join(", ");
+
+        await sendMessage({
+          chatRoomId: res._id,
+          sender: currentUser._id,
+          message: `[SYS]: ${creatorString} đã thêm ${addedStrings} vào nhóm.`
+        });
+      }
+      // ------------------------------------------------
+
       onCreated(res);
     } catch (error) {
       console.error("Error creating group chat:", error);

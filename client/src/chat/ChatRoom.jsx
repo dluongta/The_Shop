@@ -20,6 +20,12 @@ const timeAgo = (date) => {
   return "vừa xong";
 };
 
+const getUserString = (user) => {
+  if (!user) return "Ai đó";
+  const name = user.name && user.name.trim() !== "" ? user.name : (user.email?.split("@")[0] || "Ai đó");
+  return user.email ? `${name} (${user.email})` : name;
+};
+
 export default function ChatRoom({
   currentChat, setCurrentChat, setChatRooms, currentUser, socket, users, onlineUsersId,
 }) {
@@ -39,9 +45,27 @@ export default function ChatRoom({
     addDeputyApi, removeDeputyApi
   } = useApi();
 
-  // Xác định quyền hạn của người dùng hiện tại
   const isAdmin = currentChat?.admin === currentUser._id;
   const isDeputy = currentChat?.deputies?.includes(currentUser._id);
+
+  const handleFormSubmit = async (message) => {
+    if (!message.trim()) return;
+    try {
+      const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
+      if (!res || !res._id) return;
+
+      socket.emit("sendMessageInRoom", {
+        _id: res._id, chatRoomId: currentChat._id, senderId: currentUser._id,
+        senderEmail: currentUser.name || currentUser.email, message, createdAt: res.createdAt,
+        isGroup: currentChat.isGroup, roomName: currentChat.name
+      });
+
+      setMessages((prev) => [res, ...prev]);
+      setVisibleCount((prev) => prev + 1);
+      setChatRooms((prev) => prev.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } } : room));
+      setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" }); }, 50);
+    } catch (error) { console.error("Lỗi gửi tin nhắn:", error); }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -61,11 +85,17 @@ export default function ChatRoom({
     if (window.confirm("Bạn có chắc muốn xóa thành viên này khỏi nhóm?")) {
       try {
         await kickMemberApi(currentChat._id, currentUser._id, memberId);
+
         setCurrentChat(prev => {
           const newMembers = prev.members.filter(id => id !== memberId);
           const newDeputies = prev.deputies ? prev.deputies.filter(id => id !== memberId) : [];
           return { ...prev, members: newMembers, deputies: newDeputies };
         });
+
+        const member = users.find(u => u._id === memberId);
+        const actorString = getUserString(currentUser);
+        const targetString = getUserString(member);
+        await handleFormSubmit(`[SYS]: ${actorString} đã xóa ${targetString} khỏi nhóm.`);
       } catch (error) {
         alert("Có lỗi xảy ra khi xóa thành viên!");
       }
@@ -88,26 +118,24 @@ export default function ChatRoom({
     if (window.confirm("Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm? Bạn sẽ được chuyển xuống làm Phó nhóm.")) {
       try {
         await transferAdminApi(currentChat._id, currentUser._id, newAdminId);
-
         setCurrentChat(prev => {
           let newDeputies = prev.deputies ? prev.deputies.filter(id => id !== newAdminId) : [];
-          if (!newDeputies.includes(currentUser._id)) {
-            newDeputies.push(currentUser._id);
-          }
+          if (!newDeputies.includes(currentUser._id)) newDeputies.push(currentUser._id);
           return { ...prev, admin: newAdminId, deputies: newDeputies };
         });
-
         setChatRooms(prev => prev.map(room => {
           if (room._id === currentChat._id) {
             let newDeputies = room.deputies ? room.deputies.filter(id => id !== newAdminId) : [];
-            if (!newDeputies.includes(currentUser._id)) {
-              newDeputies.push(currentUser._id);
-            }
+            if (!newDeputies.includes(currentUser._id)) newDeputies.push(currentUser._id);
             return { ...room, admin: newAdminId, deputies: newDeputies };
           }
           return room;
         }));
 
+        const newAdmin = users.find(u => u._id === newAdminId);
+        const actorString = getUserString(currentUser);
+        const targetString = getUserString(newAdmin);
+        await handleFormSubmit(`[SYS]: ${actorString} đã chuyển quyền Trưởng nhóm cho ${targetString}.`);
       } catch (error) {
         alert("Có lỗi xảy ra khi chuyển quyền!");
       }
@@ -119,9 +147,12 @@ export default function ChatRoom({
       try {
         await addDeputyApi(currentChat._id, currentUser._id, memberId);
         setCurrentChat(prev => ({ ...prev, deputies: [...(prev.deputies || []), memberId] }));
-      } catch (error) {
-        alert("Có lỗi xảy ra!");
-      }
+
+        const member = users.find(u => u._id === memberId);
+        const actorString = getUserString(currentUser);
+        const targetString = getUserString(member);
+        await handleFormSubmit(`[SYS]: ${actorString} đã bổ nhiệm ${targetString} làm Phó nhóm.`);
+      } catch (error) { alert("Có lỗi xảy ra!"); }
     }
   };
 
@@ -130,9 +161,12 @@ export default function ChatRoom({
       try {
         await removeDeputyApi(currentChat._id, currentUser._id, memberId);
         setCurrentChat(prev => ({ ...prev, deputies: prev.deputies.filter(id => id !== memberId) }));
-      } catch (error) {
-        alert("Có lỗi xảy ra!");
-      }
+
+        const member = users.find(u => u._id === memberId);
+        const actorString = getUserString(currentUser);
+        const targetString = getUserString(member);
+        await handleFormSubmit(`[SYS]: ${actorString} đã gỡ quyền Phó nhóm của ${targetString}.`);
+      } catch (error) { alert("Có lỗi xảy ra!"); }
     }
   };
 
@@ -148,6 +182,14 @@ export default function ChatRoom({
     try {
       await addMembersToGroupApi(currentChat._id, currentUser._id, selectedNewMembers);
       setCurrentChat(prev => ({ ...prev, members: [...prev.members, ...selectedNewMembers] }));
+
+      const actorString = getUserString(currentUser);
+      const addedStrings = selectedNewMembers.map(id => {
+        const u = users.find(user => user._id === id);
+        return getUserString(u);
+      }).join(", ");
+
+      await handleFormSubmit(`[SYS]: ${actorString} đã thêm ${addedStrings} vào nhóm.`);
       setShowAddMemberModal(false);
       setSelectedNewMembers([]);
     } catch (error) {
@@ -160,12 +202,9 @@ export default function ChatRoom({
     const fetchMessages = async () => {
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
-        const data = Array.isArray(res) ? res : [];
-        setMessages(data);
+        setMessages(Array.isArray(res) ? res : []);
         setVisibleCount(10);
-      } catch (err) {
-        console.error("Lỗi khi tải tin nhắn:", err);
-      }
+      } catch (err) { console.error("Lỗi khi tải tin nhắn:", err); }
     };
     fetchMessages();
     setShowSettings(false);
@@ -175,41 +214,23 @@ export default function ChatRoom({
     if (!currentChat) return null;
 
     if (currentChat.isGroup) {
-      // === LOGIC TÍNH THỜI GIAN VÀ TRẠNG THÁI CỦA NHÓM ===
       const otherMembers = currentChat.members.filter(id => id !== currentUser._id);
       const isGroupOnline = otherMembers.some(id => onlineUsersId.includes(id));
-      
-      // Tìm thời gian hoạt động bằng tin nhắn mới nhất trong nhóm
-      const groupLastActivity = messages.length > 0 
-        ? messages[0].createdAt 
-        : currentChat.lastMessage?.createdAt;
-      // ====================================================
+      const groupLastActivity = messages.length > 0 ? messages[0].createdAt : currentChat.lastMessage?.createdAt;
 
       return (
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-col justify-center translate-y">
-            <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">
-              {currentChat.name}
-            </h3>
+            <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">{currentChat.name}</h3>
             <span className="text-[13px] text-gray-500 leading-none translate-y-1">
               {currentChat.members?.length || 0} thành viên
               <span className="mx-1.5">•</span>
-              {/* HIỂN THỊ TRẠNG THÁI HOẠT ĐỘNG BÊN CẠNH SỐ THÀNH VIÊN */}
-              {isGroupOnline ? (
-                <span className="text-green-500 font-medium">Đang hoạt động</span>
-              ) : groupLastActivity ? (
-                `Hoạt động ${timeAgo(groupLastActivity)}`
-              ) : (
-                "Nhóm mới"
-              )}
+              {isGroupOnline ? <span className="text-green-500 font-medium">Đang hoạt động</span> : groupLastActivity ? `Hoạt động ${timeAgo(groupLastActivity)}` : "Nhóm mới"}
             </span>
           </div>
 
           <div className="relative flex gap-2" ref={settingsRef}>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 px-3 py-1.5 text-sm rounded-md font-medium border"
-            >
+            <button onClick={() => setShowSettings(!showSettings)} className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 px-3 py-1.5 text-sm rounded-md font-medium border">
               Cài đặt nhóm
             </button>
 
@@ -226,47 +247,26 @@ export default function ChatRoom({
                       <li key={memberId} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
                         <span className="truncate flex flex-wrap items-center gap-1">
                           {member?.email || "Unknown"}
-                          {isMemberAdmin && (
-                            <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
-                              Trưởng nhóm
-                            </span>
-                          )}
-                          {isMemberDeputy && (
-                            <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">
-                              Phó nhóm
-                            </span>
-                          )}
+                          {isMemberAdmin && <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Trưởng nhóm</span>}
+                          {isMemberDeputy && <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Phó nhóm</span>}
                         </span>
 
                         <div className="flex gap-2 ml-2 shrink-0">
-                          {/* Quyền của Trưởng Nhóm */}
                           {isAdmin && !isMemberAdmin && (
                             <div className="flex flex-col gap-1 items-end">
                               <div className="flex gap-2">
                                 {!isMemberDeputy ? (
-                                  <button onClick={() => handleAddDeputy(memberId)} className="text-blue-500 hover:text-blue-700 text-[10px] font-medium border border-blue-200 px-1 rounded">
-                                    Thêm Phó nhóm
-                                  </button>
+                                  <button onClick={() => handleAddDeputy(memberId)} className="text-blue-500 hover:text-blue-700 text-[10px] font-medium border border-blue-200 px-1 rounded">Thêm Phó nhóm</button>
                                 ) : (
-                                  <button onClick={() => handleRemoveDeputy(memberId)} className="text-orange-500 hover:text-orange-700 text-[10px] font-medium border border-orange-200 px-1 rounded">
-                                    Gỡ Phó nhóm
-                                  </button>
+                                  <button onClick={() => handleRemoveDeputy(memberId)} className="text-orange-500 hover:text-orange-700 text-[10px] font-medium border border-orange-200 px-1 rounded">Gỡ Phó nhóm</button>
                                 )}
-                                <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">
-                                  Xóa
-                                </button>
+                                <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">Xóa</button>
                               </div>
-                              <button onClick={() => handleTransferAdmin(memberId)} className="text-green-600 hover:text-green-800 text-[10px] font-medium border border-green-200 px-1 rounded">
-                                Chuyển quyền Trưởng nhóm
-                              </button>
+                              <button onClick={() => handleTransferAdmin(memberId)} className="text-green-600 hover:text-green-800 text-[10px] font-medium border border-green-200 px-1 rounded">Chuyển quyền Trưởng nhóm</button>
                             </div>
                           )}
-
-                          {/* Quyền của Phó Nhóm (Chỉ hiện nút xóa người thường) */}
                           {isDeputy && !isMemberAdmin && !isMemberDeputy && !isAdmin && (
-                            <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">
-                              Xóa khỏi nhóm
-                            </button>
+                            <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">Xóa khỏi nhóm</button>
                           )}
                         </div>
                       </li>
@@ -276,12 +276,8 @@ export default function ChatRoom({
 
                 {isAdmin && (
                   <div className="flex flex-col gap-2 mt-3 border-t pt-3">
-                    <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">
-                      + Thêm thành viên
-                    </button>
-                    <button onClick={handleDissolve} className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded w-full transition-colors">
-                      Giải tán nhóm
-                    </button>
+                    <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">+ Thêm thành viên</button>
+                    <button onClick={handleDissolve} className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded w-full transition-colors">Giải tán nhóm</button>
                   </div>
                 )}
 
@@ -290,6 +286,9 @@ export default function ChatRoom({
                     <button
                       onClick={async () => {
                         if (window.confirm("Bạn có chắc muốn rời nhóm?")) {
+                          const actorString = getUserString(currentUser);
+                          await handleFormSubmit(`[SYS]: ${actorString} đã rời khỏi nhóm.`);
+
                           await leaveGroupChat(currentChat._id, currentUser._id);
                           setChatRooms((prev) => prev.filter((room) => room._id !== currentChat._id));
                           setCurrentChat(null);
@@ -311,11 +310,7 @@ export default function ChatRoom({
     const otherUserId = currentChat.members.find(id => id !== currentUser._id);
     const otherUser = users.find(u => u._id === otherUserId);
     const isOnline = onlineUsersId.includes(otherUserId);
-
-    let displayName = "Unknown User";
-    if (otherUser) {
-      displayName = otherUser.name && otherUser.name.trim() !== "" ? otherUser.name : otherUser.email;
-    }
+    const displayName = otherUser ? (otherUser.name?.trim() !== "" ? otherUser.name : otherUser.email) : "Unknown User";
 
     return (
       <div className="flex items-center gap-3">
@@ -328,7 +323,7 @@ export default function ChatRoom({
         </div>
       </div>
     );
-  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages]); // THÊM `messages` VÀO DEPENDENCY ĐỂ TỰ UPDATE REAL-TIME
+  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages]);
 
   const availableUsersToAdd = useMemo(() => {
     if (!currentChat) return [];
@@ -363,25 +358,6 @@ export default function ChatRoom({
     };
   }, [socket, currentChat]);
 
-  const handleFormSubmit = async (message) => {
-    if (!message.trim()) return;
-    try {
-      const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
-      if (!res || !res._id) return;
-
-      socket.emit("sendMessageInRoom", {
-        _id: res._id, chatRoomId: currentChat._id, senderId: currentUser._id,
-        senderEmail: currentUser.name || currentUser.email, message, createdAt: res.createdAt,
-        isGroup: currentChat.isGroup, roomName: currentChat.name
-      });
-
-      setMessages((prev) => [res, ...prev]);
-      setVisibleCount((prev) => prev + 1);
-      setChatRooms((prev) => prev.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } } : room));
-      setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" }); }, 50);
-    } catch (error) { console.error("Lỗi gửi tin nhắn:", error); }
-  };
-
   const handleRevokeMessage = async (messageId) => {
     try {
       await revokeMessageApi(messageId, currentUser._id);
@@ -406,6 +382,9 @@ export default function ChatRoom({
 
   const visibleMessages = messages.slice(0, visibleCount);
 
+  // LOGIC CHECK CÓ TIN NHẮN THỰC SỰ HAY KHÔNG ĐỂ ẨN "Đã hết tin nhắn"
+  const hasRegularMessages = messages.some((m) => m.message && !m.message.startsWith("[SYS]: "));
+
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-white relative">
       <div className="flex items-center p-3 px-4 border-b bg-white shrink-0 z-10 h-[76px] relative">
@@ -417,8 +396,35 @@ export default function ChatRoom({
 
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto bg-gray-50 p-4">
         <div className="flex flex-col gap-3">
-          {visibleMessages.map((m) => m?._id && <Message key={m._id} message={m} self={currentUser._id} users={users} onRevoke={handleRevokeMessage} />)}
-          {visibleCount < messages.length ? <div className="text-center text-xs text-gray-400 my-2">Cuộn xuống để xem thêm...</div> : messages.length > 0 && <div className="text-center text-xs text-gray-400 my-2">Đã hết tin nhắn</div>}
+          {visibleMessages.map((m) => {
+            if (!m?._id) return null;
+
+            if (m.message && m.message.startsWith("[SYS]: ")) {
+              const sysText = m.message.replace("[SYS]: ", "");
+              // Cắt chuỗi theo định dạng **nội dung**
+              const parts = sysText.split(/\*\*(.*?)\*\*/g);
+
+              return (
+                <div key={m._id} className="text-center text-xs text-gray-400 my-2">
+                  {parts.map((part, index) =>
+                    index % 2 === 1 ? (
+                      <span key={index} className="font-bold text-gray-500">{part}</span>
+                    ) : (
+                      part
+                    )
+                  )}
+                </div>
+              );
+            }
+
+            return <Message key={m._id} message={m} self={currentUser._id} users={users} onRevoke={handleRevokeMessage} />
+          })}
+
+          {visibleCount < messages.length ? (
+            <div className="text-center text-xs text-gray-400 my-2">Cuộn xuống để xem thêm...</div>
+          ) : hasRegularMessages && (
+            <div className="text-center text-xs text-gray-400 my-2">Đã hết tin nhắn</div>
+          )}
         </div>
       </div>
 

@@ -92,7 +92,6 @@ export default function AllUsers({
     }
   };
 
-  // Hàm kiểm tra tin nhắn chưa đọc
   const hasUnread = (room) => {
     return (
       room.lastMessage &&
@@ -120,21 +119,16 @@ export default function AllUsers({
           const isOnline = onlineUsersId.includes(otherUserId);
           const isUnread = hasUnread(room); 
 
-          // === LOGIC KIỂM TRA ONLINE & HOẠT ĐỘNG GẦN NHẤT CỦA NHÓM ===
           let isGroupOnline = false;
           let groupLastActivity = null;
 
           if (room.isGroup) {
             const otherMembers = room.members.filter(id => id !== currentUser._id);
-            // Kiểm tra xem có ai khác trong nhóm đang online không
             isGroupOnline = otherMembers.some(id => onlineUsersId.includes(id));
-            
-            // Lấy thời gian hoạt động dựa trên tin nhắn mới nhất
             if (room.lastMessage && room.lastMessage.createdAt) {
               groupLastActivity = room.lastMessage.createdAt;
             }
           }
-          // =========================================================
 
           return (
             <div
@@ -154,7 +148,6 @@ export default function AllUsers({
                     <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm">
                       {room.name.charAt(0).toUpperCase()}
                     </div>
-                    {/* CHẤM XANH CHO NHÓM */}
                     {isGroupOnline && (
                       <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                     )}
@@ -178,7 +171,6 @@ export default function AllUsers({
                       {room.isGroup ? room.name : getDisplayName(otherUserId)}
                     </p>
                     
-                    {/* TRẠNG THÁI HOẠT ĐỘNG CHO CẢ CÁ NHÂN LẪN NHÓM */}
                     <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
                       {room.isGroup ? (
                         isGroupOnline ? (
@@ -203,21 +195,30 @@ export default function AllUsers({
                       "text-xs truncate flex gap-1 mt-0.5",
                       isUnread ? "text-black font-bold" : "text-gray-500"
                     )}>
-                      {room.lastMessage.sender === currentUser._id ? (
-                        <span>You:</span>
-                      ) : room.isGroup && room.lastMessage.sender ? (
-                        <span className={classNames(
-                          isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
-                        )}>
-                          {getDisplayName(room.lastMessage.sender)}:
-                        </span>
-                      ) : null}
                       
+                      {/* KHÔNG HIỂN THỊ TÊN NGƯỜI GỬI NẾU ĐÂY LÀ TIN NHẮN HỆ THỐNG */}
+                      {!room.lastMessage.message.startsWith("[SYS]: ") && (
+                        <>
+                          {room.lastMessage.sender === currentUser._id ? (
+                            <span>You:</span>
+                          ) : room.isGroup && room.lastMessage.sender ? (
+                            <span className={classNames(
+                              isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
+                            )}>
+                              {getDisplayName(room.lastMessage.sender)}:
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                      
+                      {/* XÓA ĐOẠN "[SYS]: " CHO HIỂN THỊ ĐẸP Ở SIDEBAR */}
                       <span className={classNames(
                         "truncate", 
                         isUnread ? "text-black font-bold" : ""
                       )}>
-                        {room.lastMessage.message}
+                        {room.lastMessage.message.startsWith("[SYS]: ") 
+                          ? room.lastMessage.message.replace("[SYS]: ", "")
+                          : room.lastMessage.message}
                       </span>
                     </p>
                   ) : (
