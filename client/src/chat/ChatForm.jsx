@@ -75,7 +75,7 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
               transform: translateY(0);
             }
             30% {
-              transform: translateY(-5px); /* Tăng biên độ nhảy lên cao hơn một chút */
+              transform: translateY(-4px); /* Tăng biên độ nhảy lên cao hơn một chút */
             }
           }
           .animate-custom-wave {
