@@ -12,7 +12,9 @@ import {
   addDeputy,
   removeDeputy,
   acceptInvite,
-  rejectInvite
+  rejectInvite,
+  acceptPrivateChat,
+  rejectPrivateChat
 } from "../controllers/chatRoom.js";
 
 const router = express.Router();
@@ -34,5 +36,9 @@ router.put("/group/remove-deputy", removeDeputy);
 // Chấp nhận và từ chối tham gia nhóm
 router.put("/group/accept-invite", acceptInvite);
 router.put("/group/reject-invite", rejectInvite);
+
+// Route cho Chấp nhận / Từ chối cuộc trò chuyện 1-1
+router.put("/accept-private", acceptPrivateChat);
+router.delete("/reject-private", rejectPrivateChat);
 
 export default router;

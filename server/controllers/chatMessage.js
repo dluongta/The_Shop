@@ -21,6 +21,23 @@ export const createMessage = async (req, res) => {
   const { chatRoomId, sender, message } = req.body;
 
   try {
+    // === KIỂM TRA LOGIC CHAT 1-1 (GIỚI HẠN 10 TIN NHẮN) ===
+    const room = await ChatRoom.findById(chatRoomId);
+    
+    if (room && room.isGroup === false && room.isAccepted === false) {
+      // Nếu không phải là người khởi tạo (ví dụ người nhận) thì không được gửi tin khi chưa đồng ý
+      if (room.requester.toString() !== sender.toString()) {
+        return res.status(403).json({ message: "Bạn phải đồng ý cuộc trò chuyện mới được nhắn tin." });
+      }
+      
+      // Nếu là người khởi tạo, đếm số tin nhắn đã gửi trong phòng
+      const messageCount = await ChatMessage.countDocuments({ chatRoomId });
+      if (messageCount >= 10) {
+        return res.status(403).json({ message: "Bạn chỉ được gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục." });
+      }
+    }
+    // ========================================================
+
     const newMessage = new ChatMessage({
       chatRoomId,
       sender,
@@ -40,7 +57,6 @@ export const createMessage = async (req, res) => {
     });
 
     const senderInfo = await User.findById(sender);
-    const room = await ChatRoom.findById(chatRoomId);
 
     if (room && senderInfo) {
       const receivers = room.members.filter(

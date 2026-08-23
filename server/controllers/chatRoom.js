@@ -3,11 +3,23 @@ import ChatRoom from "../models/ChatRoom.js";
 // ================= CÁC HÀM CHAT 1-1 & CHUNG =================
 
 export const createChatRoom = async (req, res) => {
-  const newChatRoom = new ChatRoom({
-    members: [req.body.senderId, req.body.receiverId],
-  });
-
   try {
+    // Tránh tạo trùng phòng chat 1-1
+    let existingRoom = await ChatRoom.findOne({
+      isGroup: false,
+      members: { $all: [req.body.senderId, req.body.receiverId] }
+    });
+    if (existingRoom) {
+      return res.status(200).json(existingRoom);
+    }
+
+    const newChatRoom = new ChatRoom({
+      members: [req.body.senderId, req.body.receiverId],
+      isGroup: false,
+      requester: req.body.senderId, // Lưu người khởi tạo chat
+      isAccepted: false, // Yêu cầu người nhận phải đồng ý
+    });
+
     await newChatRoom.save();
     res.status(201).json(newChatRoom);
   } catch (error) {
@@ -266,6 +278,28 @@ export const removeDeputy = async (req, res) => {
     }
     await room.save();
     res.status(200).json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// PUT /api/room/accept-private
+export const acceptPrivateChat = async (req, res) => {
+  const { roomId } = req.body;
+  try {
+    const room = await ChatRoom.findByIdAndUpdate(roomId, { isAccepted: true }, { new: true });
+    res.status(200).json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// DELETE /api/room/reject-private
+export const rejectPrivateChat = async (req, res) => {
+  const { roomId } = req.body;
+  try {
+    await ChatRoom.findByIdAndDelete(roomId);
+    res.status(200).json({ message: "Đã từ chối và xóa cuộc trò chuyện" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

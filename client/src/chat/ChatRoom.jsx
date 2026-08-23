@@ -42,17 +42,44 @@ export default function ChatRoom({
   const {
     getMessagesOfChatRoom, sendMessage, leaveGroupChat, revokeMessageApi,
     kickMemberApi, addMembersToGroupApi, dissolveGroupApi, transferAdminApi,
-    addDeputyApi, removeDeputyApi, acceptGroupInviteApi, rejectGroupInviteApi // THÊM 2 API NÀY
+    addDeputyApi, removeDeputyApi, acceptGroupInviteApi, rejectGroupInviteApi,
+    acceptPrivateChatApi, rejectPrivateChatApi
   } = useApi();
 
   const isAdmin = currentChat?.admin === currentUser._id;
   const isDeputy = currentChat?.deputies?.includes(currentUser._id);
 
-  // KIỂM TRA PHÒNG CHỜ
+  // KIỂM TRA PHÒNG CHỜ GROUP
   const isPendingMember = currentChat?.pendingMembers?.includes(currentUser._id);
+
+  // KIỂM TRA CHAT 1-1 CHƯA ACCEPT
+  const isPendingPrivate = currentChat?.isGroup === false && currentChat?.isAccepted === false;
+  const isReceiverOfPrivate = isPendingPrivate && currentChat?.requester !== currentUser._id;
+  const isRequesterOfPrivate = isPendingPrivate && currentChat?.requester === currentUser._id;
+
+  // Đếm số tin nhắn đã nhắn (chỉ tính tin nhắn của requester, không tính log hệ thống)
+  const requesterMessageCount = messages.filter(m => m.sender === currentUser._id && (!m.message || !m.message.startsWith("[SYS]:"))).length;
+  const remainingMessages = Math.max(0, 10 - requesterMessageCount);
+
+  // LỌC DANH SÁCH NGƯỜI DÙNG ĐỂ THÊM VÀO NHÓM
+  const availableUsersToAdd = useMemo(() => {
+    if (!currentChat) return [];
+    return users.filter(u =>
+      !currentChat.members.includes(u._id) &&
+      (!currentChat.pendingMembers || !currentChat.pendingMembers.includes(u._id)) &&
+      (u.email.toLowerCase().includes(memberSearchTerm.toLowerCase()) || (u.name && u.name.toLowerCase().includes(memberSearchTerm.toLowerCase())))
+    );
+  }, [users, currentChat, memberSearchTerm]);
 
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
+
+    // CHẶN 10 TIN NHẮN ĐỐI VỚI NGƯỜI BẮT ĐẦU CHAT 1-1
+    if (isRequesterOfPrivate && remainingMessages <= 0) {
+      alert("Bạn đã gửi tối đa 10 tin nhắn! Vui lòng chờ đối phương xác nhận để tiếp tục chat.");
+      return;
+    }
+
     try {
       const res = await sendMessage({ chatRoomId: currentChat._id, sender: currentUser._id, message });
       if (!res || !res._id) return;
@@ -186,7 +213,6 @@ export default function ChatRoom({
     try {
       await addMembersToGroupApi(currentChat._id, currentUser._id, selectedNewMembers);
 
-      // Update state: Add to pendingMembers instead of members
       setCurrentChat(prev => ({
         ...prev,
         pendingMembers: [...(prev.pendingMembers || []), ...selectedNewMembers]
@@ -206,7 +232,7 @@ export default function ChatRoom({
     }
   };
 
-  // HANDLER CHO LỜI MỜI
+  // HANDLER CHO LỜI MỜI GROUP
   const handleAcceptInvite = async () => {
     try {
       const updatedRoom = await acceptGroupInviteApi(currentChat._id, currentUser._id);
@@ -221,14 +247,9 @@ export default function ChatRoom({
   const handleRejectInvite = async () => {
     if (window.confirm("Bạn có chắc muốn từ chối lời mời vào nhóm này?")) {
       try {
-        // 1. Lấy tên người dùng và gửi tin nhắn hệ thống báo từ chối TRƯỚC khi thoát
         const actorString = getUserString(currentUser);
         await handleFormSubmit(`[SYS]: ${actorString} đã từ chối tham gia nhóm.`);
-
-        // 2. Gọi API từ chối lời mời
         await rejectGroupInviteApi(currentChat._id, currentUser._id);
-
-        // 3. Đóng khung chat và xóa khỏi danh sách bên trái
         setCurrentChat(null);
         setChatRooms(prev => prev.filter(r => r._id !== currentChat._id));
       } catch (err) {
@@ -237,17 +258,31 @@ export default function ChatRoom({
     }
   };
 
-  //   const handleRejectInvite = async () => {
-  //   if (window.confirm("Bạn có chắc muốn từ chối lời mời vào nhóm này?")) {
-  //     try {
-  //       await rejectGroupInviteApi(currentChat._id, currentUser._id);
-  //       setCurrentChat(null); 
-  //       setChatRooms(prev => prev.filter(r => r._id !== currentChat._id)); 
-  //     } catch (err) {
-  //       alert("Lỗi khi từ chối");
-  //     }
-  //   }
-  // };
+  // HANDLER CHO LỜI MỜI CHAT 1-1
+  const handleAcceptPrivate = async () => {
+    try {
+      const updatedRoom = await acceptPrivateChatApi(currentChat._id);
+      setCurrentChat(updatedRoom);
+      setChatRooms(prev => prev.map(r => r._id === currentChat._id ? updatedRoom : r));
+      
+      const actorString = getUserString(currentUser);
+      await handleFormSubmit(`[SYS]: ${actorString} đã đồng ý cuộc trò chuyện.`);
+    } catch (err) {
+      alert("Lỗi khi đồng ý!");
+    }
+  };
+
+  const handleRejectPrivate = async () => {
+    if (window.confirm("Bạn có chắc muốn từ chối và xóa cuộc trò chuyện này?")) {
+      try {
+        await rejectPrivateChatApi(currentChat._id);
+        setCurrentChat(null);
+        setChatRooms(prev => prev.filter(r => r._id !== currentChat._id));
+      } catch (err) {
+        alert("Lỗi khi từ chối!");
+      }
+    }
+  };
 
   useEffect(() => {
     if (!currentChat?._id) return;
@@ -261,6 +296,59 @@ export default function ChatRoom({
     fetchMessages();
     setShowSettings(false);
   }, [currentChat?._id]);
+
+  useEffect(() => {
+    if (!socket || !currentChat?._id) return;
+    socket.emit("joinRoom", currentChat._id);
+    const handleMessage = (data) => {
+      if (data.chatRoomId !== currentChat?._id) return;
+
+      if (data.message && data.message.includes("đã đồng ý cuộc trò chuyện")) {
+        setCurrentChat(prev => ({ ...prev, isAccepted: true }));
+        setChatRooms(prevRooms => prevRooms.map(r => r._id === data.chatRoomId ? { ...r, isAccepted: true } : r));
+      }
+
+      setMessages((prev) => {
+        if (prev.some((m) => m._id === data._id)) return prev;
+        return [{ _id: data._id || Date.now(), sender: data.senderId, message: data.message, isDeleted: false, createdAt: data.createdAt || new Date() }, ...prev];
+      });
+      setVisibleCount((prev) => prev + 1);
+      if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    const handleRevoke = (data) => {
+      if (data.chatRoomId !== currentChat?._id) return;
+      setMessages((prev) => prev.map((m) => (m._id === data.messageId ? { ...m, isDeleted: true } : m)));
+    };
+    socket.on("getMessage", handleMessage);
+    socket.on("messageRevoked", handleRevoke);
+    return () => {
+      socket.emit("leaveRoom", currentChat._id);
+      socket.off("getMessage", handleMessage);
+      socket.off("messageRevoked", handleRevoke);
+    };
+  }, [socket, currentChat, setCurrentChat, setChatRooms]);
+
+  const handleRevokeMessage = async (messageId) => {
+    try {
+      await revokeMessageApi(messageId, currentUser._id);
+      setMessages((prev) => {
+        const updatedMessages = prev.map((m) => m._id === messageId ? { ...m, isDeleted: true } : m);
+        const latestMsg = updatedMessages[0];
+        if (latestMsg) {
+          setChatRooms((prevRooms) => prevRooms.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { ...room.lastMessage, message: latestMsg.isDeleted ? "Tin nhắn bị thu hồi" : latestMsg.message, sender: latestMsg.sender, createdAt: latestMsg.createdAt } } : room));
+        }
+        return updatedMessages;
+      });
+    } catch (error) { alert("Không thể thu hồi tin nhắn."); }
+  };
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    if (scrollTop + clientHeight >= scrollHeight - 20) {
+      if (visibleCount < messages.length) setVisibleCount((prev) => prev + 10);
+    }
+  };
 
   const headerContent = useMemo(() => {
     if (!currentChat) return null;
@@ -387,62 +475,6 @@ export default function ChatRoom({
     );
   }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages, isPendingMember]);
 
-  const availableUsersToAdd = useMemo(() => {
-    if (!currentChat) return [];
-    return users.filter(u =>
-      !currentChat.members.includes(u._id) &&
-      (!currentChat.pendingMembers || !currentChat.pendingMembers.includes(u._id)) &&
-      (u.email.toLowerCase().includes(memberSearchTerm.toLowerCase()) || (u.name && u.name.toLowerCase().includes(memberSearchTerm.toLowerCase())))
-    );
-  }, [users, currentChat, memberSearchTerm]);
-
-  useEffect(() => {
-    if (!socket || !currentChat?._id) return;
-    socket.emit("joinRoom", currentChat._id);
-    const handleMessage = (data) => {
-      if (data.chatRoomId !== currentChat?._id) return;
-      setMessages((prev) => {
-        if (prev.some((m) => m._id === data._id)) return prev;
-        return [{ _id: data._id || Date.now(), sender: data.senderId, message: data.message, isDeleted: false, createdAt: data.createdAt || new Date() }, ...prev];
-      });
-      setVisibleCount((prev) => prev + 1);
-      if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    };
-    const handleRevoke = (data) => {
-      if (data.chatRoomId !== currentChat?._id) return;
-      setMessages((prev) => prev.map((m) => (m._id === data.messageId ? { ...m, isDeleted: true } : m)));
-    };
-    socket.on("getMessage", handleMessage);
-    socket.on("messageRevoked", handleRevoke);
-    return () => {
-      socket.emit("leaveRoom", currentChat._id);
-      socket.off("getMessage", handleMessage);
-      socket.off("messageRevoked", handleRevoke);
-    };
-  }, [socket, currentChat]);
-
-  const handleRevokeMessage = async (messageId) => {
-    try {
-      await revokeMessageApi(messageId, currentUser._id);
-      setMessages((prev) => {
-        const updatedMessages = prev.map((m) => m._id === messageId ? { ...m, isDeleted: true } : m);
-        const latestMsg = updatedMessages[0];
-        if (latestMsg) {
-          setChatRooms((prevRooms) => prevRooms.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { ...room.lastMessage, message: latestMsg.isDeleted ? "Tin nhắn bị thu hồi" : latestMsg.message, sender: latestMsg.sender, createdAt: latestMsg.createdAt } } : room));
-        }
-        return updatedMessages;
-      });
-    } catch (error) { alert("Không thể thu hồi tin nhắn."); }
-  };
-
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-    if (scrollTop + clientHeight >= scrollHeight - 20) {
-      if (visibleCount < messages.length) setVisibleCount((prev) => prev + 10);
-    }
-  };
-
   const visibleMessages = messages.slice(0, visibleCount);
   const hasRegularMessages = messages.some((m) => m.message && !m.message.startsWith("[SYS]: "));
 
@@ -489,7 +521,6 @@ export default function ChatRoom({
       </div>
 
       <div className="p-3 border-t bg-white shrink-0 z-10">
-        {/* KIỂM TRA PENDING TRƯỚC KHI RENDER KHUNG CHAT */}
         {isPendingMember ? (
           <div className="flex flex-col items-center justify-center py-2">
             <p className="text-sm text-gray-600 mb-3 font-medium">Bạn được mời tham gia nhóm này. Bạn có muốn tham gia không?</p>
@@ -508,8 +539,27 @@ export default function ChatRoom({
               </button>
             </div>
           </div>
+        ) : isReceiverOfPrivate ? (
+          <div className="flex flex-col items-center justify-center py-2">
+            <p className="text-sm text-gray-600 mb-3 font-medium">Người này muốn gửi tin nhắn cho bạn. Chấp nhận để tiếp tục trò chuyện?</p>
+            <div className="flex gap-4">
+              <button onClick={handleRejectPrivate} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-semibold transition">Từ chối</button>
+              <button onClick={handleAcceptPrivate} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-semibold transition shadow-sm">Đồng ý</button>
+            </div>
+          </div>
+        ) : (isRequesterOfPrivate && remainingMessages <= 0) ? (
+          <div className="flex flex-col items-center justify-center py-3">
+            <p className="text-sm text-red-500 font-medium">Đã gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục.</p>
+          </div>
         ) : (
-          <ChatForm handleFormSubmit={handleFormSubmit} />
+          <div className="flex flex-col">
+            {isRequesterOfPrivate && (
+              <span className="text-xs text-orange-500 mb-2 font-medium italic text-center">
+                Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm {remainingMessages} tin nhắn.
+              </span>
+            )}
+            <ChatForm handleFormSubmit={handleFormSubmit} />
+          </div>
         )}
       </div>
 
