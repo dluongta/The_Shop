@@ -67,15 +67,15 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
 
   return (
     <div className="relative w-full">
-      {/* VÙNG HIỂN THỊ "ĐANG SOẠN TIN..." - Nằm nổi lên ngay trên thanh chat */}
+      {/* VÙNG HIỂN THỊ "ĐANG SOẠN TIN..." */}
       {typingText && (
-        <div className="absolute -top-7 left-10 flex items-center gap-2 text-gray-500 animate-pulse z-10 px-3 py-1 text-xs italic bg-white rounded-t-lg shadow-[0_-2px_10px_-3px_rgba(0,0,0,0.1)] border border-b-0 border-gray-100">
-          <div className="flex space-x-1 items-center">
-            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+        <div className="absolute bottom-full left-0 mb-0 flex items-center gap-2 text-blue-600 z-10 px-3 py-1.5 text-xs italic bg-white rounded-t-lg shadow-[2px_-2px_10px_-3px_rgba(0,0,0,0.05)] border border-b-0 border-gray-200">
+          <div className="flex space-x-1 items-center pb-1">
+            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
-          <span className="font-medium">{typingText}</span>
+          <span className="font-semibold">{typingText}</span>
         </div>
       )}
 
@@ -86,7 +86,7 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex items-center justify-between w-full p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 relative z-20">
+        <div className="flex items-center justify-between w-full p-3 bg-white border-t border-gray-200 dark:bg-gray-900 dark:border-gray-700 relative z-20">
           <button
             type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -100,7 +100,7 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
 
           <input
             type="text"
-            placeholder="Write a message"
+            placeholder="Nhập tin nhắn..."
             className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             name="message"
             required

@@ -563,9 +563,9 @@ export default function ChatRoom({
         </div>
       </div>
 
-      <div className="p-3 bg-white shrink-0 z-10 relative">
+      <div className="p-0 bg-white shrink-0 z-10 relative">
         {isPendingMember ? (
-          <div className="flex flex-col items-center justify-center py-2">
+          <div className="flex flex-col items-center justify-center py-5 border-t">
             <p className="text-sm text-gray-600 mb-3 font-medium">Bạn được mời tham gia nhóm này. Bạn có muốn tham gia không?</p>
             <div className="flex gap-4">
               <button
@@ -583,7 +583,7 @@ export default function ChatRoom({
             </div>
           </div>
         ) : isReceiverOfPrivate ? (
-          <div className="flex flex-col items-center justify-center py-2">
+          <div className="flex flex-col items-center justify-center py-5 border-t">
             <p className="text-sm text-gray-600 mb-3 font-medium">Người này muốn gửi tin nhắn cho bạn. Chấp nhận để tiếp tục trò chuyện?</p>
             <div className="flex gap-4">
               <button onClick={handleRejectPrivate} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-semibold transition">Từ chối</button>
@@ -591,13 +591,13 @@ export default function ChatRoom({
             </div>
           </div>
         ) : (isRequesterOfPrivate && remainingMessages <= 0) ? (
-          <div className="flex flex-col items-center justify-center py-3">
+          <div className="flex flex-col items-center justify-center py-5 border-t">
             <p className="text-sm text-red-500 font-medium">Đã gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục.</p>
           </div>
         ) : (
-          <div className="flex flex-col relative w-full">
+          <div className="flex flex-col relative w-full pt-1">
             {isRequesterOfPrivate && (
-              <span className="text-xs text-orange-500 mb-2 font-medium italic text-center">
+              <span className="text-xs text-orange-500 mb-2 mt-2 font-medium italic text-center">
                 Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm {remainingMessages} tin nhắn.
               </span>
             )}
