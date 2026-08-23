@@ -16,7 +16,7 @@ const ProductEditScreen = () => {
   const [name, setName] = useState('')
   const [price, setPrice] = useState(0)
   const [images, setImages] = useState([]) // mảng các url ảnh
-  const [imageUrl, setImageUrl] = useState('') // state mới để chứa url ảnh nhập từ mạng
+  const [imageUrl, setImageUrl] = useState('/images/sample.jpg') // state mới để chứa url ảnh nhập từ mạng
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState('')
   const [countInStock, setCountInStock] = useState(0)
@@ -87,7 +87,7 @@ const ProductEditScreen = () => {
     } finally {
       setUploading(false)
       // Reset input file để có thể chọn lại file cũ nếu muốn
-      e.target.value = null 
+      e.target.value = null
     }
   }
 
@@ -163,7 +163,7 @@ const ProductEditScreen = () => {
             {/* --- KHU VỰC CHỈNH SỬA ẢNH --- */}
             <Form.Group controlId='images' className="mt-3">
               <Form.Label>Product Images (Max 5)</Form.Label>
-              
+
               {/* Option 1: Upload từ máy */}
               <Form.Control
                 type='file'
@@ -183,9 +183,9 @@ const ProductEditScreen = () => {
                   onChange={(e) => setImageUrl(e.target.value)}
                   disabled={images.length >= 5} // Khóa lại nếu đã đủ 5 ảnh
                 />
-                <Button 
-                  variant="secondary" 
-                  className="ms-2" 
+                <Button
+                  variant="secondary"
+                  className="ms-2"
                   onClick={addImageUrlHandler}
                   disabled={images.length >= 5 || !imageUrl.trim()}
                 >
@@ -257,14 +257,22 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId='category' className="mt-3">
-              <Form.Label>Category</Form.Label>
+            {/* Tìm đoạn Form.Group controlId='category' và thay bằng đoạn này */}
+
+            <Form.Group controlId='category' className="mb-3">
+              <Form.Label>Danh mục sản phẩm (Category)</Form.Label>
               <Form.Control
-                type='text'
-                placeholder='Enter category'
+                as='select'
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-              />
+              >
+                <option value=''>-- Chọn danh mục --</option>
+                <option value='Máy tính'>Máy tính</option>
+                <option value='Điện thoại'>Điện thoại</option>
+                <option value='Máy ảnh'>Máy ảnh</option>
+                <option value='Phụ kiện'>Phụ kiện</option>
+                <option value='Thiết bị khác'>Thiết bị khác</option>
+              </Form.Control>
             </Form.Group>
 
             <Form.Group controlId='description' className="mt-3 mb-3">

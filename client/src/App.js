@@ -87,7 +87,8 @@ const LayoutWrapper = ({ children }) => {
       >
         {children}
       </main>
-      {!isChat && <Footer />}
+      {/* {!isChat && <Footer />} */}
+      <Footer />
     </>
   );
 };

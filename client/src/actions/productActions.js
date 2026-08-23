@@ -110,8 +110,8 @@ export const listAdminProducts =
 //     }
 //   }
 
-// listProducts action
-export const listProducts = (keyword = '', pageNumber = '', userId = '', minPrice = '', maxPrice = '', sort = '') => async (dispatch) => {
+// Tìm hàm listProducts và sửa lại như sau:
+export const listProducts = (keyword = '', pageNumber = '', userId = '', minPrice = '', maxPrice = '', sort = '', category = '') => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_LIST_REQUEST })
 
@@ -122,7 +122,8 @@ export const listProducts = (keyword = '', pageNumber = '', userId = '', minPric
     if (userId) query += `userId=${userId}&`
     if (minPrice !== '') query += `minPrice=${minPrice}&`
     if (maxPrice !== '') query += `maxPrice=${maxPrice}&`
-    if (sort) query += `sort=${sort}`
+    if (sort) query += `sort=${sort}&`
+    if (category) query += `category=${category}&` // Gửi danh sách category lên backend
 
     if (query.endsWith('&')) query = query.slice(0, -1)
 
@@ -142,7 +143,6 @@ export const listProducts = (keyword = '', pageNumber = '', userId = '', minPric
     })
   }
 }
-
 
 
 export const listProductDetails = (id) => async (dispatch) => {

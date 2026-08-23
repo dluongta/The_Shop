@@ -20,13 +20,17 @@ const getProducts = asyncHandler(async (req, res) => {
       ? { user: req.query.userId }
       : {}
 
-  // Price filter (safe NaN handling)
+  // Price filter
   const minPrice = Number(req.query.minPrice)
   const maxPrice = Number(req.query.maxPrice)
-
   const priceFilter = {}
   if (!isNaN(minPrice)) priceFilter.$gte = minPrice
   if (!isNaN(maxPrice)) priceFilter.$lte = maxPrice
+
+  // Filter by categories (HỖ TRỢ LỌC NHIỀU DANH MỤC)
+  const categoryFilter = req.query.category
+    ? { category: { $in: req.query.category.split(',') } } 
+    : {}
 
   // Sort
   let sortBy = { updatedAt: -1 }
@@ -35,10 +39,11 @@ const getProducts = asyncHandler(async (req, res) => {
   if (req.query.sort === 'name_asc') sortBy = { name: 1 }
   if (req.query.sort === 'name_desc') sortBy = { name: -1 }
 
-  // Final filters
+  // Final filters - Gộp tất cả lại
   const filters = {
     ...keyword,
     ...userFilter,
+    ...categoryFilter,
     ...(Object.keys(priceFilter).length && { price: priceFilter }),
   }
 

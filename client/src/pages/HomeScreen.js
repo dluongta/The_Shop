@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Container, Form, Row, Col, Button, Modal } from 'react-bootstrap'
+import { Container, Form, Row, Col, Button, Modal, Card } from 'react-bootstrap'
 import { useGoogleOneTapLogin } from '@react-oauth/google'
 import { jwtDecode } from 'jwt-decode'
 
@@ -27,7 +27,12 @@ const HomeScreen = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [role, setRole] = useState('buyer')
-  const [paypalClientId, setPaypalClientId] = useState('') // Thêm state cho PayPal Client ID
+  const [paypalClientId, setPaypalClientId] = useState('')
+
+  /* =========================
+     DANH SÁCH CATEGORY (MẪU)
+  ========================= */
+  const categoryList = ['Máy tính', 'Điện thoại', 'Máy ảnh', 'Thiết bị khác']
 
   /* =========================
      FILTER & PAGINATION STATE
@@ -38,6 +43,11 @@ const HomeScreen = () => {
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
   const [sort, setSort] = useState(searchParams.get('sort') || '')
+  
+  // State quản lý mảng các danh mục được tick
+  const [selectedCategories, setSelectedCategories] = useState(
+    searchParams.get('category') ? searchParams.get('category').split(',') : []
+  )
 
   /* =========================
      GOOGLE REGISTER MODAL
@@ -56,19 +66,53 @@ const HomeScreen = () => {
      FETCH PRODUCTS
   ========================= */
   useEffect(() => {
-    dispatch(listProducts(keyword, pageNumber, '', minPrice, maxPrice, sort))
-  }, [dispatch, keyword, pageNumber, minPrice, maxPrice, sort])
+    // Lấy chuỗi category từ URL để fetch
+    const categoryQuery = searchParams.get('category') || ''
+    dispatch(listProducts(keyword, pageNumber, '', minPrice, maxPrice, sort, categoryQuery))
+    // eslint-disable-next-line
+  }, [dispatch, keyword, pageNumber, location.search])
 
   /* =========================
-     GOOGLE ONE TAP LOGIN
+     XỬ LÝ TICK CHỌN DANH MỤC
   ========================= */
+  const handleCategoryChange = (e) => {
+    const value = e.target.value
+    const isChecked = e.target.checked
+
+    if (isChecked) {
+      setSelectedCategories([...selectedCategories, value])
+    } else {
+      setSelectedCategories(selectedCategories.filter((c) => c !== value))
+    }
+  }
+
+  /* =========================
+     FILTER SUBMIT
+  ========================= */
+  const submitHandler = (e) => {
+    e.preventDefault()
+
+    const params = new URLSearchParams()
+    if (minPrice) params.set('minPrice', minPrice)
+    if (maxPrice) params.set('maxPrice', maxPrice)
+    if (sort) params.set('sort', sort)
+    if (selectedCategories.length > 0) {
+      params.set('category', selectedCategories.join(','))
+    }
+    
+    // Khi áp dụng filter mới, luôn reset về trang 1
+    params.set('pageNumber', 1)
+
+    navigate(`${keyword ? `/search/${keyword}` : '/'}?${params.toString()}`)
+  }
+
+  /* Google Logic giữ nguyên ... */
   useGoogleOneTapLogin({
     disabled: !!userInfo,
     onSuccess: async (res) => {
       try {
         const decoded = jwtDecode(res.credential)
         const { email, name } = decoded
-
         const existsRes = await dispatch(checkEmailExists(email))
 
         if (existsRes?.exists) {
@@ -84,45 +128,14 @@ const HomeScreen = () => {
     onError: () => console.log('Google One Tap failed'),
   })
 
-  /* =========================
-     REGISTER FROM MODAL
-  ========================= */
   const handleRegisterFromGoogle = async () => {
     if (!passwordModal || !googleUser) return
-
-    await dispatch(
-      register(
-        googleUser.name,
-        googleUser.email,
-        passwordModal,
-        role,
-        paypalClientId // Truyền thêm paypalClientId
-      )
-    )
-
+    await dispatch(register(googleUser.name, googleUser.email, passwordModal, role, paypalClientId))
     dispatch(login(googleUser.email, passwordModal))
-
     setShowModal(false)
     setPasswordModal('')
     setGoogleUser(null)
     setPaypalClientId('')
-  }
-
-  /* =========================
-     FILTER SUBMIT
-  ========================= */
-  const submitHandler = (e) => {
-    e.preventDefault()
-
-    const params = new URLSearchParams()
-    if (minPrice) params.set('minPrice', minPrice)
-    if (maxPrice) params.set('maxPrice', maxPrice)
-    if (sort) params.set('sort', sort)
-    
-    // Khi áp dụng filter mới, luôn reset về trang 1
-    params.set('pageNumber', 1)
-
-    navigate(`${keyword ? `/search/${keyword}` : '/'}?${params.toString()}`)
   }
 
   return (
@@ -132,80 +145,101 @@ const HomeScreen = () => {
 
       {!keyword && (
         <Container>
-          <h1>Top Products</h1>
+          <h2 className="mb-4">Top Products</h2>
           <ProductCarousel />
         </Container>
       )}
 
-      <Container>
-        <h1>Latest Products</h1>
+      <Container className="mt-4">
+        <Row>
+          {/* CỘT TRÁI: SIDEBAR LỌC SẢN PHẨM */}
+          <Col md={3}>
+            <Card className="p-3 mb-4 border-0 shadow-sm">
+              <Form onSubmit={submitHandler}>
+                <h5 className="mb-3">Danh mục sản phẩm</h5>
+                <Form.Group className="mb-4">
+                  {categoryList.map((cat, index) => (
+                    <Form.Check
+                      key={index}
+                      type="checkbox"
+                      label={<span className="fw-bold">{cat}</span>}
+                      value={cat}
+                      checked={selectedCategories.includes(cat)}
+                      onChange={handleCategoryChange}
+                      className="mb-2"
+                    />
+                  ))}
+                </Form.Group>
 
-        {/* FILTER */}
-        <Form onSubmit={submitHandler} className="mb-3">
-          <Row>
-            <Col md={3}>
-              <Form.Control
-                type="number"
-                placeholder="Min Price"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
-            </Col>
+                <h5 className="mb-3">Bộ lọc khác</h5>
+                <Form.Group className="mb-3">
+                  <Form.Label>Giá tối thiểu</Form.Label>
+                  <Form.Control
+                    type="number"
+                    placeholder="Min Price"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                  />
+                </Form.Group>
 
-            <Col md={3}>
-              <Form.Control
-                type="number"
-                placeholder="Max Price"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-              />
-            </Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Giá tối đa</Form.Label>
+                  <Form.Control
+                    type="number"
+                    placeholder="Max Price"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                  />
+                </Form.Group>
 
-            <Col md={3}>
-              <Form.Control
-                as="select"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                <option value="">Sort</option>
-                <option value="price_asc">Price: Ascending</option>
-                <option value="price_desc">Price: Descending</option>
-                <option value="name_asc">Name: A - Z</option>
-                <option value="name_desc">Name: Z - A</option>
-              </Form.Control>
-            </Col>
+                <Form.Group className="mb-4">
+                  <Form.Label>Sắp xếp</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                  >
+                    <option value="">Mặc định</option>
+                    <option value="price_asc">Giá: Thấp đến Cao</option>
+                    <option value="price_desc">Giá: Cao đến Thấp</option>
+                    <option value="name_asc">Tên: A - Z</option>
+                    <option value="name_desc">Tên: Z - A</option>
+                  </Form.Control>
+                </Form.Group>
 
-            <Col md={3}>
-              <Button type="submit" className="w-100">
-                Apply
-              </Button>
-            </Col>
-          </Row>
-        </Form>
+                <Button type="submit" variant="dark" className="w-100">
+                  Áp dụng bộ lọc
+                </Button>
+              </Form>
+            </Card>
+          </Col>
 
-        {loading ? (
-          <Loader />
-        ) : error ? (
-          <Message variant="danger">{error}</Message>
-        ) : (
-          <>
-            <LatestProducts products={products} />
-            <Paginate pages={pages} page={page} />
-          </>
-        )}
+          {/* CỘT PHẢI: DANH SÁCH SẢN PHẨM */}
+          <Col md={9}>
+            <h2 className="mb-4">Sản phẩm mới nhất</h2>
+            {loading ? (
+              <Loader />
+            ) : error ? (
+              <Message variant="danger">{error}</Message>
+            ) : (
+              <>
+                <LatestProducts products={products} />
+                <div className="mt-4 d-flex justify-content-center">
+                  <Paginate pages={pages} page={page} keyword={keyword ? keyword : ''} />
+                </div>
+              </>
+            )}
+          </Col>
+        </Row>
       </Container>
 
-      {/* MODAL */}
+      {/* MODAL (Giữ nguyên) */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        {/* Đã xóa closeButton tại đây */}
         <Modal.Header>
           <Modal.Title>Create account</Modal.Title>
         </Modal.Header>
-
         <Modal.Body>
-          <p>
-            Please enter a password to create your account <strong>{googleUser?.email}</strong>.
-          </p>
+          <p>Please enter a password to create your account <strong>{googleUser?.email}</strong>.</p>
           <Form.Control
             type="password"
             placeholder="Enter password"
@@ -213,17 +247,11 @@ const HomeScreen = () => {
             onChange={(e) => setPasswordModal(e.target.value)}
           />
           <Form.Group className="mt-3">
-            <Form.Control
-              as="select"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
+            <Form.Control as="select" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="buyer">Buyer (Người mua)</option>
               <option value="seller">Seller (Người bán)</option>
             </Form.Control>
           </Form.Group>
-
-          {/* Trường PayPal Client ID */}
           <Form.Control
             className="mt-3"
             type="text"
@@ -231,16 +259,10 @@ const HomeScreen = () => {
             value={paypalClientId}
             onChange={(e) => setPaypalClientId(e.target.value)}
           />
-
         </Modal.Body>
-        
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleRegisterFromGoogle}>
-            Register & Login
-          </Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleRegisterFromGoogle}>Register & Login</Button>
         </Modal.Footer>
       </Modal>
     </>
