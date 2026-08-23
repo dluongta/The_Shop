@@ -67,15 +67,33 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
 
   return (
     <div className="relative w-full">
+      {/* Định nghĩa Keyframe trực tiếp bằng thẻ style để tạo hiệu ứng sóng "lên -> xuống" mượt mà */}
+      <style>
+        {`
+          @keyframes customWave {
+            0%, 60%, 100% {
+              transform: translateY(0);
+            }
+            30% {
+              transform: translateY(-5px); /* Tăng biên độ nhảy lên cao hơn một chút */
+            }
+          }
+          .animate-custom-wave {
+            animation: customWave 1.3s linear infinite;
+          }
+        `}
+      </style>
+
       {/* VÙNG HIỂN THỊ "ĐANG SOẠN TIN..." */}
       {typingText && (
         <div className="absolute bottom-full left-0 mb-0 flex items-baseline gap-1 text-blue-600 z-10 px-3 py-1.5 text-xs italic bg-white rounded-t-lg shadow-[2px_-2px_10px_-3px_rgba(0,0,0,0.05)] border border-b-0 border-gray-200">
           <span className="font-semibold leading-none">{typingText}</span>
-          {/* 3 dấu chấm nhảy ở bên phải chữ - Căn ngang đáy chữ bằng items-baseline */}
+          
+          {/* 3 dấu chấm nhảy ở bên phải chữ - Căn ngang đáy chữ và có hiệu ứng wave */}
           <div className="flex space-x-0.5 items-baseline">
-            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-custom-wave" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-custom-wave" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-custom-wave" style={{ animationDelay: '300ms' }}></div>
           </div>
         </div>
       )}
