@@ -18,7 +18,10 @@ export const createChatRoom = async (req, res) => {
 export const getChatRoomOfUser = async (req, res) => {
   try {
     const chatRoom = await ChatRoom.find({
-      members: { $in: [req.params.userId] },
+      $or: [
+        { members: { $in: [req.params.userId] } },
+        { pendingMembers: { $in: [req.params.userId] } }
+      ]
     });
     res.status(200).json(chatRoom);
   } catch (error) {
@@ -37,10 +40,8 @@ export const getChatRoomOfUsers = async (req, res) => {
   }
 };
 
-
 // ================= CÁC HÀM QUẢN LÝ NHÓM CHAT =================
 
-// POST /api/room/group
 export const createGroupChat = async (req, res) => {
   const { name, memberIds, adminId } = req.body;
   if (!name || !memberIds || memberIds.length < 2) {
@@ -48,12 +49,16 @@ export const createGroupChat = async (req, res) => {
   }
 
   try {
+    const initialMembers = [adminId];
+    const initialPending = memberIds.filter(id => id !== adminId);
+
     const newRoom = new ChatRoom({
       name,
-      members: memberIds,
+      members: initialMembers,
+      pendingMembers: initialPending,
       isGroup: true,
       admin: adminId,
-      deputies: [], // Khởi tạo mảng phó nhóm rỗng
+      deputies: [], 
     });
 
     await newRoom.save();
@@ -73,7 +78,6 @@ export const createGroupChat = async (req, res) => {
   }
 };
 
-// PUT /api/room/leave/:roomId (Thành viên tự rời nhóm)
 export const leaveGroupChat = async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;
@@ -91,22 +95,22 @@ export const leaveGroupChat = async (req, res) => {
     }
 
     room.members = room.members.filter(id => id.toString() !== userId);
-    // Xóa luôn khỏi mảng phó nhóm nếu người rời là phó nhóm
+    if (room.pendingMembers) {
+      room.pendingMembers = room.pendingMembers.filter(id => id.toString() !== userId);
+    }
     if (room.deputies) {
       room.deputies = room.deputies.filter(id => id.toString() !== userId);
     }
+    
     await room.save();
-
     res.status(200).json({ message: "Left group successfully", room });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// PUT /api/room/group/remove (Trưởng nhóm / Phó nhóm xóa thành viên)
 export const removeMember = async (req, res) => {
   const { roomId, adminId, memberToRemoveId } = req.body;
-  // Biến adminId ở đây thực chất là ID của người đang thực hiện hành động (Requester)
 
   try {
     const room = await ChatRoom.findById(roomId);
@@ -119,7 +123,6 @@ export const removeMember = async (req, res) => {
       return res.status(403).json({ message: "Chỉ Trưởng nhóm và Phó nhóm mới có quyền xóa" });
     }
 
-    // Nếu người xóa là phó nhóm, không cho phép xóa Trưởng nhóm hoặc Phó nhóm khác
     if (isDeputy && !isAdmin) {
       const targetIsAdmin = room.admin.toString() === memberToRemoveId;
       const targetIsDeputy = room.deputies && room.deputies.some(id => id.toString() === memberToRemoveId);
@@ -129,6 +132,9 @@ export const removeMember = async (req, res) => {
     }
 
     room.members = room.members.filter(id => id.toString() !== memberToRemoveId);
+    if (room.pendingMembers) {
+      room.pendingMembers = room.pendingMembers.filter(id => id.toString() !== memberToRemoveId);
+    }
     if (room.deputies) {
       room.deputies = room.deputies.filter(id => id.toString() !== memberToRemoveId);
     }
@@ -139,7 +145,6 @@ export const removeMember = async (req, res) => {
   }
 };
 
-// PUT /api/room/group/add (Nhóm trưởng thêm thành viên)
 export const addMembers = async (req, res) => {
   const { roomId, adminId, newMemberIds } = req.body;
   try {
@@ -147,11 +152,14 @@ export const addMembers = async (req, res) => {
     if (!room) return res.status(404).json({ message: "Không tìm thấy nhóm" });
     if (room.admin.toString() !== adminId) return res.status(403).json({ message: "Chỉ nhóm trưởng mới có quyền thêm thành viên" });
 
+    if (!room.pendingMembers) room.pendingMembers = [];
+
     newMemberIds.forEach(id => {
-      if (!room.members.includes(id)) {
-        room.members.push(id);
+      if (!room.members.includes(id) && !room.pendingMembers.includes(id)) {
+        room.pendingMembers.push(id);
       }
     });
+    
     await room.save();
     res.status(200).json(room);
   } catch (error) {
@@ -159,7 +167,39 @@ export const addMembers = async (req, res) => {
   }
 };
 
-// DELETE /api/room/group/dissolve (Nhóm trưởng giải tán nhóm)
+export const acceptInvite = async (req, res) => {
+  const { roomId, userId } = req.body;
+  try {
+    const room = await ChatRoom.findById(roomId);
+    if (!room) return res.status(404).json({ message: "Không tìm thấy nhóm" });
+
+    room.pendingMembers = room.pendingMembers.filter(id => id.toString() !== userId);
+    if (!room.members.includes(userId)) {
+      room.members.push(userId);
+    }
+    
+    await room.save();
+    res.status(200).json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const rejectInvite = async (req, res) => {
+  const { roomId, userId } = req.body;
+  try {
+    const room = await ChatRoom.findById(roomId);
+    if (!room) return res.status(404).json({ message: "Không tìm thấy nhóm" });
+
+    room.pendingMembers = room.pendingMembers.filter(id => id.toString() !== userId);
+    await room.save();
+    
+    res.status(200).json({ message: "Đã từ chối tham gia nhóm", roomId });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const dissolveGroup = async (req, res) => {
   const { roomId, adminId } = req.body;
   try {
@@ -174,28 +214,6 @@ export const dissolveGroup = async (req, res) => {
   }
 };
 
-// PUT /api/room/group/transfer-admin
-// export const transferAdmin = async (req, res) => {
-//   const { roomId, currentAdminId, newAdminId } = req.body;
-//   try {
-//     const room = await ChatRoom.findById(roomId);
-//     if (!room) return res.status(404).json({ message: "Không tìm thấy nhóm" });
-//     if (room.admin.toString() !== currentAdminId) return res.status(403).json({ message: "Chỉ nhóm trưởng mới có quyền thực hiện" });
-
-//     room.admin = newAdminId;
-//     // Nếu tân trưởng nhóm đang là phó nhóm thì bỏ chức phó nhóm đi
-//     if (room.deputies) {
-//       room.deputies = room.deputies.filter(id => id.toString() !== newAdminId);
-//     }
-//     await room.save();
-
-//     res.status(200).json(room);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-// PUT /api/room/group/transfer-admin
 export const transferAdmin = async (req, res) => {
   const { roomId, currentAdminId, newAdminId } = req.body;
   try {
@@ -203,28 +221,21 @@ export const transferAdmin = async (req, res) => {
     if (!room) return res.status(404).json({ message: "Không tìm thấy nhóm" });
     if (room.admin.toString() !== currentAdminId) return res.status(403).json({ message: "Chỉ nhóm trưởng mới có quyền thực hiện" });
 
-    // 1. Chuyển quyền trưởng nhóm cho người mới
     room.admin = newAdminId;
-
     if (!room.deputies) room.deputies = [];
-
-    // 2. Nếu tân trưởng nhóm đang là phó nhóm thì gỡ chức phó nhóm đi
     room.deputies = room.deputies.filter(id => id.toString() !== newAdminId);
 
-    // 3. Đưa cựu trưởng nhóm (người đang thực hiện) vào làm phó nhóm
     if (!room.deputies.includes(currentAdminId)) {
       room.deputies.push(currentAdminId);
     }
 
     await room.save();
-
     res.status(200).json(room);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// PUT /api/room/group/add-deputy
 export const addDeputy = async (req, res) => {
   const { roomId, adminId, deputyId } = req.body;
   try {
@@ -243,7 +254,6 @@ export const addDeputy = async (req, res) => {
   }
 };
 
-// PUT /api/room/group/remove-deputy
 export const removeDeputy = async (req, res) => {
   const { roomId, adminId, deputyId } = req.body;
   try {

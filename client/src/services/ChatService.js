@@ -161,9 +161,9 @@ export const useApi = () => {
   const dissolveGroupApi = async (roomId, adminId) => {
     const header = createHeader();
     try {
-      const res = await axios.delete(`${baseURL}/room/group/dissolve`, { 
-        ...header, 
-        data: { roomId, adminId } 
+      const res = await axios.delete(`${baseURL}/room/group/dissolve`, {
+        ...header,
+        data: { roomId, adminId }
       });
       return res.data;
     } catch (e) {
@@ -204,6 +204,16 @@ export const useApi = () => {
       throw e;
     }
   };
+  // Bổ sung vào danh sách return của useApi()
+  const acceptGroupInviteApi = async (roomId, userId) => {
+    const res = await axios.put(`/api/room/group/accept-invite`, { roomId, userId });
+    return res.data;
+  };
+
+  const rejectGroupInviteApi = async (roomId, userId) => {
+    const res = await axios.put(`/api/room/group/reject-invite`, { roomId, userId });
+    return res.data;
+  };
 
   return {
     initiateSocketConnection,
@@ -218,11 +228,13 @@ export const useApi = () => {
     markMessagesAsRead,
     leaveGroupChat,
     revokeMessageApi,
-    kickMemberApi,          
-    addMembersToGroupApi,   
+    kickMemberApi,
+    addMembersToGroupApi,
     dissolveGroupApi,
     transferAdminApi,
     addDeputyApi,
-    removeDeputyApi       
+    removeDeputyApi,
+    acceptGroupInviteApi,
+    rejectGroupInviteApi
   };
 };

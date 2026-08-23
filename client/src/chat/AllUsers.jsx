@@ -118,6 +118,9 @@ export default function AllUsers({
           const otherUserObj = users.find(u => u._id === otherUserId);
           const isOnline = onlineUsersId.includes(otherUserId);
           const isUnread = hasUnread(room); 
+          
+          // Kiểm tra xem user hiện tại có đang được mời vào nhóm này không
+          const isPending = room.pendingMembers?.includes(currentUser._id);
 
           let isGroupOnline = false;
           let groupLastActivity = null;
@@ -164,11 +167,16 @@ export default function AllUsers({
                   <div className="flex justify-between items-center">
                     <p
                       className={classNames(
-                        "truncate text-sm",
+                        "truncate text-sm flex items-center",
                         isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
                       )}
                     >
                       {room.isGroup ? room.name : getDisplayName(otherUserId)}
+                      {isPending && (
+                        <span className="ml-2 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                          LỜI MỜI
+                        </span>
+                      )}
                     </p>
                     
                     <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
@@ -196,7 +204,6 @@ export default function AllUsers({
                       isUnread ? "text-black font-bold" : "text-gray-500"
                     )}>
                       
-                      {/* KHÔNG HIỂN THỊ TÊN NGƯỜI GỬI NẾU ĐÂY LÀ TIN NHẮN HỆ THỐNG */}
                       {!room.lastMessage.message.startsWith("[SYS]: ") && (
                         <>
                           {room.lastMessage.sender === currentUser._id ? (
@@ -211,7 +218,6 @@ export default function AllUsers({
                         </>
                       )}
                       
-                      {/* XÓA ĐOẠN "[SYS]: " CHO HIỂN THỊ ĐẸP Ở SIDEBAR */}
                       <span className={classNames(
                         "truncate", 
                         isUnread ? "text-black font-bold" : ""
@@ -222,10 +228,10 @@ export default function AllUsers({
                       </span>
                     </p>
                   ) : (
-                    <p className="text-[10px] text-gray-400 truncate italic">
+                    <p className="text-[10px] text-gray-400 truncate italic mt-0.5">
                       {!room.isGroup 
                         ? otherUserObj?.email 
-                        : "Nhóm mới - Chưa có tin nhắn"}
+                        : (isPending ? "Bạn được mời vào nhóm này" : "Nhóm mới - Chưa có tin nhắn")}
                     </p>
                   )}
                 </div>

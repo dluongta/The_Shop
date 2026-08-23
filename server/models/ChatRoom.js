@@ -4,9 +4,10 @@ const ChatRoomSchema = new mongoose.Schema(
   {
     name: { type: String },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    pendingMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Mảng lưu người dùng đang ở phòng chờ
     isGroup: { type: Boolean, default: false },
     admin: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
-    deputies: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // THÊM DÒNG NÀY: Mảng lưu Phó nhóm
+    deputies: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Mảng lưu Phó nhóm
 
     lastMessage: {
       sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

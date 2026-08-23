@@ -42,11 +42,14 @@ export default function ChatRoom({
   const {
     getMessagesOfChatRoom, sendMessage, leaveGroupChat, revokeMessageApi,
     kickMemberApi, addMembersToGroupApi, dissolveGroupApi, transferAdminApi,
-    addDeputyApi, removeDeputyApi
+    addDeputyApi, removeDeputyApi, acceptGroupInviteApi, rejectGroupInviteApi // THÊM 2 API NÀY
   } = useApi();
 
   const isAdmin = currentChat?.admin === currentUser._id;
   const isDeputy = currentChat?.deputies?.includes(currentUser._id);
+
+  // KIỂM TRA PHÒNG CHỜ
+  const isPendingMember = currentChat?.pendingMembers?.includes(currentUser._id);
 
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
@@ -82,20 +85,21 @@ export default function ChatRoom({
   }, []);
 
   const handleKick = async (memberId) => {
-    if (window.confirm("Bạn có chắc muốn xóa thành viên này khỏi nhóm?")) {
+    if (window.confirm("Bạn có chắc muốn xóa/hủy mời thành viên này?")) {
       try {
         await kickMemberApi(currentChat._id, currentUser._id, memberId);
 
         setCurrentChat(prev => {
           const newMembers = prev.members.filter(id => id !== memberId);
+          const newPending = prev.pendingMembers ? prev.pendingMembers.filter(id => id !== memberId) : [];
           const newDeputies = prev.deputies ? prev.deputies.filter(id => id !== memberId) : [];
-          return { ...prev, members: newMembers, deputies: newDeputies };
+          return { ...prev, members: newMembers, pendingMembers: newPending, deputies: newDeputies };
         });
 
         const member = users.find(u => u._id === memberId);
         const actorString = getUserString(currentUser);
         const targetString = getUserString(member);
-        await handleFormSubmit(`[SYS]: ${actorString} đã xóa ${targetString} khỏi nhóm.`);
+        await handleFormSubmit(`[SYS]: ${actorString} đã loại ${targetString} khỏi nhóm.`);
       } catch (error) {
         alert("Có lỗi xảy ra khi xóa thành viên!");
       }
@@ -178,10 +182,15 @@ export default function ChatRoom({
   };
 
   const submitAddMembers = async () => {
-    if (selectedNewMembers.length === 0) return alert("Vui lòng chọn ít nhất 1 thành viên để thêm!");
+    if (selectedNewMembers.length === 0) return alert("Vui lòng chọn ít nhất 1 thành viên để mời!");
     try {
       await addMembersToGroupApi(currentChat._id, currentUser._id, selectedNewMembers);
-      setCurrentChat(prev => ({ ...prev, members: [...prev.members, ...selectedNewMembers] }));
+
+      // Update state: Add to pendingMembers instead of members
+      setCurrentChat(prev => ({
+        ...prev,
+        pendingMembers: [...(prev.pendingMembers || []), ...selectedNewMembers]
+      }));
 
       const actorString = getUserString(currentUser);
       const addedStrings = selectedNewMembers.map(id => {
@@ -189,13 +198,56 @@ export default function ChatRoom({
         return getUserString(u);
       }).join(", ");
 
-      await handleFormSubmit(`[SYS]: ${actorString} đã thêm ${addedStrings} vào nhóm.`);
+      await handleFormSubmit(`[SYS]: ${actorString} đã gửi lời mời tham gia nhóm cho ${addedStrings}.`);
       setShowAddMemberModal(false);
       setSelectedNewMembers([]);
     } catch (error) {
-      alert("Có lỗi xảy ra khi thêm thành viên!");
+      alert("Có lỗi xảy ra khi mời thành viên!");
     }
   };
+
+  // HANDLER CHO LỜI MỜI
+  const handleAcceptInvite = async () => {
+    try {
+      const updatedRoom = await acceptGroupInviteApi(currentChat._id, currentUser._id);
+      setCurrentChat(updatedRoom);
+      setChatRooms(prev => prev.map(r => r._id === currentChat._id ? updatedRoom : r));
+      await handleFormSubmit(`[SYS]: ${getUserString(currentUser)} đã chấp nhận tham gia nhóm.`);
+    } catch (err) {
+      alert("Không thể tham gia nhóm");
+    }
+  };
+
+  const handleRejectInvite = async () => {
+    if (window.confirm("Bạn có chắc muốn từ chối lời mời vào nhóm này?")) {
+      try {
+        // 1. Lấy tên người dùng và gửi tin nhắn hệ thống báo từ chối TRƯỚC khi thoát
+        const actorString = getUserString(currentUser);
+        await handleFormSubmit(`[SYS]: ${actorString} đã từ chối tham gia nhóm.`);
+
+        // 2. Gọi API từ chối lời mời
+        await rejectGroupInviteApi(currentChat._id, currentUser._id);
+
+        // 3. Đóng khung chat và xóa khỏi danh sách bên trái
+        setCurrentChat(null);
+        setChatRooms(prev => prev.filter(r => r._id !== currentChat._id));
+      } catch (err) {
+        alert("Lỗi khi từ chối");
+      }
+    }
+  };
+
+  //   const handleRejectInvite = async () => {
+  //   if (window.confirm("Bạn có chắc muốn từ chối lời mời vào nhóm này?")) {
+  //     try {
+  //       await rejectGroupInviteApi(currentChat._id, currentUser._id);
+  //       setCurrentChat(null); 
+  //       setChatRooms(prev => prev.filter(r => r._id !== currentChat._id)); 
+  //     } catch (err) {
+  //       alert("Lỗi khi từ chối");
+  //     }
+  //   }
+  // };
 
   useEffect(() => {
     if (!currentChat?._id) return;
@@ -218,10 +270,15 @@ export default function ChatRoom({
       const isGroupOnline = otherMembers.some(id => onlineUsersId.includes(id));
       const groupLastActivity = messages.length > 0 ? messages[0].createdAt : currentChat.lastMessage?.createdAt;
 
+      const allUsersInGroup = [...currentChat.members, ...(currentChat.pendingMembers || [])];
+
       return (
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-col justify-center translate-y">
-            <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">{currentChat.name}</h3>
+            <h3 className="font-semibold truncate text-[17px] text-gray-800 leading-none mb-1.5">
+              {currentChat.name}
+              {isPendingMember && <span className="ml-2 text-xs text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full">Phòng chờ</span>}
+            </h3>
             <span className="text-[13px] text-gray-500 leading-none translate-y-1">
               {currentChat.members?.length || 0} thành viên
               <span className="mx-1.5">•</span>
@@ -238,10 +295,11 @@ export default function ChatRoom({
               <div className="absolute right-0 top-full mt-2 w-[340px] bg-white shadow-xl border rounded p-4 z-50">
                 <h4 className="font-bold mb-2 text-sm text-gray-800">Thành viên</h4>
                 <ul className="max-h-48 overflow-y-auto mb-3">
-                  {currentChat.members.map(memberId => {
+                  {allUsersInGroup.map(memberId => {
                     const member = users.find(u => u._id === memberId);
                     const isMemberAdmin = currentChat.admin === memberId;
                     const isMemberDeputy = currentChat.deputies?.includes(memberId);
+                    const isPending = currentChat.pendingMembers?.includes(memberId);
 
                     return (
                       <li key={memberId} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
@@ -249,24 +307,28 @@ export default function ChatRoom({
                           {member?.email || "Unknown"}
                           {isMemberAdmin && <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Trưởng nhóm</span>}
                           {isMemberDeputy && <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Phó nhóm</span>}
+                          {isPending && <span className="text-[10px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}
                         </span>
 
                         <div className="flex gap-2 ml-2 shrink-0">
                           {isAdmin && !isMemberAdmin && (
                             <div className="flex flex-col gap-1 items-end">
                               <div className="flex gap-2">
-                                {!isMemberDeputy ? (
+                                {!isPending && !isMemberDeputy && (
                                   <button onClick={() => handleAddDeputy(memberId)} className="text-blue-500 hover:text-blue-700 text-[10px] font-medium border border-blue-200 px-1 rounded">Thêm Phó nhóm</button>
-                                ) : (
+                                )}
+                                {!isPending && isMemberDeputy && (
                                   <button onClick={() => handleRemoveDeputy(memberId)} className="text-orange-500 hover:text-orange-700 text-[10px] font-medium border border-orange-200 px-1 rounded">Gỡ Phó nhóm</button>
                                 )}
-                                <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">Xóa</button>
+                                <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">{isPending ? "Hủy mời" : "Xóa"}</button>
                               </div>
-                              <button onClick={() => handleTransferAdmin(memberId)} className="text-green-600 hover:text-green-800 text-[10px] font-medium border border-green-200 px-1 rounded">Chuyển quyền Trưởng nhóm</button>
+                              {!isPending && (
+                                <button onClick={() => handleTransferAdmin(memberId)} className="text-green-600 hover:text-green-800 text-[10px] font-medium border border-green-200 px-1 rounded">Chuyển quyền Trưởng nhóm</button>
+                              )}
                             </div>
                           )}
                           {isDeputy && !isMemberAdmin && !isMemberDeputy && !isAdmin && (
-                            <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">Xóa khỏi nhóm</button>
+                            <button onClick={() => handleKick(memberId)} className="text-red-500 hover:text-red-700 text-[10px] font-medium border border-red-200 px-1 rounded">{isPending ? "Hủy mời" : "Xóa khỏi nhóm"}</button>
                           )}
                         </div>
                       </li>
@@ -276,12 +338,12 @@ export default function ChatRoom({
 
                 {isAdmin && (
                   <div className="flex flex-col gap-2 mt-3 border-t pt-3">
-                    <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">+ Thêm thành viên</button>
+                    <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">+ Mời thành viên</button>
                     <button onClick={handleDissolve} className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded w-full transition-colors">Giải tán nhóm</button>
                   </div>
                 )}
 
-                {!isAdmin && (
+                {!isAdmin && !isPendingMember && (
                   <div className="mt-3 border-t pt-3">
                     <button
                       onClick={async () => {
@@ -323,12 +385,13 @@ export default function ChatRoom({
         </div>
       </div>
     );
-  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages]);
+  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages, isPendingMember]);
 
   const availableUsersToAdd = useMemo(() => {
     if (!currentChat) return [];
     return users.filter(u =>
       !currentChat.members.includes(u._id) &&
+      (!currentChat.pendingMembers || !currentChat.pendingMembers.includes(u._id)) &&
       (u.email.toLowerCase().includes(memberSearchTerm.toLowerCase()) || (u.name && u.name.toLowerCase().includes(memberSearchTerm.toLowerCase())))
     );
   }, [users, currentChat, memberSearchTerm]);
@@ -381,8 +444,6 @@ export default function ChatRoom({
   };
 
   const visibleMessages = messages.slice(0, visibleCount);
-
-  // LOGIC CHECK CÓ TIN NHẮN THỰC SỰ HAY KHÔNG ĐỂ ẨN "Đã hết tin nhắn"
   const hasRegularMessages = messages.some((m) => m.message && !m.message.startsWith("[SYS]: "));
 
   return (
@@ -401,7 +462,6 @@ export default function ChatRoom({
 
             if (m.message && m.message.startsWith("[SYS]: ")) {
               const sysText = m.message.replace("[SYS]: ", "");
-              // Cắt chuỗi theo định dạng **nội dung**
               const parts = sysText.split(/\*\*(.*?)\*\*/g);
 
               return (
@@ -429,13 +489,34 @@ export default function ChatRoom({
       </div>
 
       <div className="p-3 border-t bg-white shrink-0 z-10">
-        <ChatForm handleFormSubmit={handleFormSubmit} />
+        {/* KIỂM TRA PENDING TRƯỚC KHI RENDER KHUNG CHAT */}
+        {isPendingMember ? (
+          <div className="flex flex-col items-center justify-center py-2">
+            <p className="text-sm text-gray-600 mb-3 font-medium">Bạn được mời tham gia nhóm này. Bạn có muốn tham gia không?</p>
+            <div className="flex gap-4">
+              <button
+                onClick={handleRejectInvite}
+                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-semibold transition"
+              >
+                Từ chối
+              </button>
+              <button
+                onClick={handleAcceptInvite}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-semibold transition shadow-sm"
+              >
+                Đồng ý tham gia
+              </button>
+            </div>
+          </div>
+        ) : (
+          <ChatForm handleFormSubmit={handleFormSubmit} />
+        )}
       </div>
 
       {showAddMemberModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[60]">
           <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full m-4">
-            <h2 className="text-xl font-bold mb-4">Thêm thành viên</h2>
+            <h2 className="text-xl font-bold mb-4">Mời thành viên</h2>
             <input value={memberSearchTerm} onChange={(e) => setMemberSearchTerm(e.target.value)} placeholder="Tìm kiếm bằng email hoặc tên..." className="border border-gray-300 rounded px-3 py-2 w-full mb-2 focus:outline-none focus:border-blue-500" />
             <div className="max-h-64 overflow-y-auto mb-4 border border-gray-200 rounded p-2">
               {availableUsersToAdd.length > 0 ? (
@@ -449,7 +530,7 @@ export default function ChatRoom({
             </div>
             <div className="flex justify-end space-x-3">
               <button onClick={() => { setShowAddMemberModal(false); setSelectedNewMembers([]); }} className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-sm font-medium">Hủy</button>
-              <button onClick={submitAddMembers} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium">Thêm vào nhóm</button>
+              <button onClick={submitAddMembers} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium">Gửi lời mời</button>
             </div>
           </div>
         </div>
