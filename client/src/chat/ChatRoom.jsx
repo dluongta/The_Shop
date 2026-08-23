@@ -32,7 +32,7 @@ export default function ChatRoom({
   const [messages, setMessages] = useState([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [showSettings, setShowSettings] = useState(false);
-  
+
   const [typingUsers, setTypingUsers] = useState([]);
 
   const settingsRef = useRef(null);
@@ -276,7 +276,7 @@ export default function ChatRoom({
       const updatedRoom = await acceptPrivateChatApi(currentChat._id);
       setCurrentChat(updatedRoom);
       setChatRooms(prev => prev.map(r => r._id === currentChat._id ? updatedRoom : r));
-      
+
       const actorString = getUserString(currentUser);
       await handleFormSubmit(`[SYS]: ${actorString} đã đồng ý cuộc trò chuyện.`);
     } catch (err) {
@@ -298,9 +298,9 @@ export default function ChatRoom({
 
   useEffect(() => {
     if (!currentChat?._id) return;
-    
-    setTypingUsers([]); 
-    
+
+    setTypingUsers([]);
+
     const fetchMessages = async () => {
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
@@ -516,9 +516,9 @@ export default function ChatRoom({
 
   const typingText = useMemo(() => {
     if (typingUsers.length === 0) return null;
-    if (typingUsers.length === 1) return `${typingUsers[0].senderName} đang soạn tin...`;
-    if (typingUsers.length === 2) return `${typingUsers[0].senderName} và ${typingUsers[1].senderName} đang soạn tin...`;
-    return `Nhiều người đang soạn tin...`;
+    if (typingUsers.length === 1) return `${typingUsers[0].senderName} đang soạn tin`;
+    if (typingUsers.length === 2) return `${typingUsers[0].senderName} và ${typingUsers[1].senderName} đang soạn tin`;
+    return `Nhiều người đang soạn tin`;
   }, [typingUsers]);
 
   return (
@@ -601,9 +601,9 @@ export default function ChatRoom({
                 Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm {remainingMessages} tin nhắn.
               </span>
             )}
-            
-            <ChatForm 
-              handleFormSubmit={handleFormSubmit} 
+
+            <ChatForm
+              handleFormSubmit={handleFormSubmit}
               onTyping={handleTyping}
               onStopTyping={handleStopTyping}
               typingText={typingText}

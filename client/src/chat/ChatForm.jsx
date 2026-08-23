@@ -69,13 +69,14 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
     <div className="relative w-full">
       {/* VÙNG HIỂN THỊ "ĐANG SOẠN TIN..." */}
       {typingText && (
-        <div className="absolute bottom-full left-0 mb-0 flex items-center gap-2 text-blue-600 z-10 px-3 py-1.5 text-xs italic bg-white rounded-t-lg shadow-[2px_-2px_10px_-3px_rgba(0,0,0,0.05)] border border-b-0 border-gray-200">
-          <div className="flex space-x-1 items-center pb-1">
-            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-          </div>
+        <div className="absolute bottom-full left-0 mb-0 flex items-center gap-1.5 text-blue-600 z-10 px-3 py-1.5 text-xs italic bg-white rounded-t-lg shadow-[2px_-2px_10px_-3px_rgba(0,0,0,0.05)] border border-b-0 border-gray-200">
           <span className="font-semibold">{typingText}</span>
+          {/* 3 dấu chấm nhảy ở bên phải chữ */}
+          <div className="flex space-x-1 items-center pb-1">
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
         </div>
       )}
 
