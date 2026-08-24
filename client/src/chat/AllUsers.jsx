@@ -119,13 +119,10 @@ export default function AllUsers({
           const isOnline = onlineUsersId.includes(otherUserId);
           const isUnread = hasUnread(room);
 
-          // KIỂM TRA ĐÃ CÓ TIN NHẮN CHƯA
-          const hasMessages = room.lastMessage && room.lastMessage.message && room.lastMessage.message.trim() !== "";
-
-          // TỔNG HỢP KIỂM TRA LỜI MỜI
+          // TỔNG HỢP KIỂM TRA LỜI MỜI: GROUP VÀ CHAT 1-1
           const isPendingGroup = room.isGroup && room.pendingMembers?.includes(currentUser._id);
-          // Chỉ coi là Lời Mời 1-1 nếu đã có người gửi ít nhất 1 tin nhắn
-          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id && hasMessages;
+          // KHÔNG CẦN CHỜ CÓ TIN NHẮN NỮA, CHỈ CẦN TẠO PHÒNG LÀ BÁO LỜI MỜI CHO NGƯỜI NHẬN LUÔN
+          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
           
           const isPending = isPendingGroup || isPendingPrivate;
 
