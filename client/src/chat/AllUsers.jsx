@@ -119,9 +119,14 @@ export default function AllUsers({
           const isOnline = onlineUsersId.includes(otherUserId);
           const isUnread = hasUnread(room);
 
-          // TỔNG HỢP KIỂM TRA LỜI MỜI: GROUP VÀ CHAT 1-1
+          // KIỂM TRA ĐÃ CÓ TIN NHẮN CHƯA
+          const hasMessages = room.lastMessage && room.lastMessage.message && room.lastMessage.message.trim() !== "";
+
+          // TỔNG HỢP KIỂM TRA LỜI MỜI
           const isPendingGroup = room.isGroup && room.pendingMembers?.includes(currentUser._id);
-          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
+          // Chỉ coi là Lời Mời 1-1 nếu đã có người gửi ít nhất 1 tin nhắn
+          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id && hasMessages;
+          
           const isPending = isPendingGroup || isPendingPrivate;
 
           let isGroupOnline = false;
@@ -167,93 +172,93 @@ export default function AllUsers({
                     />
                   </div>
                 )}
+                
+                {/* KHỐI NỘI DUNG (CỘT DỌC) */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <div className="flex justify-between items-center mb-0.5">
-                    {/* TÊN NGƯỜI DÙNG / NHÓM */}
-                    <div className="flex items-center min-w-0 flex-1 mr-2">
-                      <p
-                        className={classNames(
-                          "text-sm truncate", 
-                          isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
-                        )}
-                      >
-                        {room.isGroup ? room.name : getDisplayName(otherUserId)}
-                      </p>
-                      {/* Thẻ LỜI MỜI luôn hiển thị trọn vẹn */}
-                      {isPending && (
-                        <span className="ml-2 shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">
-                          LỜI MỜI
-                        </span>
-                      )}
-                    </div>
+                  
+                  {/* HÀNG 1: TÊN NGƯỜI DÙNG / NHÓM */}
+                  <p
+                    className={classNames(
+                      "text-sm truncate pr-2", 
+                      isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
+                    )}
+                  >
+                    {room.isGroup ? room.name : getDisplayName(otherUserId)}
+                  </p>
 
-                    <span className="text-[10px] shrink-0 text-gray-400">
-                      {room.isGroup ? (
-                        isGroupOnline ? (
-                          <span className="text-green-500 font-medium">Đang hoạt động</span>
-                        ) : groupLastActivity ? (
-                          `Hoạt động ${timeAgo(groupLastActivity)}`
-                        ) : (
-                          "Nhóm mới"
-                        )
+                  {/* HÀNG 2: THỜI GIAN HOẠT ĐỘNG (Cùng hàng dọc với tên) */}
+                  <p className="text-[10px] text-gray-400 truncate mt-0.5">
+                    {room.isGroup ? (
+                      isGroupOnline ? (
+                        <span className="text-green-500 font-medium">Đang hoạt động</span>
+                      ) : groupLastActivity ? (
+                        `Hoạt động ${timeAgo(groupLastActivity)}`
                       ) : (
-                        isOnline ? (
-                          <span className="text-green-500 font-medium">Đang hoạt động</span>
-                        ) : otherUserObj?.lastSeen ? (
-                          `Hoạt động ${timeAgo(otherUserObj.lastSeen)}`
-                        ) : ""
-                      )}
-                    </span>
-                  </div>
+                        "Nhóm mới"
+                      )
+                    ) : (
+                      isOnline ? (
+                        <span className="text-green-500 font-medium">Đang hoạt động</span>
+                      ) : otherUserObj?.lastSeen ? (
+                        `Hoạt động ${timeAgo(otherUserObj.lastSeen)}`
+                      ) : ""
+                    )}
+                  </p>
 
-                  {room.lastMessage && room.lastMessage.message ? (
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p className={classNames(
-                        "text-xs truncate flex gap-1 flex-1 pr-2",
-                        isUnread ? "text-black font-bold" : "text-gray-500"
-                      )}>
-
-                        {!room.lastMessage.message.startsWith("[SYS]: ") && (
-                          <>
-                            {room.lastMessage.sender === currentUser._id ? (
-                              <span>You:</span>
-                            ) : room.lastMessage.sender ? (
-                              // Đã sửa dòng này: Hiển thị tên nếu sender khác bạn, áp dụng cho cả Group và 1-1
-                              <span className={classNames(
-                                isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
-                              )}>
-                                {getDisplayName(room.lastMessage.sender)}:
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-
-                        <span className={classNames(
-                          "truncate",
-                          isUnread ? "text-black font-bold" : ""
+                  {/* HÀNG 3: TIN NHẮN / LỜI MỜI */}
+                  <div className="flex justify-between items-end mt-1">
+                    <div className="flex-1 min-w-0 pr-2">
+                      {room.lastMessage && room.lastMessage.message ? (
+                        <p className={classNames(
+                          "text-xs truncate flex gap-1",
+                          isUnread ? "text-black font-bold" : "text-gray-500"
                         )}>
-                          {room.lastMessage.message.startsWith("[SYS]: ")
-                            ? room.lastMessage.message.replace("[SYS]: ", "")
-                            : room.lastMessage.message}
-                        </span>
-                      </p>
-                      
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between mt-0.5">
-                      <p className="text-[10px] text-gray-400 truncate italic flex-1 pr-2">
-                        {!room.isGroup ? (
-                          <span>{otherUserObj?.email}</span>
-                        ) : (
-                          isPendingGroup ? (
-                            <span>Bạn được mời vào nhóm này</span>
+                          {!room.lastMessage.message.startsWith("[SYS]: ") && (
+                            <>
+                              {room.lastMessage.sender === currentUser._id ? (
+                                <span>You:</span>
+                              ) : room.lastMessage.sender ? (
+                                <span className={classNames(
+                                  isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
+                                )}>
+                                  {getDisplayName(room.lastMessage.sender)}:
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+
+                          <span className={classNames(
+                            "truncate",
+                            isUnread ? "text-black font-bold" : ""
+                          )}>
+                            {room.lastMessage.message.startsWith("[SYS]: ")
+                              ? room.lastMessage.message.replace("[SYS]: ", "")
+                              : room.lastMessage.message}
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-gray-400 truncate italic">
+                          {!room.isGroup ? (
+                            <span>{otherUserObj?.email}</span>
                           ) : (
-                            <span>Nhóm mới - Chưa có tin nhắn</span>
-                          )
-                        )}
-                      </p>
+                            isPendingGroup ? (
+                              <span>Bạn được mời vào nhóm này</span>
+                            ) : (
+                              <span>Nhóm mới - Chưa có tin nhắn</span>
+                            )
+                          )}
+                        </p>
+                      )}
                     </div>
-                  )}
+                    
+                    {/* THẺ LỜI MỜI DƯỚI CÙNG GÓC PHẢI */}
+                    {isPending && (
+                      <span className="shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                        LỜI MỜI
+                      </span>
+                    )}
+                  </div>
+                  
                 </div>
               </div>
             </div>
