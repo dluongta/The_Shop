@@ -140,7 +140,7 @@ export default function ChatRoom({
         const member = users.find(u => u._id === memberId);
         const actorString = getUserString(currentUser);
         const targetString = getUserString(member);
-        await handleFormSubmit(`[SYS]: ${actorString} đã loại ${targetString} khỏi nhóm.`);
+        await handleFormSubmit(`[SYS]: ${actorString} đã xóa ${targetString} khỏi nhóm.`);
       } catch (error) {
         alert("Có lỗi xảy ra khi xóa thành viên!");
       }
