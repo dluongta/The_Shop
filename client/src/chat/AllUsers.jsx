@@ -40,7 +40,7 @@ export default function AllUsers({
     if (userId === currentUser._id) return "You";
     const user = users.find((u) => u._id === userId);
     if (!user) return "Unknown User";
-    
+
     return user.name && user.name.trim() !== "" ? user.name : user.email;
   };
 
@@ -49,12 +49,12 @@ export default function AllUsers({
 
     const filteredRooms = chatRooms.filter((room) => {
       if (room.isGroup) return normalize(room.name).includes(q);
-      
+
       const otherId = room.members.find((id) => id !== currentUser._id);
       const otherUser = users.find((u) => u._id === otherId);
       const nameToSearch = otherUser?.name || "";
       const emailToSearch = otherUser?.email || "";
-      
+
       return normalize(nameToSearch).includes(q) || normalize(emailToSearch).includes(q);
     });
 
@@ -103,7 +103,7 @@ export default function AllUsers({
   return (
     <div className="flex flex-col h-full bg-white select-none">
       <div className="overflow-y-auto flex-1">
-        
+
         <div className="bg-gray-50 px-4 py-2 border-b border-t first:border-t-0">
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             Recent Chats ({displayList.filteredRooms.length})
@@ -114,13 +114,15 @@ export default function AllUsers({
           const otherUserId = !room.isGroup
             ? room.members.find((id) => id !== currentUser._id)
             : null;
-          
+
           const otherUserObj = users.find(u => u._id === otherUserId);
           const isOnline = onlineUsersId.includes(otherUserId);
-          const isUnread = hasUnread(room); 
-          
-          // Kiểm tra xem user hiện tại có đang được mời vào nhóm này không
-          const isPending = room.pendingMembers?.includes(currentUser._id);
+          const isUnread = hasUnread(room);
+
+          // TỔNG HỢP KIỂM TRA LỜI MỜI: GROUP VÀ CHAT 1-1
+          const isPendingGroup = room.isGroup && room.pendingMembers?.includes(currentUser._id);
+          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
+          const isPending = isPendingGroup || isPendingPrivate;
 
           let isGroupOnline = false;
           let groupLastActivity = null;
@@ -145,7 +147,7 @@ export default function AllUsers({
                 selectedChat === room._id ? "bg-blue-50" : "hover:bg-gray-50"
               )}
             >
-              <div className="flex items-center gap-3 truncate w-full">
+              <div className="flex items-center gap-3 w-full overflow-hidden">
                 {room.isGroup ? (
                   <div className="relative shrink-0">
                     <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm">
@@ -156,30 +158,28 @@ export default function AllUsers({
                     )}
                   </div>
                 ) : (
-                  <Contact
-                    chatRoom={room}
-                    currentUser={currentUser}
-                    onlineUsersId={onlineUsersId}
-                    users={users}
-                  />
+                  <div className="shrink-0">
+                    <Contact
+                      chatRoom={room}
+                      currentUser={currentUser}
+                      onlineUsersId={onlineUsersId}
+                      users={users}
+                    />
+                  </div>
                 )}
-                <div className="truncate flex-1">
-                  <div className="flex justify-between items-center">
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex justify-between items-center mb-0.5">
+                    {/* TÊN NGƯỜI DÙNG / NHÓM */}
                     <p
                       className={classNames(
-                        "truncate text-sm flex items-center",
+                        "text-sm truncate flex-1 pr-2", 
                         isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
                       )}
                     >
                       {room.isGroup ? room.name : getDisplayName(otherUserId)}
-                      {isPending && (
-                        <span className="ml-2 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
-                          LỜI MỜI
-                        </span>
-                      )}
                     </p>
-                    
-                    <span className="text-[10px] whitespace-nowrap text-gray-400 ml-2">
+
+                    <span className="text-[10px] shrink-0 text-gray-400">
                       {room.isGroup ? (
                         isGroupOnline ? (
                           <span className="text-green-500 font-medium">Đang hoạt động</span>
@@ -197,42 +197,66 @@ export default function AllUsers({
                       )}
                     </span>
                   </div>
-                  
+
                   {room.lastMessage && room.lastMessage.message ? (
-                    <p className={classNames(
-                      "text-xs truncate flex gap-1 mt-0.5",
-                      isUnread ? "text-black font-bold" : "text-gray-500"
-                    )}>
-                      
-                      {!room.lastMessage.message.startsWith("[SYS]: ") && (
-                        <>
-                          {room.lastMessage.sender === currentUser._id ? (
-                            <span>You:</span>
-                          ) : room.isGroup && room.lastMessage.sender ? (
-                            <span className={classNames(
-                              isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
-                            )}>
-                              {getDisplayName(room.lastMessage.sender)}:
-                            </span>
-                          ) : null}
-                        </>
-                      )}
-                      
-                      <span className={classNames(
-                        "truncate", 
-                        isUnread ? "text-black font-bold" : ""
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className={classNames(
+                        "text-xs truncate flex gap-1 flex-1 pr-2",
+                        isUnread ? "text-black font-bold" : "text-gray-500"
                       )}>
-                        {room.lastMessage.message.startsWith("[SYS]: ") 
-                          ? room.lastMessage.message.replace("[SYS]: ", "")
-                          : room.lastMessage.message}
-                      </span>
-                    </p>
+
+                        {!room.lastMessage.message.startsWith("[SYS]: ") && (
+                          <>
+                            {room.lastMessage.sender === currentUser._id ? (
+                              <span>You:</span>
+                            ) : room.isGroup && room.lastMessage.sender ? (
+                              <span className={classNames(
+                                isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
+                              )}>
+                                {getDisplayName(room.lastMessage.sender)}:
+                              </span>
+                            ) : null}
+                          </>
+                        )}
+
+                        <span className={classNames(
+                          "truncate",
+                          isUnread ? "text-black font-bold" : ""
+                        )}>
+                          {room.lastMessage.message.startsWith("[SYS]: ")
+                            ? room.lastMessage.message.replace("[SYS]: ", "")
+                            : room.lastMessage.message}
+                        </span>
+                      </p>
+                      
+                      {/* THẺ LỜI MỜI HIỂN THỊ NẾU CÓ TIN NHẮN (TRƯỜNG HỢP NHÓM HOẶC CHAT 1-1 BỊ CHẶN) */}
+                      {isPending && (
+                        <span className="shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                          LỜI MỜI
+                        </span>
+                      )}
+                    </div>
                   ) : (
-                    <p className="text-[10px] text-gray-400 truncate italic mt-0.5">
-                      {!room.isGroup 
-                        ? otherUserObj?.email 
-                        : (isPending ? "Bạn được mời vào nhóm này" : "Nhóm mới - Chưa có tin nhắn")}
-                    </p>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-[10px] text-gray-400 truncate italic flex-1 pr-2">
+                        {!room.isGroup ? (
+                          <span>{otherUserObj?.email}</span>
+                        ) : (
+                          isPendingGroup ? (
+                            <span>Bạn được mời vào nhóm này</span>
+                          ) : (
+                            <span>Nhóm mới - Chưa có tin nhắn</span>
+                          )
+                        )}
+                      </p>
+                      
+                      {/* THẺ LỜI MỜI DƯỚI GÓC PHẢI */}
+                      {isPending && (
+                        <span className="shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                          LỜI MỜI
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -252,7 +276,7 @@ export default function AllUsers({
 
         {displayList.availableUsers.map((user) => {
           const isOnline = onlineUsersId.includes(user._id);
-          
+
           return (
             <div
               key={user._id}
@@ -282,7 +306,7 @@ export default function AllUsers({
                 </p>
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                 <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-bold">CHAT</span>
+                <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-bold">CHAT</span>
               </div>
             </div>
           );
