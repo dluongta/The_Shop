@@ -170,14 +170,22 @@ export default function AllUsers({
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <div className="flex justify-between items-center mb-0.5">
                     {/* TÊN NGƯỜI DÙNG / NHÓM */}
-                    <p
-                      className={classNames(
-                        "text-sm truncate flex-1 pr-2", 
-                        isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
+                    <div className="flex items-center min-w-0 flex-1 mr-2">
+                      <p
+                        className={classNames(
+                          "text-sm truncate", 
+                          isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
+                        )}
+                      >
+                        {room.isGroup ? room.name : getDisplayName(otherUserId)}
+                      </p>
+                      {/* Thẻ LỜI MỜI luôn hiển thị trọn vẹn */}
+                      {isPending && (
+                        <span className="ml-2 shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">
+                          LỜI MỜI
+                        </span>
                       )}
-                    >
-                      {room.isGroup ? room.name : getDisplayName(otherUserId)}
-                    </p>
+                    </div>
 
                     <span className="text-[10px] shrink-0 text-gray-400">
                       {room.isGroup ? (
@@ -209,7 +217,8 @@ export default function AllUsers({
                           <>
                             {room.lastMessage.sender === currentUser._id ? (
                               <span>You:</span>
-                            ) : room.isGroup && room.lastMessage.sender ? (
+                            ) : room.lastMessage.sender ? (
+                              // Đã sửa dòng này: Hiển thị tên nếu sender khác bạn, áp dụng cho cả Group và 1-1
                               <span className={classNames(
                                 isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
                               )}>
@@ -229,12 +238,6 @@ export default function AllUsers({
                         </span>
                       </p>
                       
-                      {/* THẺ LỜI MỜI HIỂN THỊ NẾU CÓ TIN NHẮN (TRƯỜNG HỢP NHÓM HOẶC CHAT 1-1 BỊ CHẶN) */}
-                      {isPending && (
-                        <span className="shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
-                          LỜI MỜI
-                        </span>
-                      )}
                     </div>
                   ) : (
                     <div className="flex items-center justify-between mt-0.5">
@@ -249,13 +252,6 @@ export default function AllUsers({
                           )
                         )}
                       </p>
-                      
-                      {/* THẺ LỜI MỜI DƯỚI GÓC PHẢI */}
-                      {isPending && (
-                        <span className="shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
-                          LỜI MỜI
-                        </span>
-                      )}
                     </div>
                   )}
                 </div>
