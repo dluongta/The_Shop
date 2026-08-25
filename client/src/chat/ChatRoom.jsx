@@ -395,7 +395,7 @@ export default function ChatRoom({
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
 
     // Hiện mũi tên LÊN khi cuộn xuống xa tin nhắn mới nhất
-    setShowScrollTop(scrollTop > 100);
+    setShowScrollTop(scrollTop > 120);
 
     // Xóa trạng thái tin mới khi đã cuộn lên tới cùng
     if (scrollTop < 50) {
