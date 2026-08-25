@@ -34,6 +34,10 @@ export default function ChatRoom({
   const [showSettings, setShowSettings] = useState(false);
 
   const [typingUsers, setTypingUsers] = useState([]);
+  
+  // === STATE QUẢN LÝ NÚT CUỘN LÊN ===
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [hasNewMessageIndicator, setHasNewMessageIndicator] = useState(false);
 
   const settingsRef = useRef(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
@@ -90,6 +94,8 @@ export default function ChatRoom({
       setMessages((prev) => [res, ...prev]);
       setVisibleCount((prev) => prev + 1);
       setChatRooms((prev) => prev.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } } : room));
+      
+      // Tự mình gửi tin thì chắc chắn phải cuộn lên
       setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" }); }, 50);
     } catch (error) { console.error("Lỗi gửi tin nhắn:", error); }
   };
@@ -300,6 +306,7 @@ export default function ChatRoom({
     if (!currentChat?._id) return;
 
     setTypingUsers([]);
+    setHasNewMessageIndicator(false);
 
     const fetchMessages = async () => {
       try {
@@ -331,7 +338,11 @@ export default function ChatRoom({
         return [{ _id: data._id || Date.now(), sender: data.senderId, message: data.message, isDeleted: false, createdAt: data.createdAt || new Date() }, ...prev];
       });
       setVisibleCount((prev) => prev + 1);
-      if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      
+      // Bật trạng thái tin nhắn mới nếu đang cuộn xuống dưới sâu
+      if (scrollRef.current && scrollRef.current.scrollTop > 50) {
+        setHasNewMessageIndicator(true);
+      }
     };
 
     const handleRevoke = (data) => {
@@ -378,13 +389,28 @@ export default function ChatRoom({
     } catch (error) { alert("Không thể thu hồi tin nhắn."); }
   };
 
+  // === XỬ LÝ SỰ KIỆN CUỘN ===
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+
+    // Hiện mũi tên LÊN khi cuộn xuống xa tin nhắn mới nhất
+    setShowScrollTop(scrollTop > 100);
+
+    // Xóa trạng thái tin mới khi đã cuộn lên tới cùng
+    if (scrollTop < 50) {
+      setHasNewMessageIndicator(false);
+    }
+
+    // Load thêm tin nhắn cũ (Infinite scroll)
     if (scrollTop + clientHeight >= scrollHeight - 20) {
       if (visibleCount < messages.length) setVisibleCount((prev) => prev + 10);
     }
   };
+
+  useEffect(() => {
+    handleScroll();
+  }, [messages.length, visibleCount]);
 
   const headerContent = useMemo(() => {
     if (!currentChat) return null;
@@ -530,7 +556,30 @@ export default function ChatRoom({
         <div className="flex-1 min-w-0">{headerContent}</div>
       </div>
 
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto bg-gray-50 p-4 relative">
+      {/* NÚT FLOAT "^" KÉP NẰM NGOÀI ĐỂ CỐ ĐỊNH GÓC MÀN HÌNH */}
+      <div className="absolute right-6 bottom-24 flex flex-col gap-2 z-[60]">
+        {(showScrollTop || hasNewMessageIndicator) && (
+          <button
+            onClick={() => {
+              scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+              setHasNewMessageIndicator(false);
+            }}
+            className={`relative w-10 h-10 shadow-lg border rounded-full flex items-center justify-center transition-colors hover:border-blue-600 hover:text-blue-600 ${
+              hasNewMessageIndicator 
+                ? "bg-orange-500 text-white border-orange-500" 
+                : "bg-white text-gray-700 border-gray-700"
+            }`}
+            title="Cuộn lên tin nhắn mới nhất"
+          >
+            {/* Icon 2 mũi tên lên */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7M5 9l7-7 7 7" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto bg-gray-50 p-4">
         <div className="flex flex-col gap-3">
           {visibleMessages.map((m) => {
             if (!m?._id) return null;
@@ -563,9 +612,9 @@ export default function ChatRoom({
         </div>
       </div>
 
-      <div className="p-0 bg-white shrink-0 z-10 relative">
+      <div className="p-0 bg-white shrink-0 z-10 relative border-t border-gray-200">
         {isPendingMember ? (
-          <div className="flex flex-col items-center justify-center py-5 border-t">
+          <div className="flex flex-col items-center justify-center py-5">
             <p className="text-sm text-gray-600 mb-3 font-medium">Bạn được mời tham gia nhóm này. Bạn có muốn tham gia không?</p>
             <div className="flex gap-4">
               <button
@@ -583,7 +632,7 @@ export default function ChatRoom({
             </div>
           </div>
         ) : isReceiverOfPrivate ? (
-          <div className="flex flex-col items-center justify-center py-5 border-t">
+          <div className="flex flex-col items-center justify-center py-5">
             <p className="text-sm text-gray-600 mb-3 font-medium">Người này muốn gửi tin nhắn cho bạn. Chấp nhận để tiếp tục trò chuyện?</p>
             <div className="flex gap-4">
               <button onClick={handleRejectPrivate} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-semibold transition">Từ chối</button>
@@ -591,7 +640,7 @@ export default function ChatRoom({
             </div>
           </div>
         ) : (isRequesterOfPrivate && remainingMessages <= 0) ? (
-          <div className="flex flex-col items-center justify-center py-5 border-t">
+          <div className="flex flex-col items-center justify-center py-5">
             <p className="text-sm text-red-500 font-medium">Đã gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục.</p>
           </div>
         ) : (
@@ -601,9 +650,9 @@ export default function ChatRoom({
                 Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm {remainingMessages} tin nhắn.
               </span>
             )}
-
-            <ChatForm
-              handleFormSubmit={handleFormSubmit}
+            
+            <ChatForm 
+              handleFormSubmit={handleFormSubmit} 
               onTyping={handleTyping}
               onStopTyping={handleStopTyping}
               typingText={typingText}
