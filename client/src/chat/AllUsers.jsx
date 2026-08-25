@@ -92,14 +92,6 @@ export default function AllUsers({
     }
   };
 
-  const hasUnread = (room) => {
-    return (
-      room.lastMessage &&
-      !room.lastMessage.isRead &&
-      room.lastMessage.sender !== currentUser._id
-    );
-  };
-
   return (
     <div className="flex flex-col h-full bg-white select-none">
       <div className="overflow-y-auto flex-1">
@@ -117,13 +109,14 @@ export default function AllUsers({
 
           const otherUserObj = users.find(u => u._id === otherUserId);
           const isOnline = onlineUsersId.includes(otherUserId);
-          const isUnread = hasUnread(room);
-
-          // TỔNG HỢP KIỂM TRA LỜI MỜI: GROUP VÀ CHAT 1-1
-          const isPendingGroup = room.isGroup && room.pendingMembers?.includes(currentUser._id);
-          // KHÔNG CẦN CHỜ CÓ TIN NHẮN NỮA, CHỈ CẦN TẠO PHÒNG LÀ BÁO LỜI MỜI CHO NGƯỜI NHẬN LUÔN
-          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
           
+          // ==== LẤY SỐ LƯỢNG TIN NHẮN CHƯA ĐỌC TỪ CƠ SỞ DỮ LIỆU ====
+          const unreadCount = room.unreadCounts ? (room.unreadCounts[currentUser._id] || 0) : 0;
+          const isUnread = unreadCount > 0;
+
+          // TỔNG HỢP KIỂM TRA LỜI MỜI
+          const isPendingGroup = room.isGroup && room.pendingMembers?.includes(currentUser._id);
+          const isPendingPrivate = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
           const isPending = isPendingGroup || isPendingPrivate;
 
           let isGroupOnline = false;
@@ -170,40 +163,44 @@ export default function AllUsers({
                   </div>
                 )}
                 
-                {/* KHỐI NỘI DUNG (CỘT DỌC) */}
+                {/* KHỐI NỘI DUNG */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   
-                  {/* HÀNG 1: TÊN NGƯỜI DÙNG / NHÓM */}
-                  <p
-                    className={classNames(
-                      "text-sm truncate pr-2", 
-                      isUnread ? "font-bold text-blue-600" : "font-semibold text-gray-900"
-                    )}
-                  >
-                    {room.isGroup ? room.name : getDisplayName(otherUserId)}
-                  </p>
+                  <div className="flex justify-between items-center mb-0.5">
+                    <div className="flex items-center min-w-0 flex-1 mr-2">
+                      <p
+                        className={classNames(
+                          "text-sm truncate", 
+                          isUnread ? "font-bold text-black" : "font-semibold text-gray-900"
+                        )}
+                      >
+                        {room.isGroup ? room.name : getDisplayName(otherUserId)}
+                      </p>
+                    </div>
 
-                  {/* HÀNG 2: THỜI GIAN HOẠT ĐỘNG (Cùng hàng dọc với tên) */}
-                  <p className="text-[10px] text-gray-400 truncate mt-0.5">
-                    {room.isGroup ? (
-                      isGroupOnline ? (
-                        <span className="text-green-500 font-medium">Đang hoạt động</span>
-                      ) : groupLastActivity ? (
-                        `Hoạt động ${timeAgo(groupLastActivity)}`
+                    <span className={classNames(
+                      "text-[10px] shrink-0",
+                      isUnread ? "font-bold text-blue-600" : "text-gray-400"
+                    )}>
+                      {room.isGroup ? (
+                        isGroupOnline ? (
+                          <span className="text-green-500 font-medium">Đang hoạt động</span>
+                        ) : groupLastActivity ? (
+                          `Hoạt động ${timeAgo(groupLastActivity)}`
+                        ) : (
+                          "Nhóm mới"
+                        )
                       ) : (
-                        "Nhóm mới"
-                      )
-                    ) : (
-                      isOnline ? (
-                        <span className="text-green-500 font-medium">Đang hoạt động</span>
-                      ) : otherUserObj?.lastSeen ? (
-                        `Hoạt động ${timeAgo(otherUserObj.lastSeen)}`
-                      ) : ""
-                    )}
-                  </p>
+                        isOnline ? (
+                          <span className="text-green-500 font-medium">Đang hoạt động</span>
+                        ) : otherUserObj?.lastSeen ? (
+                          `Hoạt động ${timeAgo(otherUserObj.lastSeen)}`
+                        ) : ""
+                      )}
+                    </span>
+                  </div>
 
-                  {/* HÀNG 3: TIN NHẮN / LỜI MỜI */}
-                  <div className="flex justify-between items-end mt-1">
+                  <div className="flex justify-between items-center mt-0.5">
                     <div className="flex-1 min-w-0 pr-2">
                       {room.lastMessage && room.lastMessage.message ? (
                         <p className={classNames(
@@ -248,12 +245,18 @@ export default function AllUsers({
                       )}
                     </div>
                     
-                    {/* THẺ LỜI MỜI DƯỚI CÙNG GÓC PHẢI */}
-                    {isPending && (
-                      <span className="shrink-0 text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
-                        LỜI MỜI
-                      </span>
-                    )}
+                    {/* THẺ LỜI MỜI / SỐ TIN CHƯA ĐỌC */}
+                    <div className="shrink-0 flex items-center justify-end min-w-[20px]">
+                      {isPending ? (
+                        <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold whitespace-nowrap">
+                          LỜI MỜI
+                        </span>
+                      ) : isUnread ? (
+                        <span className="bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 shadow-sm">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   
                 </div>

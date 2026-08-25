@@ -21,6 +21,12 @@ export default function ChatLayout() {
   const { currentUser } = useAuth();
   const { initiateSocketConnection, getAllUsers, getChatRooms } = useApi();
 
+  // Dùng ref để lưu trữ currentChat giúp Socket bên trong useEffect đọc được giá trị mới nhất
+  const currentChatRef = useRef(currentChat);
+  useEffect(() => {
+    currentChatRef.current = currentChat;
+  }, [currentChat]);
+
   useEffect(() => {
     if (!currentUser?._id) return;
 
@@ -33,11 +39,26 @@ export default function ChatLayout() {
 
     socket.current.on("getMessage", (data) => {
       setChatRooms((prev) =>
-        prev.map((room) =>
-          room._id === data.chatRoomId
-            ? { ...room, lastMessage: { sender: data.senderId, message: data.message, isRead: false, createdAt: new Date().toISOString() } }
-            : room
-        )
+        prev.map((room) => {
+          if (room._id === data.chatRoomId) {
+            // Kiểm tra xem phòng chat có đang mở không
+            const isCurrentlyOpen = currentChatRef.current?._id === data.chatRoomId;
+            const isMyMessage = data.senderId === currentUser._id;
+            
+            // Xử lý tăng số lượng tin nhắn chưa đọc
+            let newUnreadCounts = { ...(room.unreadCounts || {}) };
+            if (!isCurrentlyOpen && !isMyMessage) {
+              newUnreadCounts[currentUser._id] = (newUnreadCounts[currentUser._id] || 0) + 1;
+            }
+
+            return { 
+              ...room, 
+              unreadCounts: newUnreadCounts,
+              lastMessage: { sender: data.senderId, message: data.message, isRead: false, createdAt: new Date().toISOString() } 
+            };
+          }
+          return room;
+        })
       );
     });
 
@@ -58,7 +79,6 @@ export default function ChatLayout() {
       });
     });
 
-    // Lắng nghe sự kiện userOffline để cập nhật lastSeen
     socket.current.on("userOffline", ({ userId, lastSeen }) => {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
@@ -82,10 +102,23 @@ export default function ChatLayout() {
   const handleChatChange = async (chat) => {
     if (!chat?._id) return;
     setCurrentChat(chat);
-    try { await axios.put(`/api/message/mark-as-read/${chat._id}`); } catch { }
+    try { 
+      // ĐÃ SỬA: Phải gửi kèm userId lên Backend để Backend biết user nào đang mở tin nhắn
+      await axios.put(`/api/message/mark-as-read/${chat._id}`, { userId: currentUser._id }); 
+    } catch (error) { 
+      console.error("Lỗi đánh dấu đã đọc:", error);
+    }
+    
+    // Đặt số lượng tin chưa đọc về 0 khi bấm vào phòng chat ở UI
     setChatRooms((prev) =>
       prev.map((room) =>
-        room._id === chat._id ? { ...room, lastMessage: room.lastMessage ? { ...room.lastMessage, isRead: true } : room.lastMessage } : room
+        room._id === chat._id 
+          ? { 
+              ...room, 
+              unreadCounts: { ...(room.unreadCounts || {}), [currentUser._id]: 0 },
+              lastMessage: room.lastMessage ? { ...room.lastMessage, isRead: true } : room.lastMessage 
+            } 
+          : room
       )
     );
   };
@@ -97,7 +130,6 @@ export default function ChatLayout() {
       </div>
 
       <div className="flex-1 min-h-0 flex overflow-hidden lg:flex-row w-full">
-        {/* CỘT DANH SÁCH USER */}
         <div className={`
           ${currentChat ? 'hidden lg:flex' : 'flex'} 
           w-full lg:w-1/3 flex-col border-r bg-white h-full min-h-0
@@ -125,7 +157,6 @@ export default function ChatLayout() {
           </div>
         </div>
 
-        {/* CỘT KHUNG CHAT */}
         <div className={`
           ${!currentChat ? 'hidden lg:flex' : 'flex'} 
           flex-1 min-w-0 min-h-0 overflow-hidden bg-gray-50 flex-col

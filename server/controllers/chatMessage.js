@@ -47,14 +47,32 @@ export const createMessage = async (req, res) => {
 
     const savedMessage = await newMessage.save();
 
-    await ChatRoom.findByIdAndUpdate(chatRoomId, {
-      lastMessage: {
+    // ================= CẬP NHẬT PHÒNG CHAT & UNREAD COUNT =================
+    if (room) {
+      // Khởi tạo Map nếu chưa có
+      if (!room.unreadCounts) {
+        room.unreadCounts = new Map();
+      }
+
+      // Tăng unreadCount lên 1 cho tất cả thành viên TRỪ người gửi
+      room.members.forEach(memberId => {
+        if (memberId.toString() !== sender.toString()) {
+          const currentCount = room.unreadCounts.get(memberId.toString()) || 0;
+          room.unreadCounts.set(memberId.toString(), currentCount + 1);
+        }
+      });
+
+      // Cập nhật tin nhắn cuối cùng
+      room.lastMessage = {
         sender,
         message,
         isRead: false,
         createdAt: savedMessage.createdAt,
-      },
-    });
+      };
+
+      await room.save(); // Lưu lại thay đổi
+    }
+    // ======================================================================
 
     const senderInfo = await User.findById(sender);
 
@@ -107,9 +125,10 @@ export const createMessage = async (req, res) => {
 
 export const markMessagesAsRead = async (req, res) => {
   const { chatRoomId } = req.params;
-  const { userId } = req.body;
+  const { userId } = req.body; 
 
   try {
+    // Đánh dấu các tin nhắn chưa đọc thành đã đọc
     await ChatMessage.updateMany(
       {
         chatRoomId,
@@ -119,9 +138,24 @@ export const markMessagesAsRead = async (req, res) => {
       { $set: { isRead: true } }
     );
 
-    await ChatRoom.findByIdAndUpdate(chatRoomId, {
-      "lastMessage.isRead": true,
-    });
+    // ================= RESET UNREAD COUNT =================
+    const room = await ChatRoom.findById(chatRoomId);
+    if (room) {
+      if (!room.unreadCounts) {
+        room.unreadCounts = new Map();
+      }
+      
+      // Đặt số tin nhắn chưa đọc của user hiện tại về 0
+      room.unreadCounts.set(userId.toString(), 0);
+
+      // Nếu tin nhắn cuối không phải của mình thì đánh dấu nó là đã đọc
+      if (room.lastMessage && room.lastMessage.sender && room.lastMessage.sender.toString() !== userId.toString()) {
+        room.lastMessage.isRead = true;
+      }
+
+      await room.save();
+    }
+    // ======================================================
 
     res.json({ success: true });
   } catch (err) {

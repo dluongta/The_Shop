@@ -9,9 +9,15 @@ const ChatRoomSchema = new mongoose.Schema(
     admin: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
     deputies: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
 
-    // === 2 TRƯỜNG MỚI THÊM CHO TÍNH NĂNG CHỜ CHAT 1-1 ===
-    requester: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Ai là người bắt đầu chat
-    isAccepted: { type: Boolean, default: true }, // Nhóm mặc định là true, nhưng 1-1 mới sẽ là false
+    requester: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
+    isAccepted: { type: Boolean, default: true }, 
+
+    // === THÊM TRƯỜNG NÀY ĐỂ ĐẾM SỐ TIN CHƯA ĐỌC ===
+    unreadCounts: {
+      type: Map,
+      of: Number,
+      default: {}
+    },
 
     lastMessage: {
       sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
