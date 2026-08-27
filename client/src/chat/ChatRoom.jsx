@@ -3,6 +3,7 @@ import { useApi } from "../services/ChatService";
 import Message from "./Message";
 import Contact from "./Contact";
 import ChatForm from "./ChatForm";
+import axios from "axios";
 
 const timeAgo = (date) => {
   if (!date) return "";
@@ -35,9 +36,9 @@ export default function ChatRoom({
 
   const [typingUsers, setTypingUsers] = useState([]);
   
-  // === STATE QUẢN LÝ NÚT CUỘN LÊN ===
+  // === STATE QUẢN LÝ NÚT CUỘN VÀ CHƯA ĐỌC ===
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [hasNewMessageIndicator, setHasNewMessageIndicator] = useState(false);
+  const [unreadIds, setUnreadIds] = useState(new Set()); 
 
   const settingsRef = useRef(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
@@ -95,7 +96,6 @@ export default function ChatRoom({
       setVisibleCount((prev) => prev + 1);
       setChatRooms((prev) => prev.map((room) => room._id === currentChat._id ? { ...room, lastMessage: { sender: currentUser._id, message: res.message, isRead: false, createdAt: res.createdAt || new Date().toISOString() } } : room));
       
-      // Tự mình gửi tin thì chắc chắn phải cuộn lên
       setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: "smooth" }); }, 50);
     } catch (error) { console.error("Lỗi gửi tin nhắn:", error); }
   };
@@ -306,7 +306,7 @@ export default function ChatRoom({
     if (!currentChat?._id) return;
 
     setTypingUsers([]);
-    setHasNewMessageIndicator(false);
+    setUnreadIds(new Set()); // Xóa danh sách chưa đọc khi vào phòng
 
     const fetchMessages = async () => {
       try {
@@ -339,9 +339,22 @@ export default function ChatRoom({
       });
       setVisibleCount((prev) => prev + 1);
       
-      // Bật trạng thái tin nhắn mới nếu đang cuộn xuống dưới sâu
+      // === FIX LỖI REFRESH BỊ CHƯA ĐỌC ===
       if (scrollRef.current && scrollRef.current.scrollTop > 50) {
-        setHasNewMessageIndicator(true);
+         // Thêm vào danh sách chưa đọc nếu đang ở dưới sâu
+         setUnreadIds((prev) => {
+            const newSet = new Set(prev);
+            newSet.add(data._id);
+            return newSet;
+         });
+      } else {
+         // Đang ở đầu (xem được ngay) -> GỌI API ĐỂ CẬP NHẬT DATABASE
+         if (data.senderId !== currentUser._id) {
+           axios.put(`/api/message/mark-as-read/${data.chatRoomId}`, { 
+             userId: currentUser._id,
+             messageIds: [data._id]
+           }).catch(err => console.error("Lỗi tự động mark read:", err));
+         }
       }
     };
 
@@ -375,6 +388,48 @@ export default function ChatRoom({
     };
   }, [socket, currentChat, setCurrentChat, setChatRooms]);
 
+  // === OBSERVER ĐỂ ĐÁNH DẤU TIN NHẮN ĐÃ ĐỌC KHI CUỘN LÊN ===
+  useEffect(() => {
+    if (!scrollRef.current || unreadIds.size === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(async (entry) => {
+        if (entry.isIntersecting) {
+          const msgId = entry.target.getAttribute("data-msg-id");
+          
+          if (unreadIds.has(msgId)) {
+             try {
+                // Gọi API đánh dấu tin nhắn này là đã đọc
+                await axios.put(`/api/message/mark-as-read/${currentChat._id}`, { 
+                  userId: currentUser._id,
+                  messageIds: [msgId]
+                });
+                
+                // Loại bỏ khỏi danh sách chưa đọc trên UI
+                setUnreadIds((prev) => {
+                  const newSet = new Set(prev);
+                  newSet.delete(msgId);
+                  return newSet;
+                });
+             } catch(err) {
+               console.error("Lỗi xóa tin nhắn unread", err);
+             }
+          }
+        }
+      });
+    }, {
+      root: scrollRef.current,
+      threshold: 0.1, // Nếu 10% phần tử hiển thị lên là tính đã thấy
+    });
+
+    const nodes = scrollRef.current.querySelectorAll('.msg-item-observe');
+    nodes.forEach(node => observer.observe(node));
+
+    return () => {
+      nodes.forEach(node => observer.unobserve(node));
+    };
+  }, [messages, unreadIds, currentChat]);
+
   const handleRevokeMessage = async (messageId) => {
     try {
       await revokeMessageApi(messageId, currentUser._id);
@@ -394,15 +449,14 @@ export default function ChatRoom({
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
 
-    // Hiện mũi tên LÊN khi cuộn xuống xa tin nhắn mới nhất
-    setShowScrollTop(scrollTop > 120);
+    // Hiện mũi tên LÊN khi cuộn xuống xa
+    setShowScrollTop(scrollTop > 100);
 
-    // Xóa trạng thái tin mới khi đã cuộn lên tới cùng
-    if (scrollTop < 50) {
-      setHasNewMessageIndicator(false);
+    // Xóa hết trạng thái tin mới khi đã cuộn lên tới cùng
+    if (scrollTop < 50 && unreadIds.size > 0) {
+      setUnreadIds(new Set());
     }
 
-    // Load thêm tin nhắn cũ (Infinite scroll)
     if (scrollTop + clientHeight >= scrollHeight - 20) {
       if (visibleCount < messages.length) setVisibleCount((prev) => prev + 10);
     }
@@ -556,18 +610,18 @@ export default function ChatRoom({
         <div className="flex-1 min-w-0">{headerContent}</div>
       </div>
 
-      {/* NÚT FLOAT "^" KÉP NẰM NGOÀI ĐỂ CỐ ĐỊNH GÓC MÀN HÌNH */}
+      {/* NÚT FLOAT "^" KÉP KÈM SỐ LƯỢNG TIN NHẮN MỚI */}
       <div className="absolute right-6 bottom-24 flex flex-col gap-2 z-[60]">
-        {(showScrollTop || hasNewMessageIndicator) && (
+        {(showScrollTop || unreadIds.size > 0) && (
           <button
             onClick={() => {
               scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-              setHasNewMessageIndicator(false);
+              setUnreadIds(new Set()); // Bấm lên thì coi như đọc hết
             }}
             className={`relative w-10 h-10 shadow-lg border rounded-full flex items-center justify-center transition-colors hover:border-blue-600 hover:text-blue-600 ${
-              hasNewMessageIndicator 
-                ? "bg-orange-500 text-white border-orange-500" 
-                : "bg-white text-gray-700 border-gray-700"
+              unreadIds.size > 0
+                ? "bg-white text-black border-gray-300" // Có tin nhắn: nền trắng, chữ đen, viền nhạt
+                : "bg-white text-gray-700 border-gray-700" // Bình thường: xám gần đen
             }`}
             title="Cuộn lên tin nhắn mới nhất"
           >
@@ -575,6 +629,13 @@ export default function ChatRoom({
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7M5 9l7-7 7 7" />
             </svg>
+            
+            {/* Huy hiệu đỏ hiển thị số lượng tin mới */}
+            {unreadIds.size > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center rounded-full px-1 shadow-sm border-2 border-white">
+                  {unreadIds.size > 99 ? "99+" : unreadIds.size}
+                </span>
+            )}
           </button>
         )}
       </div>
@@ -601,7 +662,12 @@ export default function ChatRoom({
               );
             }
 
-            return <Message key={m._id} message={m} self={currentUser._id} users={users} onRevoke={handleRevokeMessage} />
+            return (
+               // Thêm data-msg-id và class để Observer có thể theo dõi
+               <div key={m._id} data-msg-id={m._id} className="msg-item-observe">
+                 <Message message={m} self={currentUser._id} users={users} onRevoke={handleRevokeMessage} />
+               </div>
+            );
           })}
 
           {visibleCount < messages.length ? (

@@ -25,12 +25,10 @@ export const createMessage = async (req, res) => {
     const room = await ChatRoom.findById(chatRoomId);
     
     if (room && room.isGroup === false && room.isAccepted === false) {
-      // Nếu không phải là người khởi tạo (ví dụ người nhận) thì không được gửi tin khi chưa đồng ý
       if (room.requester.toString() !== sender.toString()) {
         return res.status(403).json({ message: "Bạn phải đồng ý cuộc trò chuyện mới được nhắn tin." });
       }
       
-      // Nếu là người khởi tạo, đếm số tin nhắn đã gửi trong phòng
       const messageCount = await ChatMessage.countDocuments({ chatRoomId });
       if (messageCount >= 10) {
         return res.status(403).json({ message: "Bạn chỉ được gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục." });
@@ -49,12 +47,10 @@ export const createMessage = async (req, res) => {
 
     // ================= CẬP NHẬT PHÒNG CHAT & UNREAD COUNT =================
     if (room) {
-      // Khởi tạo Map nếu chưa có
       if (!room.unreadCounts) {
         room.unreadCounts = new Map();
       }
 
-      // Tăng unreadCount lên 1 cho tất cả thành viên TRỪ người gửi
       room.members.forEach(memberId => {
         if (memberId.toString() !== sender.toString()) {
           const currentCount = room.unreadCounts.get(memberId.toString()) || 0;
@@ -62,7 +58,6 @@ export const createMessage = async (req, res) => {
         }
       });
 
-      // Cập nhật tin nhắn cuối cùng
       room.lastMessage = {
         sender,
         message,
@@ -70,7 +65,7 @@ export const createMessage = async (req, res) => {
         createdAt: savedMessage.createdAt,
       };
 
-      await room.save(); // Lưu lại thay đổi
+      await room.save(); 
     }
     // ======================================================================
 
@@ -83,7 +78,6 @@ export const createMessage = async (req, res) => {
 
       for (const receiverId of receivers) {
 
-        // KIỂM TRA: NẾU LÀ NHÓM THÌ HIỂN THỊ THÊM TÊN NHÓM
         let notifTitle = "Tin nhắn mới";
         let notifMessage = `Bạn có tin nhắn mới từ: ${senderInfo.email}`;
 
@@ -125,30 +119,41 @@ export const createMessage = async (req, res) => {
 
 export const markMessagesAsRead = async (req, res) => {
   const { chatRoomId } = req.params;
-  const { userId } = req.body; 
+  const { userId, messageIds } = req.body; // THÊM messageIds ĐỂ ĐÁNH DẤU CỤ THỂ TỪNG TIN NHẮN
 
   try {
-    // Đánh dấu các tin nhắn chưa đọc thành đã đọc
-    await ChatMessage.updateMany(
-      {
-        chatRoomId,
-        sender: { $ne: userId },
-        isRead: false,
-      },
-      { $set: { isRead: true } }
-    );
+    // Nếu có truyền danh sách ID các tin nhắn cụ thể
+    if (messageIds && messageIds.length > 0) {
+       await ChatMessage.updateMany(
+        { _id: { $in: messageIds }, sender: { $ne: userId } },
+        { $set: { isRead: true } }
+      );
+    } else {
+      // Nếu không, đánh dấu tất cả (khi vừa bấm mở phòng chat)
+      await ChatMessage.updateMany(
+        { chatRoomId, sender: { $ne: userId }, isRead: false },
+        { $set: { isRead: true } }
+      );
+    }
 
-    // ================= RESET UNREAD COUNT =================
+    // ================= RESET HOẶC GIẢM UNREAD COUNT =================
     const room = await ChatRoom.findById(chatRoomId);
     if (room) {
       if (!room.unreadCounts) {
         room.unreadCounts = new Map();
       }
       
-      // Đặt số tin nhắn chưa đọc của user hiện tại về 0
-      room.unreadCounts.set(userId.toString(), 0);
+      const currentCount = room.unreadCounts.get(userId.toString()) || 0;
 
-      // Nếu tin nhắn cuối không phải của mình thì đánh dấu nó là đã đọc
+      if (messageIds && messageIds.length > 0) {
+        // Trừ đi số lượng tin nhắn vừa được đọc
+        const newCount = Math.max(0, currentCount - messageIds.length);
+        room.unreadCounts.set(userId.toString(), newCount);
+      } else {
+        // Reset về 0 khi vừa mở phòng
+        room.unreadCounts.set(userId.toString(), 0);
+      }
+
       if (room.lastMessage && room.lastMessage.sender && room.lastMessage.sender.toString() !== userId.toString()) {
         room.lastMessage.isRead = true;
       }

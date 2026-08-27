@@ -1,5 +1,3 @@
-import bcrypt from 'bcryptjs';
-
 const users = [
   {
     name: 'Admin User',
@@ -25,7 +23,7 @@ for (let i = 1; i <= 100; i++) {
   const newUser = {
     name: `User ${i}`,
     email: `user${i}@example.com`,
-    password: bcrypt.hashSync('123456', 10),
+    password: ='123456',
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
   users.push(newUser);
 }
