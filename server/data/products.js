@@ -191,7 +191,7 @@
 const products = [
   {
     name: 'Airpods Wireless Bluetooth Headphones',
-    images: ['/images/airpods.jpg','/images/keyboard.jpg'],
+    images: ['/images/airpods.jpg', '/images/keyboard.jpg'],
     description: 'Bluetooth technology lets you connect it with compatible devices wirelessly...',
     brand: 'Apple',
     category: 'Phụ kiện',
@@ -203,10 +203,10 @@ const products = [
   },
   {
     name: 'iPhone 11 Pro 256GB Memory',
-    images: ['/images/phone.jpg','/images/keyboard.jpg'],
+    images: ['/images/phone.jpg', '/images/keyboard.jpg'],
     description: 'Introducing the iPhone 11 Pro. A transformative triple-camera system...',
     brand: 'Apple',
-    category: 'Điện thoại', 
+    category: 'Điện thoại',
     price: 599.99,
     countInStock: 10,
     rating: 0,
@@ -215,10 +215,10 @@ const products = [
   },
   {
     name: 'Cannon EOS 80D DSLR Camera',
-    images: ['/images/camera.jpg','/images/keyboard.jpg'],
+    images: ['/images/camera.jpg', '/images/keyboard.jpg'],
     description: 'Characterized by versatile imaging specs, the Canon EOS 80D...',
     brand: 'Cannon',
-    category: 'Máy ảnh', 
+    category: 'Máy ảnh',
     price: 929.99,
     countInStock: 0,
     rating: 0,
@@ -227,7 +227,7 @@ const products = [
   },
   {
     name: 'Sony Playstation 4 Pro White Version',
-    images: ['/images/playstation.jpg','/images/camera.jpg'],
+    images: ['/images/playstation.jpg', '/images/camera.jpg'],
     description: 'The ultimate home entertainment center starts with PlayStation...',
     brand: 'Sony',
     category: 'Thiết bị khác',
@@ -239,7 +239,7 @@ const products = [
   },
   {
     name: 'Logitech G-Series Gaming Mouse',
-    images: ['/images/mouse.jpg','/images/camera.jpg'],
+    images: ['/images/mouse.jpg', '/images/camera.jpg'],
     description: 'Get a better handle on your games with this Logitech LIGHTSYNC gaming mouse...',
     brand: 'Logitech',
     category: 'Phụ kiện',
@@ -251,7 +251,7 @@ const products = [
   },
   {
     name: 'Amazon Echo Dot 3rd Generation',
-    images: ['/images/alexa.jpg','/images/camera.jpg'],
+    images: ['/images/alexa.jpg', '/images/camera.jpg'],
     description: 'Meet Echo Dot - Our most popular smart speaker with a fabric design...',
     brand: 'Amazon',
     category: 'Thiết bị khác',
@@ -263,10 +263,10 @@ const products = [
   },
   {
     name: 'DELL XPS',
-    images: ['/images/laptop.png','/images/camera.jpg'],
+    images: ['/images/laptop.png', '/images/camera.jpg'],
     description: 'High quality with impressive display and sound',
     brand: 'DELL',
-    category: 'Máy tính', 
+    category: 'Máy tính',
     price: 599.99,
     countInStock: 10,
     rating: 5,
@@ -275,10 +275,10 @@ const products = [
   },
   {
     name: 'Iphone',
-    images: ['/images/iphone.jpg','/images/camera.jpg'],
+    images: ['/images/iphone.jpg', '/images/camera.jpg'],
     description: 'High Quality Iphone',
     brand: 'Apple',
-    category: 'Điện thoại', 
+    category: 'Điện thoại',
     price: 99.99,
     countInStock: 10,
     rating: 5,
@@ -287,7 +287,7 @@ const products = [
   },
   {
     name: 'Computer Keyboard',
-    images: ['/images/keyboard.jpg','/images/camera.jpg'],
+    images: ['/images/keyboard.jpg', '/images/camera.jpg'],
     description: 'Compatible with most of computer devices',
     brand: 'DELL',
     category: 'Phụ kiện',

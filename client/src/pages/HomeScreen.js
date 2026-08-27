@@ -32,7 +32,7 @@ const HomeScreen = () => {
   /* =========================
      DANH SÁCH CATEGORY (MẪU)
   ========================= */
-  const categoryList = ['Máy tính', 'Điện thoại', 'Máy ảnh', 'Thiết bị khác']
+  const categoryList = ['Máy tính', 'Điện thoại', 'Máy ảnh', 'Phụ kiện', 'Thiết bị khác']
 
   /* =========================
      FILTER & PAGINATION STATE
