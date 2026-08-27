@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react'; // <-- Import thêm useRef
 import { LinkContainer } from 'react-router-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
@@ -15,7 +15,8 @@ import {
 } from '../actions/notificationActions';
 
 export const NavBar = ({ socket }) => {
-  const [expanded, setExpanded] = useState(false); // Thêm state quản lý menu
+  const [expanded, setExpanded] = useState(false);
+  const navRef = useRef(null); // <-- Tạo ref để theo dõi vùng Navbar
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -47,8 +48,26 @@ export const NavBar = ({ socket }) => {
     };
   }, [socket, userInfo, dispatch]);
 
+  // <-- THÊM: Xử lý sự kiện click ra ngoài Navbar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Nếu menu đang mở và vị trí click không nằm trong Navbar thì đóng lại
+      if (expanded && navRef.current && !navRef.current.contains(event.target)) {
+        setExpanded(false);
+      }
+    };
+
+    // Lắng nghe sự kiện click chuột/chạm màn hình
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Cleanup listener khi component unmount
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [expanded]);
+  // <-- KẾT THÚC THÊM
+
   const handleCloseMenu = () => {
-    setExpanded(false); // Đóng menu
+    setExpanded(false);
   };
 
   const logoutHandler = () => {
@@ -67,6 +86,7 @@ export const NavBar = ({ socket }) => {
 
   return (
     <Navbar
+      ref={navRef} // <-- Gắn ref vào Navbar
       expand="lg"
       variant="dark"
       bg="dark"
@@ -84,7 +104,7 @@ export const NavBar = ({ socket }) => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto align-items-center text-center">
 
-            {/* Đưa Username (Profile) hoặc Sign In lên đầu tiên */}
+            {/* Username (Profile) hoặc Sign In */}
             {userInfo ? (
               <LinkContainer to="/profile">
                 <Nav.Link onClick={handleCloseMenu} className="fw-bold me-lg-2">
@@ -99,7 +119,7 @@ export const NavBar = ({ socket }) => {
               </LinkContainer>
             )}
 
-            {/* Khối Notification nằm ngay sau Username */}
+            {/* Khối Notification */}
             {userInfo && (
               <Dropdown align="end" as={Nav.Item} className="me-lg-3">
                 <Dropdown.Toggle
@@ -296,7 +316,6 @@ export const NavBar = ({ socket }) => {
               </>
             )}
 
-            {/* Nút Logout được đưa xuống vị trí cuối cùng trong menu nếu đã đăng nhập */}
             {userInfo && (
               <Nav.Link onClick={logoutHandler}>
                 <i className="fas fa-sign-out-alt"></i> Log Out

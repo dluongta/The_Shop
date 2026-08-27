@@ -171,7 +171,8 @@ export default function AllUsers({
                       <p
                         className={classNames(
                           "text-sm truncate", 
-                          isUnread ? "font-bold text-black" : "font-semibold text-gray-900"
+                          // GIẢM ĐỘ ĐẬM TỪ extrabold XUỐNG bold
+                          isUnread ? "font-bold text-black" : "font-medium text-gray-800"
                         )}
                       >
                         {room.isGroup ? room.name : getDisplayName(otherUserId)}
@@ -180,7 +181,7 @@ export default function AllUsers({
 
                     <span className={classNames(
                       "text-[10px] shrink-0",
-                      isUnread ? "font-bold text-blue-600" : "text-gray-400"
+                      isUnread ? "font-bold text-black" : "text-gray-400"
                     )}>
                       {room.isGroup ? (
                         isGroupOnline ? (
@@ -205,7 +206,8 @@ export default function AllUsers({
                       {room.lastMessage && room.lastMessage.message ? (
                         <p className={classNames(
                           "text-xs truncate flex gap-1",
-                          isUnread ? "text-black font-bold" : "text-gray-500"
+                          // GIẢM ĐỘ ĐẬM TỪ extrabold XUỐNG bold
+                          isUnread ? "font-bold text-black" : "text-gray-500"
                         )}>
                           {!room.lastMessage.message.startsWith("[SYS]: ") && (
                             <>
@@ -213,7 +215,8 @@ export default function AllUsers({
                                 <span>You:</span>
                               ) : room.lastMessage.sender ? (
                                 <span className={classNames(
-                                  isUnread ? "text-black font-bold" : "font-semibold text-gray-700"
+                                  // GIẢM ĐỘ ĐẬM
+                                  isUnread ? "font-bold text-black" : "font-medium text-gray-700"
                                 )}>
                                   {getDisplayName(room.lastMessage.sender)}:
                                 </span>
@@ -223,7 +226,8 @@ export default function AllUsers({
 
                           <span className={classNames(
                             "truncate",
-                            isUnread ? "text-black font-bold" : ""
+                            // GIẢM ĐỘ ĐẬM
+                            isUnread ? "font-bold text-black" : ""
                           )}>
                             {room.lastMessage.message.startsWith("[SYS]: ")
                               ? room.lastMessage.message.replace("[SYS]: ", "")
