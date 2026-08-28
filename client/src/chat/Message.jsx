@@ -82,7 +82,24 @@
 //     </li>
 //   );
 // }
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+// Hàm tính khoảng thời gian "cách đây bao lâu"
+const timeAgo = (date) => {
+  if (!date) return "";
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " năm trước";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " tháng trước";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " ngày trước";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " giờ trước";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " phút trước";
+  return "vừa xong";
+};
 
 export default function Message({ message, self, users = [], onRevoke }) {
   const senderId =
@@ -90,6 +107,20 @@ export default function Message({ message, self, users = [], onRevoke }) {
 
   const senderUser = users.find((u) => u._id === senderId);
   const isSelf = senderId === self;
+
+  // Dùng state để cập nhật lại "thời gian trôi qua" mỗi phút một lần (giúp chữ "vừa xong" -> "1 phút trước" tự động nhảy)
+  const [relativeTime, setRelativeTime] = useState("");
+
+  useEffect(() => {
+    setRelativeTime(timeAgo(message.createdAt));
+    
+    // Cập nhật lại thời gian cách đây mỗi 60 giây
+    const intervalId = setInterval(() => {
+      setRelativeTime(timeAgo(message.createdAt));
+    }, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [message.createdAt]);
 
   return (
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-2`}>
@@ -130,19 +161,27 @@ export default function Message({ message, self, users = [], onRevoke }) {
             <span></span>
           )}
 
-          <span 
-            className={`text-[10px] text-right whitespace-nowrap ${
-              message.isDeleted ? "text-black font-medium opacity-100" : "opacity-70" // ✅ Thời gian màu đen, đậm hơn khi thu hồi
+          <div 
+            className={`flex flex-col items-end text-[10px] text-right whitespace-nowrap ${
+              message.isDeleted ? "text-black font-medium opacity-100" : "opacity-70"
             }`}
           >
-            {new Date(message.createdAt).toLocaleString("vi-VN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
+            {/* Giờ, Phút, Giây, Ngày, Tháng, Năm */}
+            <span>
+              {new Date(message.createdAt).toLocaleString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
+            </span>
+            {/* Cách đây bao lâu */}
+            <span className="italic mt-0.5">
+              ({relativeTime})
+            </span>
+          </div>
         </div>
       </div>
     </li>
