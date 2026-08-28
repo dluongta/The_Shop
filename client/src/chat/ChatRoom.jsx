@@ -485,7 +485,7 @@ export default function ChatRoom({
             </h3>
             <span className="text-[13px] text-gray-500 leading-none translate-y-1">
               {currentChat.members?.length || 0} thành viên
-              <span className="mx-1.5">•</span>
+              <span className="mx-1.5">-</span>
               {isGroupOnline ? <span className="text-green-500 font-medium">Đang hoạt động</span> : groupLastActivity ? `Hoạt động ${timeAgo(groupLastActivity)}` : "Nhóm mới"}
             </span>
           </div>

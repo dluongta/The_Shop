@@ -121,12 +121,22 @@ export default function AllUsers({
 
           let isGroupOnline = false;
           let groupLastActivity = null;
+          let userRoleInGroup = null;
 
           if (room.isGroup) {
             const otherMembers = room.members.filter(id => id !== currentUser._id);
             isGroupOnline = otherMembers.some(id => onlineUsersId.includes(id));
             if (room.lastMessage && room.lastMessage.createdAt) {
               groupLastActivity = room.lastMessage.createdAt;
+            }
+
+            // XÁC ĐỊNH VAI TRÒ CỦA USER HIỆN TẠI TRONG NHÓM
+            if (room.admin === currentUser._id) {
+              userRoleInGroup = "Trưởng nhóm";
+            } else if (room.deputies && room.deputies.includes(currentUser._id)) {
+              userRoleInGroup = "Phó nhóm";
+            } else if (room.members.includes(currentUser._id)) {
+              userRoleInGroup = "Thành viên";
             }
           }
 
@@ -167,20 +177,31 @@ export default function AllUsers({
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   
                   <div className="flex justify-between items-center mb-0.5">
-                    <div className="flex items-center min-w-0 flex-1 mr-2">
+                    <div className="flex items-center min-w-0 flex-1 mr-2 gap-2">
                       <p
                         className={classNames(
                           "text-sm truncate", 
-                          // GIẢM ĐỘ ĐẬM TỪ extrabold XUỐNG bold
                           isUnread ? "font-bold text-black" : "font-medium text-gray-800"
                         )}
                       >
                         {room.isGroup ? room.name : getDisplayName(otherUserId)}
                       </p>
+
+                      {/* HIỂN THỊ BADGE VAI TRÒ NẾU LÀ NHÓM */}
+                      {room.isGroup && userRoleInGroup && !isPendingGroup && (
+                        <span className={classNames(
+                          "text-[9px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap border shrink-0",
+                          userRoleInGroup === "Trưởng nhóm" ? "bg-orange-100 text-orange-600 border-orange-200" :
+                          userRoleInGroup === "Phó nhóm" ? "bg-purple-100 text-purple-700 border-purple-200" :
+                          "bg-gray-100 text-gray-600 border-gray-200"
+                        )}>
+                          {userRoleInGroup}
+                        </span>
+                      )}
                     </div>
 
                     <span className={classNames(
-                      "text-[10px] shrink-0",
+                      "text-[10px] shrink-0 ml-2",
                       isUnread ? "font-bold text-black" : "text-gray-400"
                     )}>
                       {room.isGroup ? (
@@ -206,7 +227,6 @@ export default function AllUsers({
                       {room.lastMessage && room.lastMessage.message ? (
                         <p className={classNames(
                           "text-xs truncate flex gap-1",
-                          // GIẢM ĐỘ ĐẬM TỪ extrabold XUỐNG bold
                           isUnread ? "font-bold text-black" : "text-gray-500"
                         )}>
                           {!room.lastMessage.message.startsWith("[SYS]: ") && (
@@ -215,7 +235,6 @@ export default function AllUsers({
                                 <span>You:</span>
                               ) : room.lastMessage.sender ? (
                                 <span className={classNames(
-                                  // GIẢM ĐỘ ĐẬM
                                   isUnread ? "font-bold text-black" : "font-medium text-gray-700"
                                 )}>
                                   {getDisplayName(room.lastMessage.sender)}:
@@ -226,7 +245,6 @@ export default function AllUsers({
 
                           <span className={classNames(
                             "truncate",
-                            // GIẢM ĐỘ ĐẬM
                             isUnread ? "font-bold text-black" : ""
                           )}>
                             {room.lastMessage.message.startsWith("[SYS]: ")
