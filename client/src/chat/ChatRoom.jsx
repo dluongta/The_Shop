@@ -511,8 +511,8 @@ export default function ChatRoom({
                           {member?.email || "Unknown"}
                           {isMemberAdmin && <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Trưởng nhóm</span>}
                           {isMemberDeputy && <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Phó nhóm</span>}
-                          {isPending && <span className="text-[10px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}
-                        </span>
+                          {isPending && <span className="text-[10px] bg-green-100 text-green-700 border border-green-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}                        
+                          </span>
 
                         <div className="flex gap-2 ml-2 shrink-0">
                           {isAdmin && !isMemberAdmin && (
