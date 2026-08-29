@@ -1,90 +1,5 @@
-// // export default function Message({ message, self, users = [] }) {
-// //   const senderId =
-// //     typeof message.sender === "string"
-// //       ? message.sender
-// //       : message.sender?._id;
-
-// //   const senderUser = users.find((u) => u._id === senderId);
-// //   const isSelf = senderId === self;
-
-// //   return (
-// //     <li className={`flex ${isSelf ? "justify-end" : "justify-start"}`}>
-// //       <div
-// //         className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow ${isSelf ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
-// //           }`}
-// //       >
-// //         <p className={`text-xs font-semibold mb-1 ${isSelf ? "text-blue-100" : "text-gray-600"}`}>
-// //           {senderUser?.email || senderUser?.name || "Former member"}
-// //         </p>
-
-// //         <p>{message.message}</p>
-
-// //         {/* Time */}
-// //         {/* <span className="block text-[10px] text-right opacity-70 mt-1">
-// //           {new Date(message.createdAt).toLocaleTimeString()}
-// //         </span> */}
-// //         <span className="block text-[10px] text-right opacity-70 mt-1">
-// //           {new Date(message.createdAt).toLocaleString("vi-VN", {
-// //             day: "2-digit",
-// //             month: "2-digit",
-// //             year: "numeric",
-// //             hour: "2-digit",
-// //             minute: "2-digit",
-// //           })}
-// //         </span>
-
-// //       </div>
-// //     </li>
-// //   );
-// // }
-// export default function Message({ message, self, users = [], onRevoke }) {
-//   const senderId =
-//     typeof message.sender === "string"
-//       ? message.sender
-//       : message.sender?._id;
-
-//   const senderUser = users.find((u) => u._id === senderId);
-//   const isSelf = senderId === self;
-
-//   return (
-//     <li className={`flex ${isSelf ? "justify-end" : "justify-start"}`}>
-//       <div className="relative group max-w-xs">
-//         {isSelf && !message.isDeleted && (
-//           <button
-//             onClick={() => onRevoke(message._id)}
-//             className="absolute top-1/2 -left-10 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded"
-//           >
-//             Thu hồi
-//           </button>
-//         )}
-
-//         <div
-//           className={`px-4 py-2 rounded-lg text-sm shadow ${
-//             isSelf ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
-//           } ${message.isDeleted ? "opacity-60 italic bg-gray-100 text-gray-500 border" : ""}`}
-//         >
-//           <p className={`text-xs font-semibold mb-1 ${isSelf && !message.isDeleted ? "text-blue-100" : "text-gray-600"}`}>
-//             {senderUser?.email || senderUser?.name || "Former member"}
-//           </p>
-
-//           <p>
-//             {message.isDeleted ? "Tin nhắn đã bị thu hồi" : message.message}
-//           </p>
-
-//           <span className="block text-[10px] text-right opacity-70 mt-1">
-//             {new Date(message.createdAt).toLocaleString("vi-VN", {
-//               day: "2-digit", month: "2-digit", year: "numeric",
-//               hour: "2-digit", minute: "2-digit",
-//             })}
-//           </span>
-//         </div>
-//       </div>
-//     </li>
-//   );
-// }
 import React, { useEffect, useState } from "react";
 
-// Hàm tính khoảng thời gian "cách đây bao lâu"
 const timeAgo = (date) => {
   if (!date) return "";
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -108,13 +23,11 @@ export default function Message({ message, self, users = [], onRevoke }) {
   const senderUser = users.find((u) => u._id === senderId);
   const isSelf = senderId === self;
 
-  // Dùng state để cập nhật lại "thời gian trôi qua" mỗi phút một lần (giúp chữ "vừa xong" -> "1 phút trước" tự động nhảy)
   const [relativeTime, setRelativeTime] = useState("");
 
   useEffect(() => {
     setRelativeTime(timeAgo(message.createdAt));
     
-    // Cập nhật lại thời gian cách đây mỗi 60 giây
     const intervalId = setInterval(() => {
       setRelativeTime(timeAgo(message.createdAt));
     }, 60000);
@@ -123,14 +36,15 @@ export default function Message({ message, self, users = [], onRevoke }) {
   }, [message.createdAt]);
 
   return (
-    <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-2`}>
+    <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-3`}>
       <div
-        className={`max-w-xs px-4 py-2 rounded-lg text-sm border ${
+        // Thêm shadow-md để mọi tin nhắn đều có đổ bóng 3D
+        className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${
           message.isDeleted
-            ? "bg-gray-200 text-black border border-gray-400 italic"
+            ? "bg-gray-200 text-black border-gray-400 italic"
             : isSelf
-            ? "bg-blue-500 text-white"
-            : "bg-gray-200 text-gray-900"
+            ? "bg-blue-500 text-white border-blue-600"
+            : "bg-gray-100 text-gray-900 border-gray-300"
         }`}
       >
         <p
@@ -153,34 +67,29 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {isSelf && !message.isDeleted ? (
             <button
               onClick={() => onRevoke(message._id)}
-              className="text-[10px] text-red-200 hover:text-white font-medium cursor-pointer"
+              className="text-[10px] text-red-200 hover:text-white font-medium cursor-pointer shrink-0"
             >
               Thu hồi
             </button>
           ) : (
-            <span></span>
+            <div className="flex-1"></div>
           )}
 
+          {/* Dùng whitespace-nowrap để ngăn rớt dòng và shrink-0 để không bị bóp méo */}
           <div 
-            className={`flex flex-col items-end text-[10px] text-right whitespace-nowrap ${
-              message.isDeleted ? "text-black font-medium opacity-100" : "opacity-70"
+            className={`text-[10px] text-right whitespace-nowrap shrink-0 ${
+              message.isDeleted ? "text-black font-medium opacity-100" : "opacity-80"
             }`}
           >
-            {/* Giờ, Phút, Giây, Ngày, Tháng, Năm */}
-            <span>
-              {new Date(message.createdAt).toLocaleString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
-            </span>
-            {/* Cách đây bao lâu */}
-            <span className="italic mt-0.5">
-              ({relativeTime})
-            </span>
+            {new Date(message.createdAt).toLocaleString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}{" "}
+            <span className="italic">({relativeTime})</span>
           </div>
         </div>
       </div>
