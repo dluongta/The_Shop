@@ -109,7 +109,7 @@ export default function AllUsers({
 
           const otherUserObj = users.find(u => u._id === otherUserId);
           const isOnline = onlineUsersId.includes(otherUserId);
-          
+
           // ==== LẤY SỐ LƯỢNG TIN NHẮN CHƯA ĐỌC TỪ CƠ SỞ DỮ LIỆU ====
           const unreadCount = room.unreadCounts ? (room.unreadCounts[currentUser._id] || 0) : 0;
           const isUnread = unreadCount > 0;
@@ -172,15 +172,15 @@ export default function AllUsers({
                     />
                   </div>
                 )}
-                
+
                 {/* KHỐI NỘI DUNG */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  
+
                   <div className="flex justify-between items-center mb-0.5">
                     <div className="flex items-center min-w-0 flex-1 mr-2 gap-2">
                       <p
                         className={classNames(
-                          "text-sm truncate", 
+                          "text-sm truncate",
                           isUnread ? "font-bold text-black" : "font-medium text-gray-800"
                         )}
                       >
@@ -192,8 +192,8 @@ export default function AllUsers({
                         <span className={classNames(
                           "text-[9px] px-1.5 py-0.5 rounded font-bold whitespace-nowrap border shrink-0",
                           userRoleInGroup === "Trưởng nhóm" ? "bg-orange-100 text-orange-600 border-orange-200" :
-                          userRoleInGroup === "Phó nhóm" ? "bg-purple-100 text-purple-700 border-purple-200" :
-                          "bg-gray-100 text-gray-600 border-gray-200"
+                            userRoleInGroup === "Phó nhóm" ? "bg-purple-100 text-purple-700 border-purple-200" :
+                              "bg-blue-100 text-blue-700 border-blue-200" // <--- Sửa màu ở dòng này
                         )}>
                           {userRoleInGroup}
                         </span>
@@ -266,7 +266,7 @@ export default function AllUsers({
                         </p>
                       )}
                     </div>
-                    
+
                     {/* THẺ LỜI MỜI / SỐ TIN CHƯA ĐỌC */}
                     <div className="shrink-0 flex items-center justify-end min-w-[20px]">
                       {isPending ? (
@@ -280,7 +280,7 @@ export default function AllUsers({
                       ) : null}
                     </div>
                   </div>
-                  
+
                 </div>
               </div>
             </div>

@@ -517,11 +517,9 @@ export default function ChatRoom({
                           {/* Hiển thị Badge chức vụ */}
                           {isMemberAdmin && <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Trưởng nhóm</span>}
                           {isMemberDeputy && <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Phó nhóm</span>}
-                          {isPending && <span className="text-[10px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}
-
+                          {isPending && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}
                           {/* MỚI: Hiển thị chữ Thành viên cho những người còn lại */}
-                          {isRegularMember && <span className="text-[10px] bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Thành viên</span>}
-                        </span>
+                          {isRegularMember && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Thành viên</span>}                        </span>
 
                         <div className="flex gap-2 ml-2 shrink-0">
                           {isAdmin && !isMemberAdmin && (
