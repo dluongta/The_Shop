@@ -19,7 +19,6 @@ const timeAgo = (date) => {
 // Hàm nhận diện URL và chuyển thành thẻ <a> có thể click
 const formatMessage = (text, isSelf) => {
   if (!text) return "";
-  // Biểu thức chính quy tìm các link bắt đầu bằng http hoặc https
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
 
@@ -31,16 +30,15 @@ const formatMessage = (text, isSelf) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          // Link sẽ có màu khác nhau tùy thuộc vào tin nhắn của mình (nền xanh) hay người khác (nền xám)
-          className={`underline font-medium transition-colors ${
-            isSelf ? "text-blue-200 hover:text-white" : "text-blue-600 hover:text-blue-800"
+          // Đã thêm lại class 'underline' để giữ gạch chân cho link
+          className={`underline font-semibold transition-colors ${
+            isSelf ? "text-white hover:text-gray-200" : "text-blue-600 hover:text-blue-800"
           }`}
         >
           {part}
         </a>
       );
     }
-    // Chữ bình thường và các thẻ tag sẽ được React tự động render dưới dạng chuỗi nguyên vẹn
     return part;
   });
 };
@@ -56,7 +54,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
 
   useEffect(() => {
     setRelativeTime(timeAgo(message.createdAt));
-    
+
     const intervalId = setInterval(() => {
       setRelativeTime(timeAgo(message.createdAt));
     }, 60000);
@@ -78,7 +76,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
         <p
           className={`text-xs font-semibold mb-1 ${
             message.isDeleted
-              ? "text-black" 
+              ? "text-black"
               : isSelf
               ? "text-blue-100"
               : "text-gray-600"
@@ -87,8 +85,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {senderUser?.email || senderUser?.name || "Former member"}
         </p>
 
-        {/* Thêm whitespace-pre-wrap để giữ nguyên \n và khoảng trắng */}
-        <p className={`break-words whitespace-pre-wrap ${message.isDeleted ? "text-black font-medium" : ""}`}>
+        <p className={`break-words whitespace-pre-wrap font-medium ${message.isDeleted ? "text-black" : ""}`}>
           {message.isDeleted ? "Tin nhắn đã bị thu hồi" : formatMessage(message.message, isSelf)}
         </p>
 
@@ -104,7 +101,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
             <div className="flex-1"></div>
           )}
 
-          <div 
+          <div
             className={`text-[10px] text-right whitespace-nowrap shrink-0 ${
               message.isDeleted ? "text-black font-medium opacity-100" : "opacity-80"
             }`}
