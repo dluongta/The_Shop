@@ -18,7 +18,7 @@ const ProductEditScreen = () => {
   const [images, setImages] = useState([]) 
   const [imageUrl, setImageUrl] = useState('/images/sample.jpg') 
   const [brand, setBrand] = useState('')
-  const [category, setCategory] = useState('Thiết bị khác')
+  const [category, setCategory] = useState('Phụ kiện')
   const [countInStock, setCountInStock] = useState(0)
   const [description, setDescription] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -257,17 +257,17 @@ const ProductEditScreen = () => {
             </Form.Group>
 
             <Form.Group controlId='category' className="mb-3 mt-3">
-              <Form.Label>Danh mục sản phẩm (Category)</Form.Label>
+              <Form.Label>Category</Form.Label>
               <Form.Control
                 as='select'
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
-                <option value='Thiết bị khác'>Thiết bị khác</option>
                 <option value='Máy tính'>Máy tính</option>
                 <option value='Điện thoại'>Điện thoại</option>
                 <option value='Máy ảnh'>Máy ảnh</option>
                 <option value='Phụ kiện'>Phụ kiện</option>
+                <option value='Thiết bị khác'>Thiết bị khác</option>
               </Form.Control>
             </Form.Group>
 
