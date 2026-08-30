@@ -199,7 +199,7 @@ const ProductScreen = () => {
               {/* KHU VỰC HIỂN THỊ ẢNH & CAROUSEL */}
               {totalSlides > 0 ? (
                 <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '8px' }}>
-                  
+
                   {/* Băng chuyền Flexbox */}
                   <div
                     style={{
@@ -266,14 +266,14 @@ const ProductScreen = () => {
                             }}
                             style={{
                               width: '30px',
-                              height: '8px', 
+                              height: '8px',
                               backgroundColor: '#fff',
                               border: 'none',
                               padding: 0,
                               opacity: getActiveDot() === idx ? 1 : 0.4,
                               transition: 'opacity 0.3s ease',
                               cursor: 'pointer',
-                              borderRadius: '4px', 
+                              borderRadius: '4px',
                             }}
                             aria-label={`Slide ${idx + 1}`}
                           />
@@ -297,7 +297,7 @@ const ProductScreen = () => {
                 <ListGroup.Item>
                   <Rating
                     value={product.rating}
-                    text={`${product.numReviews} reviews`}
+                    text={`${product.numReviews}\u00A0${product.numReviews === 1 ? 'review' : 'reviews'}`}
                   />
                 </ListGroup.Item>
                 <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
