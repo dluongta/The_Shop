@@ -15,10 +15,10 @@ const ProductEditScreen = () => {
 
   const [name, setName] = useState('')
   const [price, setPrice] = useState(0)
-  const [images, setImages] = useState([]) // mảng các url ảnh
-  const [imageUrl, setImageUrl] = useState('/images/sample.jpg') // state mới để chứa url ảnh nhập từ mạng
+  const [images, setImages] = useState([]) 
+  const [imageUrl, setImageUrl] = useState('/images/sample.jpg') 
   const [brand, setBrand] = useState('')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState('Thiết bị khác')
   const [countInStock, setCountInStock] = useState(0)
   const [description, setDescription] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -47,18 +47,24 @@ const ProductEditScreen = () => {
         setPrice(product.price)
         setImages(product.images || [])
         setBrand(product.brand)
-        setCategory(product.category)
+        
+        // Kiểm tra nếu category không nằm trong danh sách chuẩn thì gán là 'Thiết bị khác'
+        const validCategories = ['Máy tính', 'Điện thoại', 'Máy ảnh', 'Phụ kiện']
+        if (validCategories.includes(product.category)) {
+          setCategory(product.category)
+        } else {
+          setCategory('Thiết bị khác')
+        }
+
         setCountInStock(product.countInStock)
         setDescription(product.description)
       }
     }
   }, [dispatch, navigate, productId, product, successUpdate])
 
-  // Xử lý upload ảnh từ máy tính
   const uploadFileHandler = async (e) => {
     const files = Array.from(e.target.files)
 
-    // Giới hạn tổng số ảnh ≤ 5
     if (files.length + images.length > 5) {
       alert('You can upload up to 5 images only')
       return
@@ -86,14 +92,12 @@ const ProductEditScreen = () => {
       console.error(error)
     } finally {
       setUploading(false)
-      // Reset input file để có thể chọn lại file cũ nếu muốn
       e.target.value = null
     }
   }
 
-  // Xử lý thêm ảnh từ URL mạng
   const addImageUrlHandler = (e) => {
-    e.preventDefault() // Ngăn form submit
+    e.preventDefault() 
     if (!imageUrl.trim()) return
 
     if (images.length >= 5) {
@@ -102,7 +106,7 @@ const ProductEditScreen = () => {
     }
 
     setImages((prev) => [...prev, imageUrl.trim()])
-    setImageUrl('') // Reset ô input url
+    setImageUrl('') 
   }
 
   const removeImage = (index) => {
@@ -160,28 +164,25 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            {/* --- KHU VỰC CHỈNH SỬA ẢNH --- */}
             <Form.Group controlId='images' className="mt-3">
               <Form.Label>Product Images (Max 5)</Form.Label>
 
-              {/* Option 1: Upload từ máy */}
               <Form.Control
                 type='file'
                 multiple
                 onChange={uploadFileHandler}
-                disabled={images.length >= 5} // Khóa lại nếu đã đủ 5 ảnh
+                disabled={images.length >= 5} 
                 className="mb-2"
               />
               {uploading && <Loader />}
 
-              {/* Option 2: Add từ URL mạng */}
               <div className="d-flex align-items-center">
                 <Form.Control
                   type='text'
                   placeholder='Enter Image URL'
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  disabled={images.length >= 5} // Khóa lại nếu đã đủ 5 ảnh
+                  disabled={images.length >= 5} 
                 />
                 <Button
                   variant="secondary"
@@ -193,7 +194,6 @@ const ProductEditScreen = () => {
                 </Button>
               </div>
 
-              {/* Khu vực Preview Ảnh */}
               <div
                 className='image-preview-container'
                 style={{
@@ -235,7 +235,6 @@ const ProductEditScreen = () => {
                 ))}
               </div>
             </Form.Group>
-            {/* --- KẾT THÚC KHU VỰC CHỈNH SỬA ẢNH --- */}
 
             <Form.Group controlId='brand' className="mt-3">
               <Form.Label>Brand</Form.Label>
@@ -257,21 +256,18 @@ const ProductEditScreen = () => {
               />
             </Form.Group>
 
-            {/* Tìm đoạn Form.Group controlId='category' và thay bằng đoạn này */}
-
-            <Form.Group controlId='category' className="mb-3">
+            <Form.Group controlId='category' className="mb-3 mt-3">
               <Form.Label>Danh mục sản phẩm (Category)</Form.Label>
               <Form.Control
                 as='select'
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
-                <option value=''>-- Chọn danh mục --</option>
+                <option value='Thiết bị khác'>Thiết bị khác</option>
                 <option value='Máy tính'>Máy tính</option>
                 <option value='Điện thoại'>Điện thoại</option>
                 <option value='Máy ảnh'>Máy ảnh</option>
                 <option value='Phụ kiện'>Phụ kiện</option>
-                <option value='Thiết bị khác'>Thiết bị khác</option>
               </Form.Control>
             </Form.Group>
 
