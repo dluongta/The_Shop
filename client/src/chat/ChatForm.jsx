@@ -7,9 +7,11 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef(null);
+  
+  // Ref để lấy DOM của textarea nhằm tự động điều chỉnh chiều cao
+  const textareaRef = useRef(null);
 
   const handleEmojiClick = (event, emojiObject) => {
-    // Khi thêm emoji cũng coi như đang gõ
     const newMessage = message + emojiObject.emoji;
     setMessage(newMessage);
     
@@ -27,6 +29,11 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
       setMessage(""); // Làm trống ô chat
       setShowEmojiPicker(false); // Ẩn picker khi gửi xong
       
+      // Reset lại chiều cao mặc định của textarea
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "42px";
+      }
+      
       // Tắt trạng thái đang gõ ngay lập tức
       if (onStopTyping) onStopTyping();
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -36,6 +43,12 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
   const handleChange = (e) => {
     const val = e.target.value;
     setMessage(val);
+
+    // Tự động thay đổi chiều cao của textarea (tối đa 120px)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + "px";
+    }
 
     // 1. Nếu xóa trắng ô -> tắt trạng thái gõ ngay
     if (val.trim() === "") {
@@ -67,7 +80,6 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
 
   return (
     <div className="relative w-full">
-      {/* Định nghĩa Keyframe trực tiếp bằng thẻ style để tạo hiệu ứng sóng "lên -> xuống" mượt mà */}
       <style>
         {`
           @keyframes customWave {
@@ -75,7 +87,7 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
               transform: translateY(0);
             }
             30% {
-              transform: translateY(-4px); /* Tăng biên độ nhảy lên cao hơn một chút */
+              transform: translateY(-4px);
             }
           }
           .animate-custom-wave {
@@ -84,12 +96,9 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
         `}
       </style>
 
-      {/* VÙNG HIỂN THỊ "ĐANG SOẠN TIN..." */}
       {typingText && (
         <div className="absolute bottom-full left-0 mb-0 flex items-baseline gap-1 text-blue-600 z-10 px-3 py-1.5 text-xs italic bg-white rounded-t-lg shadow-[2px_-2px_10px_-3px_rgba(0,0,0,0.05)] border border-b-0 border-gray-200">
           <span className="font-semibold leading-none">{typingText}</span>
-          
-          {/* 3 dấu chấm nhảy ở bên phải chữ - Căn ngang đáy chữ và có hiệu ứng wave */}
           <div className="flex space-x-0.5 items-baseline">
             <div className="w-1 h-1 bg-blue-600 rounded-full animate-custom-wave" style={{ animationDelay: '0ms' }}></div>
             <div className="w-1 h-1 bg-blue-600 rounded-full animate-custom-wave" style={{ animationDelay: '150ms' }}></div>
@@ -105,11 +114,11 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex items-center justify-between w-full p-3 bg-white border-t border-gray-200 dark:bg-gray-900 dark:border-gray-700 relative z-20">
+        <div className="flex items-end justify-between w-full p-3 bg-white border-t border-gray-200 dark:bg-gray-900 dark:border-gray-700 relative z-20">
           <button
             type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="focus:outline-none"
+            className="focus:outline-none pb-1.5"
           >
             <EmojiHappyIcon
               className="h-7 w-7 text-blue-600 hover:text-blue-700 transition-colors dark:text-blue-500"
@@ -117,16 +126,20 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
             />
           </button>
 
-          <input
-            type="text"
+          {/* Đổi từ <input> sang <textarea> */}
+          <textarea
+            ref={textareaRef}
+            rows="1"
             placeholder="Nhập tin nhắn..."
-            className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="block w-full py-2.5 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white resize-none overflow-y-auto"
+            style={{ minHeight: "42px", maxHeight: "120px" }}
             name="message"
             required
             value={message}
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={(e) => {
+              // Nhấn Enter (không kèm Shift) để gửi tin nhắn
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSubmit(e);
@@ -136,7 +149,7 @@ export default function ChatForm({ handleFormSubmit, onTyping, onStopTyping, typ
           <button 
             type="submit"
             disabled={!message.trim()}
-            className="disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+            className="disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none pb-1.5"
           >
             <PaperAirplaneIcon
               className="h-6 w-6 text-blue-600 hover:text-blue-700 transition-colors dark:text-blue-500 rotate-[90deg]"
