@@ -17,11 +17,15 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('buyer');
-  const [paypalClientId, setPaypalClientId] = useState('');
-
+  const [paypalClientId, setPaypalClientId] = useState(''); 
+  
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [passwordModal, setPasswordModal] = useState('');
   const [googleUser, setGoogleUser] = useState(null);
+  
+  // Thêm state lưu Role và PayPal Client ID riêng cho Modal Google (có thể lấy mặc định theo form chính)
+  const [googleRole, setGoogleRole] = useState('buyer');
+  const [googlePaypalClientId, setGooglePaypalClientId] = useState('');
 
   // STATE OTP
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -43,7 +47,7 @@ const RegisterScreen = () => {
 
   const redirect = new URLSearchParams(location.search).get('redirect') || '/';
   const userLogin = useSelector((state) => state.userLogin);
-  const { userInfo } = userLogin;
+  const { userInfo } = userLogin; 
 
   useEffect(() => {
     if (userInfo) navigate(redirect);
@@ -57,6 +61,9 @@ const RegisterScreen = () => {
       dispatch(googleLoginDirect(email));
     } else {
       setGoogleUser({ email, name });
+      // Đồng bộ giá trị hiện tại ở form chính vào modal Google nếu muốn
+      setGoogleRole(role);
+      setGooglePaypalClientId(paypalClientId);
       setShowGoogleModal(true);
     }
   };
@@ -69,17 +76,21 @@ const RegisterScreen = () => {
     try {
       setIsRegistering(true);
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const { data } = await axios.post('/api/users', {
-        name: googleUser.name, email: googleUser.email, password: passwordModal,
-        role, paypalClientId, isGoogleAuth: true
+      const { data } = await axios.post('/api/users', { 
+        name: googleUser.name, 
+        email: googleUser.email, 
+        password: passwordModal, 
+        role: googleRole,              // Lấy từ state modal Google
+        paypalClientId: googlePaypalClientId, // Lấy từ state modal Google
+        isGoogleAuth: true
       }, config);
-
+      
       dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
       localStorage.setItem('userInfo', JSON.stringify(data));
       setShowGoogleModal(false);
       navigate(redirect);
     } catch (error) {
-      console.log(error);
+       console.log(error);
     } finally { setIsRegistering(false); }
   };
 
@@ -93,7 +104,7 @@ const RegisterScreen = () => {
       setIsRegistering(true);
       const config = { headers: { 'Content-Type': 'application/json' } };
       await axios.post('/api/users', { name, email, password, role, paypalClientId }, config);
-
+      
       setIsRegistering(false);
       setShowOtpModal(true);
     } catch (error) {
@@ -107,7 +118,7 @@ const RegisterScreen = () => {
       setIsVerifying(true); setOtpError(''); setOtpMessage('');
       const config = { headers: { 'Content-Type': 'application/json' } };
       const { data } = await axios.post('/api/users/verify-otp', { email, otp: otpCode }, config);
-
+      
       dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
       localStorage.setItem('userInfo', JSON.stringify(data));
       setShowOtpModal(false);
@@ -136,7 +147,7 @@ const RegisterScreen = () => {
       setManualLoading(true); setManualError('');
       const config = { headers: { 'Content-Type': 'application/json' } };
       await axios.post('/api/users/resend-otp', { email: manualEmail }, config);
-
+      
       setEmail(manualEmail);
       setManualLoading(false);
       setShowManualVerifyModal(false);
@@ -161,8 +172,8 @@ const RegisterScreen = () => {
         <Form.Control className="mb-2" placeholder="Tên của bạn" value={name} onChange={(e) => setName(e.target.value)} required />
         <Form.Control className="mb-2" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Form.Control className="mb-2" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <Form.Control className="mb-3" type="password" placeholder="Xác nhận mật khẩu" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-
+        <Form.Control className="mb-3" type="password" placeholder="Xác nhận mật khẩu" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required /> 
+        
         <Form.Group className="mb-3">
           <Form.Control as="select" value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="buyer">Buyer (Người mua)</option>
@@ -181,9 +192,8 @@ const RegisterScreen = () => {
         <Col xs={5} className="text-end">
           <Button
             variant="link"
-            className="p-0 text-decoration-none fw-bold text-primary"
+            className="p-0 text-decoration-none fw-bold"
             style={{ color: '#0d6efd' }}
-            onMouseEnter={(e) => e.target.style.color = '#0d6efd'}
             onClick={() => setShowManualVerifyModal(true)}
           >
             Nhập mã xác thực?
@@ -222,12 +232,12 @@ const RegisterScreen = () => {
           {manualError && <Alert variant="danger">{manualError}</Alert>}
           <p>Nhập email tài khoản bạn đã đăng ký để nhận lại mã xác thực OTP mới:</p>
           <Form onSubmit={handleManualVerifySubmit}>
-            <Form.Control
-              type="email"
-              placeholder="Nhập địa chỉ email của bạn..."
-              value={manualEmail}
-              onChange={(e) => setManualEmail(e.target.value)}
-              required
+            <Form.Control 
+              type="email" 
+              placeholder="Nhập địa chỉ email của bạn..." 
+              value={manualEmail} 
+              onChange={(e) => setManualEmail(e.target.value)} 
+              required 
             />
           </Form>
         </Modal.Body>
@@ -239,18 +249,43 @@ const RegisterScreen = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* MODAL GOOGLE */}
+      {/* MODAL GOOGLE - ĐÃ THÊM FORM CHỌN ROLE VÀ PAYPAL CLIENT ID */}
       <Modal show={showGoogleModal} onHide={() => setShowGoogleModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
-          <Modal.Title className="w-100 text-center fw-bold">Tạo tài khoản</Modal.Title>
+          <Modal.Title className="w-100 text-center fw-bold">Tạo tài khoản Google</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Vui lòng nhập mật khẩu cho tài khoản <strong>{googleUser?.email}</strong>.</p>
-          <Form.Control className="mb-3" type="password" placeholder="Mật khẩu" value={passwordModal} onChange={(e) => setPasswordModal(e.target.value)} />
+           <p className="mb-2">Vui lòng hoàn tất thông tin cho tài khoản <strong>{googleUser?.email}</strong>.</p>
+           
+           <Form.Control 
+             className="mb-2" 
+             type="password" 
+             placeholder="Mật khẩu" 
+             value={passwordModal} 
+             onChange={(e) => setPasswordModal(e.target.value)} 
+             required 
+           />
+
+           <Form.Group className="mb-2">
+             <Form.Control as="select" value={googleRole} onChange={(e) => setGoogleRole(e.target.value)}>
+               <option value="buyer">Buyer (Người mua)</option>
+               <option value="seller">Seller (Người bán)</option>
+             </Form.Control>
+           </Form.Group>
+
+           <Form.Control 
+             className="mb-2" 
+             type="text" 
+             placeholder="PayPal Client ID (Tùy chọn)" 
+             value={googlePaypalClientId} 
+             onChange={(e) => setGooglePaypalClientId(e.target.value)} 
+           />
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-end gap-2">
           <Button variant="secondary" onClick={() => setShowGoogleModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleGoogleModalSubmit}>Hoàn tất</Button>
+          <Button variant="primary" onClick={handleGoogleModalSubmit} disabled={!passwordModal || isRegistering}>
+            {isRegistering ? 'Đang xử lý...' : 'Hoàn tất'}
+          </Button>
         </Modal.Footer>
       </Modal>
 
