@@ -5,6 +5,7 @@ const users = [
     password: '123456',
     role: 'seller',
     isAdmin: true,
+    isVerified: true,
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
   },
@@ -12,6 +13,7 @@ const users = [
     name: 'Jane Street',
     email: 'jane@example.com',
     role: 'buyer',
+    isVerified: true,
     password: '123456',
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
@@ -21,8 +23,10 @@ const users = [
 /*
 for (let i = 1; i <= 100; i++) {
   const newUser = {
-    name: `User ${i}`,
-    email: `user${i}@example.com`,
+    name: 'User ${i}',
+    email: 'user${i}@example.com',
+    role: 'buyer',
+    isVerified: true,
     password: ='123456',
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE10'],
   users.push(newUser);
