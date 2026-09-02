@@ -186,16 +186,21 @@ const RegisterScreen = () => {
         </Button>
       </Form>
 
-      <Row className="py-3 d-flex justify-content-between align-items-center">
-        <Col xs={7}>Đã có tài khoản? <Link to="/login" className="fw-bold text-primary text-decoration-none">Đăng nhập</Link></Col>
-        <Col xs={5} className="text-end">
-          <Button
+      {/* Đã thêm mb-3 vào đây để tạo khoảng cách giữa 2 dòng */}
+      <Row className="pt-3 mb-3">
+        <Col>
+          Đã có tài khoản? <Link to="/login" className="fw-bold text-primary text-decoration-none">Đăng nhập</Link>
+        </Col>
+      </Row>
+      <Row className="pb-3">
+        <Col>
+          Chưa xác thực email? <Button
             variant="link"
-            className="p-0 text-decoration-none fw-bold"
+            className="p-0 text-decoration-none fw-bold align-baseline"
             style={{ color: '#0d6efd' }}
             onClick={() => setShowManualVerifyModal(true)}
           >
-            Nhập mã xác thực?
+            Nhập mã xác thực
           </Button>
         </Col>
       </Row>

@@ -3,9 +3,7 @@ import generateToken from '../utils/generateToken.js';
 import User from '../models/userModel.js';
 import sendEmail from '../utils/sendEmail.js';
 
-/* =========================================================
-   EMAIL OTP TEMPLATE
-========================================================= */
+
 const createOtpEmail = ({ name, otp, resend = false }) => {
   const title = resend
     ? 'Mã xác thực mới của bạn'
@@ -261,9 +259,7 @@ const createOtpEmail = ({ name, otp, resend = false }) => {
 };
 
 
-/* =========================================================
-   LOGIN
-========================================================= */
+
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -294,9 +290,7 @@ const authUser = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   REGISTER
-========================================================= */
+
 const registerUser = asyncHandler(async (req, res) => {
   const {
     name,
@@ -309,9 +303,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const cleanEmail = email.trim().toLowerCase();
 
-  /* -----------------------------------------
-     CHECK USER EXIST
-  ----------------------------------------- */
+
   const userExists = await User.findOne({
     email: cleanEmail,
   });
@@ -328,14 +320,10 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   }
 
-  /* -----------------------------------------
-     GOOGLE AUTH
-  ----------------------------------------- */
+
   const isVerified = isGoogleAuth === true;
 
-  /* -----------------------------------------
-     OTP
-  ----------------------------------------- */
+
   const verificationCode = isVerified
     ? undefined
     : Math.floor(
@@ -346,9 +334,7 @@ const registerUser = asyncHandler(async (req, res) => {
     ? undefined
     : Date.now() + 10 * 60 * 1000;
 
-  /* -----------------------------------------
-     CREATE USER
-  ----------------------------------------- */
+
   const user = await User.create({
     name,
     email: cleanEmail,
@@ -365,9 +351,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Dữ liệu người dùng không hợp lệ');
   }
 
-  /* =====================================================
-     GOOGLE REGISTER
-  ===================================================== */
+
   if (isVerified) {
     res.status(201).json({
       _id: user._id,
@@ -382,9 +366,7 @@ const registerUser = asyncHandler(async (req, res) => {
     return;
   }
 
-  /* =====================================================
-     SEND OTP EMAIL
-  ===================================================== */
+
   try {
     await sendEmail({
       to: cleanEmail,
@@ -410,7 +392,6 @@ const registerUser = asyncHandler(async (req, res) => {
       error
     );
 
-    // Nếu gửi mail thất bại thì xóa user
     await User.findByIdAndDelete(user._id);
 
     res.status(500);
@@ -422,9 +403,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   VERIFY OTP
-========================================================= */
+
 const verifyOTP = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
 
@@ -446,9 +425,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
     );
   }
 
-  /* -----------------------------------------
-     CHECK OTP
-  ----------------------------------------- */
+
   if (
     user.verificationCode !== otp ||
     !user.verificationCodeExpires ||
@@ -461,18 +438,13 @@ const verifyOTP = asyncHandler(async (req, res) => {
     );
   }
 
-  /* -----------------------------------------
-     VERIFY USER
-  ----------------------------------------- */
   user.isVerified = true;
   user.verificationCode = undefined;
   user.verificationCodeExpires = undefined;
 
   await user.save();
 
-  /* -----------------------------------------
-     LOGIN AFTER VERIFY
-  ----------------------------------------- */
+
   res.json({
     _id: user._id,
     name: user.name,
@@ -485,9 +457,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   RESEND OTP
-========================================================= */
+
 const resendOTP = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -509,9 +479,6 @@ const resendOTP = asyncHandler(async (req, res) => {
     );
   }
 
-  /* -----------------------------------------
-     GENERATE NEW OTP
-  ----------------------------------------- */
   const newOtp = Math.floor(
     100000 + Math.random() * 900000
   ).toString();
@@ -523,9 +490,7 @@ const resendOTP = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  /* -----------------------------------------
-     SEND NEW EMAIL
-  ----------------------------------------- */
+
   try {
 
     await sendEmail({
@@ -562,9 +527,7 @@ const resendOTP = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   GET USER PROFILE
-========================================================= */
+
 const getUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -584,9 +547,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   UPDATE USER PROFILE
-========================================================= */
 const updateUserProfile = asyncHandler(async (req, res) => {
   const {
     name,
@@ -626,9 +586,6 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   GET PAYPAL CLIENT ID
-========================================================= */
 const getPayPalClientId = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -655,18 +612,13 @@ const getPayPalClientId = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   GET USERS
-========================================================= */
+
 const getUsers = asyncHandler(async (req, res) => {
   const users = await User.find({});
   res.json(users);
 });
 
 
-/* =========================================================
-   DELETE USER
-========================================================= */
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
@@ -683,9 +635,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   GET USER BY ID
-========================================================= */
+
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(
     req.params.id
@@ -700,9 +650,6 @@ const getUserById = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   UPDATE USER
-========================================================= */
 const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
@@ -733,9 +680,6 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   GET PASSWORD
-========================================================= */
 const getUserPassword = asyncHandler(async (req, res) => {
   const email = req.params.email;
 
@@ -754,9 +698,6 @@ const getUserPassword = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   GOOGLE LOGIN BYPASS
-========================================================= */
 const googleLoginBypass = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -781,9 +722,6 @@ const googleLoginBypass = asyncHandler(async (req, res) => {
 });
 
 
-/* =========================================================
-   EXPORT
-========================================================= */
 export {
   authUser,
   registerUser,
