@@ -70,7 +70,7 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
     await sendEmail({
       to: cleanEmail,
       subject: "Khôi phục mật khẩu - The Digital Shop",
-      html: `<h3>Link reset: <a href="${link}">${link}</a></h3>`,
+      html: `<h3>Reset Link: <a href="${link}">${link}</a></h3>`,
     });
     res.json({ status: "Reset Link Sent" });
   } catch (error) {
