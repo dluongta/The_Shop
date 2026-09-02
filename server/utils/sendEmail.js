@@ -48,11 +48,8 @@ const sendEmail = async ({ to, subject, html }) => {
       }
     );
 
-
     return response.data;
   } catch (error) {
-    console.error('========== BREVO ERROR ==========');
-
     if (error.response) {
       console.error('Status:', error.response.status);
       console.error('Data:', error.response.data);
@@ -60,8 +57,6 @@ const sendEmail = async ({ to, subject, html }) => {
     } else {
       console.error('Message:', error.message);
     }
-
-    console.error('=================================');
 
     // Lấy message chi tiết từ Brevo
     const brevoMessage =
