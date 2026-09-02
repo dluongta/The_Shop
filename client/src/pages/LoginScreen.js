@@ -106,12 +106,14 @@ const LoginScreen = () => {
     e.preventDefault()
     dispatch(login(email, password))
   }
+  
   const forgotPasswordHandler = (event) => {
     event.preventDefault();
     navigate("/forgot-password", {
       state: { message: email },
     });
   };
+
   return (
     <FormContainer>
       <h1>Sign In</h1>
@@ -147,12 +149,13 @@ const LoginScreen = () => {
         <Button type="submit">Login</Button>
       </Form>
 
-      <Row className="py-3">
+      {/* Đã tách thành 2 Row với pt-3 mb-3 để tạo khoảng cách vừa phải giống Form Đăng ký */}
+      <Row className="pt-3 mb-3">
         <Col>
           New Customer? <Link to="/register" className="fw-bold text-primary text-decoration-none">Register</Link>
         </Col>
       </Row>
-      <Row className="py-3">
+      <Row className="pb-3">
         <Col>
           Forgot password? <Link to="/forgot-password" className="fw-bold text-primary text-decoration-none" onClick={forgotPasswordHandler}>Reset Password</Link>
         </Col>
@@ -160,7 +163,6 @@ const LoginScreen = () => {
 
       {/* GOOGLE REGISTER MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        {/* Đã xóa closeButton tại đây */}
         <Modal.Header>
           <Modal.Title>Create account</Modal.Title>
         </Modal.Header>
