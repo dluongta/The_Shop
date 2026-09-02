@@ -59,14 +59,19 @@ const sendEmail = async ({ to, subject, html }) => {
     }
 
     // Lấy message chi tiết từ Brevo
-    const brevoMessage =
-      error.response?.data?.message ||
-      error.response?.data?.code ||
-      error.message;
+    const status = error.response?.status;
+    const data = error.response?.data;
 
-    throw new Error(
-      `Brevo ${error.response?.status || ''}: ${brevoMessage}`
-    );
+    const brevoMessage =
+      data?.message ||
+      data?.code ||
+      error.message ||
+      'Gửi email thất bại';
+
+    if (status) {
+      throw new Error(`[Brevo ${status}] ${brevoMessage}`);
+    }
+    throw new Error(`[Brevo] ${brevoMessage}`);
   }
 };
 
