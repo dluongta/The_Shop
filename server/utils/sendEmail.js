@@ -1,17 +1,7 @@
 import axios from 'axios';
 
-/**
- * Gửi email qua Brevo REST API
- *
- * Required ENV:
- * BREVO_API_KEY=your_brevo_api_key
- * BREVO_SENDER_EMAIL=your_verified_email
- * BREVO_SENDER_NAME=The Digital Shop
- */
 const sendEmail = async ({ to, subject, html }) => {
-  // ==============================
-  // 1. Kiểm tra ENV
-  // ==============================
+
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail =
     process.env.BREVO_SENDER_EMAIL || 'luen2k3@gmail.com';
@@ -28,19 +18,8 @@ const sendEmail = async ({ to, subject, html }) => {
     throw new Error('Email người nhận không hợp lệ');
   }
 
-  console.log('========== BREVO EMAIL DEBUG ==========');
-  console.log('API KEY exists:', !!apiKey);
-  console.log('API KEY length:', apiKey.length);
-  console.log('API KEY prefix:', apiKey.substring(0, 10) + '...');
-  console.log('Sender:', senderEmail);
-  console.log('Receiver:', to);
-  console.log('Subject:', subject);
-  console.log('========================================');
-
   try {
-    // ==============================
-    // 2. Gọi trực tiếp Brevo API
-    // ==============================
+
     const response = await axios.post(
       'https://api.brevo.com/v3/smtp/email',
       {
@@ -69,9 +48,6 @@ const sendEmail = async ({ to, subject, html }) => {
       }
     );
 
-    console.log('========== BREVO SUCCESS ==========');
-    console.log('Message ID:', response.data?.messageId);
-    console.log('===================================');
 
     return response.data;
   } catch (error) {

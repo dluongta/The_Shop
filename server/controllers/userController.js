@@ -398,19 +398,7 @@ const registerUser = asyncHandler(async (req, res) => {
       }),
     });
 
-    console.log(
-      '\n=========================================='
-    );
-
-    console.log(
-      `MÃ OTP ĐĂNG KÝ CỦA ${cleanEmail}: ${verificationCode}`
-    );
-
-    console.log(
-      '==========================================\n'
-    );
-
-    res.status(201).json({
+      res.status(201).json({
       requiresVerification: true,
       email: user.email,
     });
@@ -552,10 +540,6 @@ const resendOTP = asyncHandler(async (req, res) => {
         resend: true,
       }),
     });
-
-    console.log(
-      `[RESEND] MÃ OTP CỦA ${cleanEmail}: ${newOtp}`
-    );
 
     res.json({
       message:
