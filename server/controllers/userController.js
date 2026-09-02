@@ -416,7 +416,7 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(500);
 
     throw new Error(
-      `Lỗi hệ thống gửi mail: ${error.message}`
+      `Lỗi hệ thống gửi mail Brevo: ${error.message}`
     );
   }
 });
@@ -556,7 +556,7 @@ const resendOTP = asyncHandler(async (req, res) => {
     res.status(500);
 
     throw new Error(
-      `Lỗi hệ thống gửi mail: ${error.message}`
+      `Lỗi hệ thống gửi mail Brevo: ${error.message}`
     );
   }
 });
