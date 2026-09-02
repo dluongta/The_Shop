@@ -90,7 +90,7 @@ const ForgotPassword = () => {
                         type="submit" 
                         className="btn" 
                         disabled={loading}
-                        style={{ width: '100%', padding: '12px', background: '#4f46e5', color: '#white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                        style={{ width: '100%', padding: '12px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
                         {loading ? 'Đang xử lý...' : 'Gửi yêu cầu'}
                     </button>
