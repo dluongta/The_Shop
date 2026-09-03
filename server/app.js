@@ -157,7 +157,7 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
     res.json({ status: "Reset Link Sent" });
   } catch (error) {
     console.error("LỖI GỬI MAIL CHI TIẾT:", error.message);
-    res.status(500).json({ status: "Lỗi hệ thống gửi mail", detail: error.message });
+    res.status(500).json({ status: "Lỗi hệ thống gửi mail Brevo", detail: error.message });
   }
 }));
 
