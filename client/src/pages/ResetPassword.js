@@ -147,9 +147,9 @@ const ResetPassword = () => {
                 <div className="reset-message-content">
                   <span>{message}</span>
 
-                  {isSuccess && (
+                  {/* {isSuccess && (
                     <strong>{countdown}s</strong>
-                  )}
+                  )} */}
                 </div>
               </Message>
             </div>
@@ -242,7 +242,7 @@ const ResetPassword = () => {
               </div>
 
               {/* Password tip */}
-              <div className="reset-tip">
+              {/* <div className="reset-tip">
                 <div className="reset-tip-icon">
                   <svg viewBox="0 0 24 24" fill="none">
                     <circle
@@ -271,7 +271,7 @@ const ResetPassword = () => {
                   Sử dụng mật khẩu mạnh và không sử dụng lại
                   mật khẩu ở những tài khoản khác.
                 </p>
-              </div>
+              </div> */}
 
               {/* Button */}
               <button
