@@ -70,7 +70,89 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
     await sendEmail({
       to: cleanEmail,
       subject: "Khôi phục mật khẩu - The Digital Shop",
-      html: `<h3>Reset Link: <a href="${link}">${link}</a></h3>`,
+      html: `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khôi phục mật khẩu</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#333333;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f7fb; padding:35px 15px;">
+    <tr>
+      <td align="center">
+        <!-- MAIN CONTAINER -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 18px rgba(0,0,0,0.08);">
+          
+          <!-- HEADER -->
+          <tr>
+            <td align="center" style="background-color:#0d6efd; padding:28px 20px;">
+              <div style="color:#ffffff; font-size:25px; font-weight:bold; line-height:1.4;">
+                The Digital Shop
+              </div>
+              <div style="color:#ffffff; font-size:17px; margin-top:7px; line-height:1.5;">
+                Khôi phục mật khẩu
+              </div>
+            </td>
+          </tr>
+
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:35px 35px 30px 35px;">
+              <div style="font-size:22px; font-weight:bold; color:#222222; margin-bottom:20px; line-height:1.4;">
+                Yêu cầu đặt lại mật khẩu
+              </div>
+              
+              <div style="font-size:16px; line-height:1.7; color:#444444; margin-bottom:25px;">
+                Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại <strong style="color:#0d6efd;>The Digital Shop</strong>. Vui lòng nhấn vào nút bên dưới để thiết lập mật khẩu mới (Liên kết này chỉ có hiệu lực trong vòng <strong>10 phút</strong>).
+              </div>
+
+              <!-- BUTTON -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:25px;">
+                <tr>
+                  <td align="center">
+                    <a href="${link}" style="display:inline-block; background-color:#0d6efd; color:#ffffff; font-size:16px; font-weight:bold; text-decoration:none; padding:15px 30px; border-radius:8px; box-shadow:0 4px 6px rgba(13, 110, 253, 0.25);">
+                      ĐẶT LẠI MẬT KHẨU
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- FALLBACK LINK -->
+              <div style="font-size:14px; line-height:1.6; color:#777777; margin-bottom:20px;">
+                Nếu nút bấm không hoạt động, bạn có thể sao chép và dán đường dẫn sau vào trình duyệt:<br>
+                <a href="${link}" style="color:#0d6efd; word-break:break-all; text-decoration:underline;">${link}</a>
+              </div>
+
+              <!-- DIVIDER -->
+              <div style="border-top:1px solid #e5e5e5; margin:28px 0 20px 0;"></div>
+
+              <div style="font-size:14px; line-height:1.6; color:#777777;">
+                Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này. Tài khoản của bạn vẫn an toàn và bạn không cần thực hiện thêm bất kỳ thao tác nào.
+              </div>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td align="center" style="background-color:#f8f9fa; padding:20px; border-top:1px solid #eeeeee;">
+              <div style="font-size:15px; color:#777777; line-height:1.6;">
+                © ${new Date().getFullYear()} The Digital Shop
+              </div>
+              <div style="font-size:14px; color:#999999; margin-top:5px;">
+                Email tự động, vui lòng không trả lời email này.
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`,
     });
     res.json({ status: "Reset Link Sent" });
   } catch (error) {
