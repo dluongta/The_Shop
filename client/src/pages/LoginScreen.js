@@ -12,7 +12,6 @@ import {
   login,
   register,
   checkEmailExists,
-  loginWithPasswordFromApi,
   googleLoginDirect,
 } from '../actions/userActions'
 
@@ -24,7 +23,7 @@ const LoginScreen = () => {
   const [passwordModal, setPasswordModal] = useState('')
   const [googleUser, setGoogleUser] = useState(null)
   const [role, setRole] = useState('buyer')
-  const [paypalClientId, setPaypalClientId] = useState('') // Thêm PayPal state
+  const [paypalClientId, setPaypalClientId] = useState('') 
   
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -89,7 +88,8 @@ const LoginScreen = () => {
         googleUser.email,
         passwordModal,
         role,
-        paypalClientId // Truyền thêm PayPal Client ID
+        paypalClientId,
+        true // <--- Thêm cờ true để xác nhận đây là đăng ký qua Google
       )
     )
 
@@ -149,7 +149,6 @@ const LoginScreen = () => {
         <Button type="submit">Login</Button>
       </Form>
 
-      {/* Đã tách thành 2 Row với pt-3 mb-3 để tạo khoảng cách vừa phải giống Form Đăng ký */}
       <Row className="pt-3 mb-3">
         <Col>
           New Customer? <Link to="/register" className="fw-bold text-primary text-decoration-none">Register</Link>
@@ -187,7 +186,6 @@ const LoginScreen = () => {
             </Form.Control>
           </Form.Group>
 
-          {/* Thêm trường PayPal cho Modal */}
           <Form.Control
             className="mt-3"
             type="text"

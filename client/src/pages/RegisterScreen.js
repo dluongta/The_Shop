@@ -8,7 +8,8 @@ import axios from 'axios';
 
 import Message from '../components/Message';
 import FormContainer from '../components/FormContainer';
-import { checkEmailExists, googleLoginDirect } from '../actions/userActions';
+// IMPORT THÊM register, login TỪ USER ACTIONS
+import { checkEmailExists, googleLoginDirect, register, login } from '../actions/userActions';
 import { USER_LOGIN_SUCCESS } from '../constants/userConstants';
 
 const RegisterScreen = () => {
@@ -68,31 +69,46 @@ const RegisterScreen = () => {
   };
 
   useGoogleOneTapLogin({ disabled: !!userInfo, onSuccess: (res) => handleGoogleCredential(res.credential) });
+  
   const handleGoogleLoginSuccess = (res) => { if (res?.credential) handleGoogleCredential(res.credential) };
 
+  /* =========================
+     ĐỒNG BỘ GOOGLE MODAL SUBMIT (GIỐNG LOGIN & HOME)
+  ========================= */
   const handleGoogleModalSubmit = async () => {
     if (!googleUser || !passwordModal) return;
     try {
       setIsRegistering(true);
-      const config = { headers: { 'Content-Type': 'application/json' } };
-      const { data } = await axios.post('/api/users', { 
-        name: googleUser.name, 
-        email: googleUser.email, 
-        password: passwordModal, 
-        role: googleRole, 
-        paypalClientId: googlePaypalClientId, 
-        isGoogleAuth: true
-      }, config);
       
-      dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
-      localStorage.setItem('userInfo', JSON.stringify(data));
+      // Gọi register action của redux kèm tham số isGoogleAuth = true
+      await dispatch(
+        register(
+          googleUser.name, 
+          googleUser.email, 
+          passwordModal, 
+          googleRole, 
+          googlePaypalClientId, 
+          true 
+        )
+      );
+      
+      // Sau khi đăng ký thành công, tự động đăng nhập
+      dispatch(login(googleUser.email, passwordModal));
+
       setShowGoogleModal(false);
-      navigate(redirect);
+      setGoogleUser(null);
+      setPasswordModal('');
+      setGooglePaypalClientId('');
     } catch (error) {
        console.log(error);
-    } finally { setIsRegistering(false); }
+    } finally { 
+      setIsRegistering(false); 
+    }
   };
 
+  /* =========================
+     NORMAL REGISTER SUBMIT (GỬI OTP)
+  ========================= */
   const submitHandler = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -186,7 +202,6 @@ const RegisterScreen = () => {
         </Button>
       </Form>
 
-      {/* Đã thêm mb-3 vào đây để tạo khoảng cách giữa 2 dòng */}
       <Row className="pt-3 mb-3">
         <Col>
           Đã có tài khoản? <Link to="/login" className="fw-bold text-primary text-decoration-none">Đăng nhập</Link>
@@ -253,7 +268,7 @@ const RegisterScreen = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* MODAL GOOGLE - ĐÃ BỔ SUNG CHỌN ROLE VÀ PAYPAL CLIENT ID */}
+      {/* ================= MODAL GOOGLE ================= */}
       <Modal show={showGoogleModal} onHide={() => setShowGoogleModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
           <Modal.Title className="w-100 text-center fw-bold">Tạo tài khoản Google</Modal.Title>

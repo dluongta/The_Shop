@@ -106,7 +106,7 @@ const HomeScreen = () => {
     navigate(`${keyword ? `/search/${keyword}` : '/'}?${params.toString()}`)
   }
 
-  /* Google Logic giữ nguyên ... */
+  /* Google Logic */
   useGoogleOneTapLogin({
     disabled: !!userInfo,
     onSuccess: async (res) => {
@@ -130,7 +130,18 @@ const HomeScreen = () => {
 
   const handleRegisterFromGoogle = async () => {
     if (!passwordModal || !googleUser) return
-    await dispatch(register(googleUser.name, googleUser.email, passwordModal, role, paypalClientId))
+    
+    await dispatch(
+      register(
+        googleUser.name, 
+        googleUser.email, 
+        passwordModal, 
+        role, 
+        paypalClientId,
+        true // <--- Thêm cờ true để xác nhận đăng ký Google One Tap không cần gửi mail OTP
+      )
+    )
+    
     dispatch(login(googleUser.email, passwordModal))
     setShowModal(false)
     setPasswordModal('')
@@ -146,7 +157,9 @@ const HomeScreen = () => {
       {!keyword && (
         <Container>
           <h2 className="mb-4">Top Products</h2>
-          <ProductCarousel />
+          
+
+<ProductCarousel />
         </Container>
       )}
 
@@ -233,7 +246,7 @@ const HomeScreen = () => {
         </Row>
       </Container>
 
-      {/* MODAL (Giữ nguyên) */}
+      {/* MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header>
           <Modal.Title>Create account</Modal.Title>

@@ -127,8 +127,7 @@ export const logout = () => (dispatch) => {
 /* =========================
    REGISTER
 ========================= */
-// Đã thêm paypalClientId chính xác
-export const register = (name, email, password, role, paypalClientId) => async (dispatch) => {
+export const register = (name, email, password, role, paypalClientId, isGoogleAuth = false) => async (dispatch) => {  
   try {
     dispatch({
       type: USER_REGISTER_REQUEST,
@@ -142,7 +141,7 @@ export const register = (name, email, password, role, paypalClientId) => async (
 
     const { data } = await axios.post(
       '/api/users',
-      { name, email, password, role, paypalClientId }, // Truyền thành công paypalClientId vào req.body
+      { name, email, password, role, paypalClientId, isGoogleAuth },      
       config
     )
 
@@ -218,7 +217,7 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${userInfo.token}`,
       },
-    };
+    }
 
     const { data } = await axios.put('/api/users/profile', user, config);
 
