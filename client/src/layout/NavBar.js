@@ -104,7 +104,7 @@ export const NavBar = ({ socket }) => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto align-items-center text-center">
 
-            {/* Username (Profile) hoặc Sign In */}
+            {/* Username (Profile) hoặc Sign In + Sign Up */}
             {userInfo ? (
               <LinkContainer to="/profile">
                 <Nav.Link onClick={handleCloseMenu} className="fw-bold me-lg-2">
@@ -112,12 +112,21 @@ export const NavBar = ({ socket }) => {
                 </Nav.Link>
               </LinkContainer>
             ) : (
-              <LinkContainer to="/login">
-                <Nav.Link onClick={handleCloseMenu} className="me-lg-2">
-                  <i className="fas fa-user"></i> Sign In
-                </Nav.Link>
-              </LinkContainer>
+              <>
+                <LinkContainer to="/login">
+                  <Nav.Link onClick={handleCloseMenu} className="me-lg-2">
+                    <i className="fas fa-user me-1"></i> Sign In
+                  </Nav.Link>
+                </LinkContainer>
+
+                <LinkContainer to="/register">
+                  <Nav.Link onClick={handleCloseMenu}>
+                    <i className="fas fa-user-plus me-1"></i> Sign Up
+                  </Nav.Link>
+                </LinkContainer>
+              </>
             )}
+
 
             {/* Khối Notification */}
             {userInfo && (
@@ -160,7 +169,7 @@ export const NavBar = ({ socket }) => {
                     maxWidth: '100vw',
                     maxHeight: '400px',
                     overflowY: 'auto',
-                    overflowX: 'hidden', 
+                    overflowX: 'hidden',
                     padding: 0,
                     border: 'none',
                     backgroundColor: '#fff'
@@ -221,8 +230,8 @@ export const NavBar = ({ socket }) => {
                           borderBottom: '1px solid #ddd',
                           display: 'block',
                           width: '100%',
-                          whiteSpace: 'normal',    
-                          wordBreak: 'break-word', 
+                          whiteSpace: 'normal',
+                          wordBreak: 'break-word',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = n.isRead ? '#87CEFA' : '#0368f5';
