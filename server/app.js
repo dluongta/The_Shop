@@ -456,7 +456,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', async () => {
     let disconnectedUserId = null;
 
-    // Tìm và xóa user khỏi danh sách online, đồng thời lấy userId
     for (let [userId, sId] of onlineUsers.entries()) {
       if (sId === socket.id) {
         disconnectedUserId = userId;
