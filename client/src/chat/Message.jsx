@@ -16,7 +16,6 @@ const timeAgo = (date) => {
   return "vừa xong";
 };
 
-// Hàm nhận diện URL và chuyển thành thẻ <a> có thể click
 const formatMessage = (text, isSelf) => {
   if (!text) return "";
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -30,7 +29,6 @@ const formatMessage = (text, isSelf) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          // Bỏ in đậm, giữ nguyên trắng tinh #fff
           className="underline transition-colors text-white hover:text-gray-200"
         >
           {part}
@@ -77,7 +75,6 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {senderUser?.email || senderUser?.name || "Former member"}
         </p>
 
-        {/* NỘI DUNG TIN NHẮN: Bỏ font-medium, màu trắng tinh #fff */}
         <p className={`break-words whitespace-pre-wrap ${message.isDeleted ? "text-black" : "text-white"}`}>
           {message.isDeleted ? "Tin nhắn đã bị thu hồi" : formatMessage(message.message, isSelf)}
         </p>
