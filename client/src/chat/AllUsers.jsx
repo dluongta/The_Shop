@@ -48,6 +48,16 @@ export default function AllUsers({
     const q = normalize(searchQuery);
 
     const filteredRooms = chatRooms.filter((room) => {
+      // === LOGIC MỚI: ẨN LỜI MỜI CHƯA CÓ TIN NHẮN ĐỐI VỚI NGƯỜI NHẬN ===
+      const isPendingPrivateReceiver = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
+      const hasNoMessage = !room.lastMessage || !room.lastMessage.message;
+
+      // Nếu là lời mời 1-1, mình là người nhận và CHƯA CÓ tin nhắn -> ẨN đi
+      if (isPendingPrivateReceiver && hasNoMessage) {
+        return false;
+      }
+      // =================================================================
+
       if (room.isGroup) return normalize(room.name).includes(q);
 
       const otherId = room.members.find((id) => id !== currentUser._id);
@@ -61,9 +71,15 @@ export default function AllUsers({
     const existingContactIds = new Set();
     chatRooms.forEach((room) => {
       if (!room.isGroup) {
-        room.members.forEach((mId) => {
-          if (mId !== currentUser._id) existingContactIds.add(mId);
-        });
+        // === LOGIC MỚI: Không đưa vào danh sách đã chat nếu phòng đang bị ẩn ===
+        const isPendingPrivateReceiver = !room.isGroup && room.isAccepted === false && room.requester !== currentUser._id;
+        const hasNoMessage = !room.lastMessage || !room.lastMessage.message;
+
+        if (!(isPendingPrivateReceiver && hasNoMessage)) {
+          room.members.forEach((mId) => {
+            if (mId !== currentUser._id) existingContactIds.add(mId);
+          });
+        }
       }
     });
 

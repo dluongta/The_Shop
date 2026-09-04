@@ -626,8 +626,8 @@ export default function ChatRoom({
               setUnreadIds(new Set()); // Bấm lên thì coi như đọc hết
             }}
             className={`relative w-10 h-10 shadow-lg border rounded-full flex items-center justify-center transition-colors hover:border-blue-600 hover:text-blue-600 ${unreadIds.size > 0
-                ? "bg-white text-black border-gray-300" // Có tin nhắn: nền trắng, chữ đen, viền nhạt
-                : "bg-white text-gray-700 border-gray-700" // Bình thường: xám gần đen
+              ? "bg-white text-black border-gray-300" // Có tin nhắn: nền trắng, chữ đen, viền nhạt
+              : "bg-white text-gray-700 border-gray-700" // Bình thường: xám gần đen
               }`}
             title="Cuộn lên tin nhắn mới nhất"
           >
@@ -719,7 +719,10 @@ export default function ChatRoom({
           <div className="flex flex-col relative w-full pt-1">
             {isRequesterOfPrivate && (
               <span className="text-xs text-orange-500 mb-2 mt-2 font-medium italic text-center">
-                Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm {remainingMessages} tin nhắn.
+                {requesterMessageCount === 0
+                  ? `Hãy gửi tin nhắn đầu tiên để đối phương nhận được lời mời trò chuyện. Bạn có thể gửi thêm ${remainingMessages} tin nhắn.`
+                  : `Cuộc trò chuyện đang chờ xác nhận. Bạn có thể gửi thêm ${remainingMessages} tin nhắn.`
+                }
               </span>
             )}
 
