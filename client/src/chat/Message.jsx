@@ -30,10 +30,8 @@ const formatMessage = (text, isSelf) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          //Xanh dương đậm (text-blue-800 hover:text-blue-900)
-          className={`underline font-semibold transition-colors ${
-            isSelf ? "text-white hover:text-gray-200" : "text-white hover:text-gray-200"
-          }`}
+          // Bỏ in đậm, giữ nguyên trắng tinh #fff
+          className="underline transition-colors text-white hover:text-gray-200"
         >
           {part}
         </a>
@@ -65,27 +63,23 @@ export default function Message({ message, self, users = [], onRevoke }) {
   return (
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-3`}>
       <div
-        className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${
-          message.isDeleted
+        className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${message.isDeleted
             ? "bg-gray-200 text-black border-gray-400 italic" // Thu hồi -> Nền xám, chữ đen
             : isSelf
-            ? "bg-blue-500 text-white border-blue-600"        // Mình -> Nền xanh, chữ trắng
-            : "bg-orange-500 text-white border-orange-600"    // Người khác -> Nền cam đậm, chữ trắng
-        }`}
-      >
-        <p
-          className={`text-xs font-semibold mb-1 ${
-            message.isDeleted
-              ? "text-black"
-              : isSelf
-              ? "text-blue-100"
-              : "text-white"
+              ? "bg-blue-500 text-white border-blue-600"        // Mình -> Nền xanh, chữ trắng
+              : "bg-orange-500 text-white border-orange-600"    // Người khác -> Nền cam đậm, chữ trắng
           }`}
+      >
+        {/* TÊN / EMAIL: Bỏ in đậm, màu trắng tinh #fff */}
+        <p
+          className={`text-xs mb-1 ${message.isDeleted ? "text-black" : "text-white"
+            }`}
         >
           {senderUser?.email || senderUser?.name || "Former member"}
         </p>
 
-        <p className={`break-words whitespace-pre-wrap font-medium ${message.isDeleted ? "text-black" : ""}`}>
+        {/* NỘI DUNG TIN NHẮN: Bỏ font-medium, màu trắng tinh #fff */}
+        <p className={`break-words whitespace-pre-wrap ${message.isDeleted ? "text-black" : "text-white"}`}>
           {message.isDeleted ? "Tin nhắn đã bị thu hồi" : formatMessage(message.message, isSelf)}
         </p>
 
@@ -93,7 +87,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {isSelf && !message.isDeleted ? (
             <button
               onClick={() => onRevoke(message._id)}
-              className="text-[10px] text-red-200 hover:text-white font-medium cursor-pointer shrink-0"
+              className="text-[10px] text-red-300 hover:text-red-300 font-medium cursor-pointer shrink-0"
             >
               Thu hồi
             </button>
@@ -102,9 +96,8 @@ export default function Message({ message, self, users = [], onRevoke }) {
           )}
 
           <div
-            className={`text-[10px] text-right whitespace-nowrap shrink-0 ${
-              message.isDeleted ? "text-black font-medium opacity-100" : "opacity-80"
-            }`}
+            className={`text-[10px] text-right whitespace-nowrap shrink-0 ${message.isDeleted ? "text-black" : "text-white"
+              }`}
           >
             {new Date(message.createdAt).toLocaleString("vi-VN", {
               day: "2-digit",
