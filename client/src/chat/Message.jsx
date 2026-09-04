@@ -30,9 +30,9 @@ const formatMessage = (text, isSelf) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          // Đã thêm lại class 'underline' để giữ gạch chân cho link
+          //Xanh dương đậm (text-blue-800 hover:text-blue-900)
           className={`underline font-semibold transition-colors ${
-            isSelf ? "text-white hover:text-gray-200" : "text-blue-600 hover:text-blue-800"
+            isSelf ? "text-white hover:text-gray-200" : "text-white hover:text-gray-200"
           }`}
         >
           {part}
@@ -67,10 +67,10 @@ export default function Message({ message, self, users = [], onRevoke }) {
       <div
         className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${
           message.isDeleted
-            ? "bg-gray-200 text-black border-gray-400 italic"
+            ? "bg-gray-200 text-black border-gray-400 italic" // Thu hồi -> Nền xám, chữ đen
             : isSelf
-            ? "bg-blue-500 text-white border-blue-600"
-            : "bg-gray-100 text-gray-900 border-gray-300"
+            ? "bg-blue-500 text-white border-blue-600"        // Mình -> Nền xanh, chữ trắng
+            : "bg-orange-500 text-white border-orange-600"    // Người khác -> Nền cam đậm, chữ trắng
         }`}
       >
         <p
@@ -79,7 +79,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
               ? "text-black"
               : isSelf
               ? "text-blue-100"
-              : "text-gray-600"
+              : "text-white"
           }`}
         >
           {senderUser?.email || senderUser?.name || "Former member"}
