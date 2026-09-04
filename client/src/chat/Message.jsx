@@ -64,13 +64,12 @@ export default function Message({ message, self, users = [], onRevoke }) {
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-3`}>
       <div
         className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${message.isDeleted
-            ? "bg-gray-200 text-black border-gray-400 italic" // Thu hồi -> Nền xám, chữ đen
+            ? "bg-gray-200 text-black border-gray-400 italic" 
             : isSelf
-              ? "bg-blue-500 text-white border-blue-600"        // Mình -> Nền xanh, chữ trắng
-              : "bg-orange-500 text-white border-orange-600"    // Người khác -> Nền cam đậm, chữ trắng
+              ? "bg-blue-500 text-white border-blue-600"        
+              : "bg-indigo-500 text-white border-indigo-600"    
           }`}
       >
-        {/* TÊN / EMAIL: Bỏ in đậm, màu trắng tinh #fff */}
         <p
           className={`text-xs mb-1 ${message.isDeleted ? "text-black" : "text-white"
             }`}
