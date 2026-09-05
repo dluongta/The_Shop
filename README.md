@@ -20,11 +20,11 @@ PORT = 5000
 MONGO_URI = your mongo_database url
 JWT_SECRET = your jwt_secret
 PAYPAL_CLIENT_ID = your paypal_client_id
-CLINET_ID = your client_id
+CLINET_ID = your your client_id
 CLIENT_SECRET = your client secret
-BREVO_USER= brevo_username
-BREVO_PASS = brevo password
-BREVO_API_KEY = brevo api key
+BREVO_USER= your brevo_username
+BREVO_PASS = your brevo_password
+BREVO_API_KEY = your brevo_api_key
 ```
 ### Install Dependencies
 
