@@ -62,7 +62,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-3`}>
       <div
         className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${message.isDeleted
-            ? "bg-gray-200 text-black border-gray-400" 
+            ? "bg-gray-200 text-black border-gray-400 italic" 
             : isSelf
               ? "bg-blue-500 text-white border-blue-600"        
               : "bg-indigo-500 text-white border-indigo-600"    
@@ -75,7 +75,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {senderUser?.email || senderUser?.name || "Former member"}
         </p>
 
-        <p className={`break-words whitespace-pre-wrap ${message.isDeleted ? "text-black" : "text-white"}`}>
+        <p className={`break-words whitespace-pre-wrap ${message.isDeleted ? "text-black italic" : "text-white"}`}>
           {message.isDeleted ? "Tin nhắn đã bị thu hồi" : formatMessage(message.message, isSelf)}
         </p>
 
