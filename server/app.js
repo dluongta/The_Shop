@@ -64,7 +64,7 @@ app.post("/api/forgot-password", asyncHandler(async (req, res) => {
 
   const secret = process.env.JWT_SECRET + oldUser.password;
   const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret, { expiresIn: "10m" });
-  const link = `https://the-digital-shop.onrender.com/api/reset-password/${oldUser._id}/${token}`;
+  const link = `localhost:5000/api/reset-password/${oldUser._id}/${token}`;
 
   try {
     await sendEmail({
