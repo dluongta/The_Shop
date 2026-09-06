@@ -103,7 +103,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
           {isSelf && !message.isDeleted ? (
             <button
               onClick={() => onRevoke(message._id)}
-              className="text-[10px] text-orange-400 hover:text-orange-300 font-medium cursor-pointer shrink-0"
+              className="text-[10px] text-orange-400 hover:text-orange-400 font-medium cursor-pointer shrink-0"
             >
               Thu hồi
             </button>
