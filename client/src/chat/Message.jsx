@@ -29,7 +29,11 @@ const formatMessage = (text, isSelf) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline transition-colors text-white hover:text-gray-200"
+          className={`underline transition-colors ${
+            isSelf
+              ? "text-blue-100 hover:text-white"
+              : "text-blue-600 hover:text-blue-800"
+          }`}
         >
           {part}
         </a>
@@ -61,29 +65,45 @@ export default function Message({ message, self, users = [], onRevoke }) {
   return (
     <li className={`flex ${isSelf ? "justify-end" : "justify-start"} mb-3`}>
       <div
-        className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${message.isDeleted
-            ? "bg-gray-200 text-black border-gray-400 italic" 
+        className={`max-w-md lg:max-w-lg px-4 py-2 rounded-lg text-sm border shadow-md ${
+          message.isDeleted
+            ? "bg-gray-200 text-black border-gray-400 italic"
             : isSelf
-              ? "bg-blue-500 text-white border-blue-600"        
-              : "bg-blue-500 text-white border-blue-600"    
-          }`}
+            ? "bg-blue-500 text-white border-blue-600"
+            : "bg-white text-black border-blue-500"
+        }`}
       >
         <p
-          className={`text-xs mb-1 ${message.isDeleted ? "text-black" : "text-white"
-            }`}
+          className={`text-xs mb-1 font-medium ${
+            message.isDeleted
+              ? "text-black"
+              : isSelf
+              ? "text-blue-100"
+              : "text-gray-700"
+          }`}
         >
           {senderUser?.email || senderUser?.name || "Former member"}
         </p>
 
-        <p className={`break-words whitespace-pre-wrap ${message.isDeleted ? "text-black italic" : "text-white"}`}>
-          {message.isDeleted ? "Tin nhắn đã bị thu hồi" : formatMessage(message.message, isSelf)}
+        <p
+          className={`break-words whitespace-pre-wrap ${
+            message.isDeleted
+              ? "text-black italic"
+              : isSelf
+              ? "text-white"
+              : "text-black"
+          }`}
+        >
+          {message.isDeleted
+            ? "Tin nhắn đã bị thu hồi"
+            : formatMessage(message.message, isSelf)}
         </p>
 
         <div className="flex justify-between items-end mt-2 gap-4">
           {isSelf && !message.isDeleted ? (
             <button
               onClick={() => onRevoke(message._id)}
-              className="text-[10px] text-red-300 hover:text-red-300 font-medium cursor-pointer shrink-0"
+              className="text-[10px] text-orange-400 hover:text-orange-300 font-medium cursor-pointer shrink-0"
             >
               Thu hồi
             </button>
@@ -92,8 +112,13 @@ export default function Message({ message, self, users = [], onRevoke }) {
           )}
 
           <div
-            className={`text-[10px] text-right whitespace-nowrap shrink-0 ${message.isDeleted ? "text-black" : "text-white"
-              }`}
+            className={`text-[10px] text-right whitespace-nowrap shrink-0 ${
+              message.isDeleted
+                ? "text-black"
+                : isSelf
+                ? "text-blue-100"
+                : "text-gray-500"
+            }`}
           >
             {new Date(message.createdAt).toLocaleString("vi-VN", {
               day: "2-digit",
