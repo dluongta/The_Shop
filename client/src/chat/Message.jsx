@@ -65,7 +65,7 @@ export default function Message({ message, self, users = [], onRevoke }) {
             ? "bg-gray-200 text-black border-gray-400 italic" 
             : isSelf
               ? "bg-blue-500 text-white border-blue-600"        
-              : "bg-indigo-500 text-white border-indigo-600"    
+              : "bg-blue-500 text-white border-blue-600"    
           }`}
       >
         <p
