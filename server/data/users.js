@@ -10,6 +10,16 @@ const users = [
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
   },
   {
+    name: 'Lucient Street',
+    email: 'lucient@example.com',
+    role: 'seller',
+    isAdmin: false,
+    isVerified: true,
+    password: '123456',
+    discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE100'],
+    paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
+  },
+  {
     name: 'Jane Street',
     email: 'jane@example.com',
     role: 'buyer',
@@ -18,17 +28,7 @@ const users = [
     password: '123456',
     discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE100'],
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
-  },
-  {
-    name: 'Lucien Street',
-    email: 'lucien@example.com',
-    role: 'seller',
-    isAdmin: false,
-    isVerified: true,
-    password: '123456',
-    discounts: ['DISCOUNT10', 'DISCOUNT20', 'SALE100'],
-    paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
-  },
+  }
 ];
 
 /*
