@@ -55,17 +55,17 @@ const RegisterScreen = () => {
     if (userInfo) navigate(redirect);
   }, [userInfo, navigate, redirect]);
 
-  // Xử lý đếm ngược OTP với sessionStorage (Reset khi đóng tab)
+  // Xử lý đếm ngược OTP với localStorage
   useEffect(() => {
     const checkCooldown = () => {
-        const storedTime = sessionStorage.getItem("otp_cooldown");
+        const storedTime = localStorage.getItem("otp_cooldown");
         if (storedTime) {
             const remaining = Math.floor((parseInt(storedTime) - Date.now()) / 1000);
             if (remaining > 0) {
                 setOtpCooldown(remaining);
             } else {
                 setOtpCooldown(0);
-                sessionStorage.removeItem("otp_cooldown");
+                localStorage.removeItem("otp_cooldown");
             }
         }
     };
@@ -135,7 +135,7 @@ const RegisterScreen = () => {
       setOtpError('Mật khẩu xác nhận không khớp'); return;
     }
 
-    // Nếu đang trong 3 phút đếm ngược, KHÔNG gọi API gửi mail nữa mà chỉ bật lại Modal OTP
+    // FIX: Đang trong 3 phút đếm ngược, KHÔNG gọi API gửi mail nữa mà chỉ bật lại Modal OTP
     if (otpCooldown > 0) {
       setShowOtpModal(true);
       setOtpMessage(`Vui lòng chờ đếm ngược kết thúc để có thể gửi lại mã.`);
@@ -151,8 +151,8 @@ const RegisterScreen = () => {
       setIsRegistering(false);
       setShowOtpModal(true);
       
-      // Bắt đầu đếm ngược 3 phút khi đăng ký thành công
-      sessionStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
+      // Bắt đầu đếm ngược 3 phút khi đăng ký thành công (gửi mã lần đầu)
+      localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
       setOtpCooldown(180);
     } catch (error) {
       setIsRegistering(false);
@@ -185,7 +185,7 @@ const RegisterScreen = () => {
       setOtpMessage('Mã xác nhận mới đã được gửi vào email của bạn!');
 
       // Bắt đầu đếm ngược 3 phút khi gửi lại thành công
-      sessionStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
+      localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
       setOtpCooldown(180);
     } catch (error) {
       setOtpError(error.response?.data?.message || 'Có lỗi xảy ra khi gửi lại mã');
@@ -207,7 +207,7 @@ const RegisterScreen = () => {
       setOtpMessage(`Mã xác thực mới đã được gửi tới ${manualEmail}!`);
 
       // Bắt đầu đếm ngược 3 phút
-      sessionStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
+      localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
       setOtpCooldown(180);
     } catch (error) {
       setManualLoading(false);
@@ -239,6 +239,7 @@ const RegisterScreen = () => {
 
         <Form.Control className="mb-3" type="text" placeholder="PayPal Client ID (Tùy chọn)" value={paypalClientId} onChange={(e) => setPaypalClientId(e.target.value)} />
         
+        {/* Nút đăng ký */}
         <Button type="submit" disabled={isRegistering}>
           {isRegistering ? <><Spinner as="span" animation="border" size="sm" /> Đang xử lý...</> : 'Đăng ký'}
         </Button>
@@ -263,6 +264,7 @@ const RegisterScreen = () => {
       </Row>
 
       {/* ================= MODAL NHẬP OTP ================= */}
+      {/* Giữ nguyên backdrop={true} để cho phép bấm ra ngoài tắt bảng */}
       <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
           <Modal.Title className="w-100 text-center fw-bold">Xác thực Email</Modal.Title>
@@ -291,6 +293,7 @@ const RegisterScreen = () => {
       </Modal>
 
       {/* ================= MODAL NHẬP EMAIL THỦ CÔNG ================= */}
+      {/* Giữ nguyên backdrop={true} để cho phép bấm ra ngoài tắt bảng */}
       <Modal show={showManualVerifyModal} onHide={() => setShowManualVerifyModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
           <Modal.Title className="w-100 text-center fw-bold">Xác thực tài khoản bằng Email</Modal.Title>
