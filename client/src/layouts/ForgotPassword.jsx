@@ -2,13 +2,16 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Message from "../components/Message";
-import Loader from "../components/Loader"; // Đảm bảo bạn có component Loader
+import Loader from "../components/Loader"; 
 
 const ForgotPassword = () => {
     const [resetEmail, setResetEmail] = useState("");
     const [message, setMessage] = useState("");
     const [variant, setVariant] = useState("info");
     const [loading, setLoading] = useState(false);
+    
+    // Thêm state cho thời gian đếm ngược
+    const [cooldown, setCooldown] = useState(0);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -19,10 +22,40 @@ const ForgotPassword = () => {
         }
     }, [location.state]);
 
+    // Xử lý đếm ngược thời gian với localStorage để không mất khi F5
+    useEffect(() => {
+        const checkCooldown = () => {
+            const storedTime = localStorage.getItem("forgot_pwd_cooldown");
+            if (storedTime) {
+                const remaining = Math.floor((parseInt(storedTime) - Date.now()) / 1000);
+                if (remaining > 0) {
+                    setCooldown(remaining);
+                } else {
+                    setCooldown(0);
+                    localStorage.removeItem("forgot_pwd_cooldown");
+                }
+            }
+        };
+
+        checkCooldown(); // Kiểm tra ngay khi mount
+        const interval = setInterval(checkCooldown, 1000); // Cập nhật mỗi giây
+        
+        return () => clearInterval(interval); // Cleanup
+    }, []);
+
+    // Hàm chuyển đổi giây sang định dạng mm:ss
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (cooldown > 0) return; // Chặn spam submit
+
         setLoading(true);
-        setMessage(""); // Xóa thông báo cũ
+        setMessage("");
 
         try {
             const config = {
@@ -31,7 +64,7 @@ const ForgotPassword = () => {
                 },
             };
 
-            const { data } = await axios.post(
+            await axios.post(
                 "/api/forgot-password",
                 { email: resetEmail },
                 config
@@ -41,14 +74,13 @@ const ForgotPassword = () => {
             setMessage("Một liên kết đặt lại mật khẩu đã được gửi vào email của bạn.");
             setLoading(false);
             
-            // Tùy chọn: Tự động chuyển hướng sau 3 giây
-            // setTimeout(() => navigate('/login'), 3000);
+            // Thiết lập thời gian chờ 3 phút (180 giây)
+            localStorage.setItem("forgot_pwd_cooldown", Date.now() + 180 * 1000);
+            setCooldown(180);
 
         } catch (error) {
             setLoading(false);
             setVariant("danger");
-            
-            // FIX LỖI: Lấy thông báo lỗi cụ thể từ Backend trả về
             const errorMsg = error.response && error.response.data.status
                 ? (error.response.data.status === "User Not Exists!!" 
                     ? "Email này không tồn tại trong hệ thống." 
@@ -76,7 +108,7 @@ const ForgotPassword = () => {
                     </p>
 
                     <input
-                        type="email" // Đổi text thành email để browser tự validate format
+                        type="email"
                         name="email"
                         required
                         placeholder="Ví dụ: admin@example.com"
@@ -89,10 +121,16 @@ const ForgotPassword = () => {
                     <button 
                         type="submit" 
                         className="btn" 
-                        disabled={loading}
-                        style={{ width: '100%', padding: '12px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                        disabled={loading || cooldown > 0}
+                        style={{ 
+                            width: '100%', padding: '12px', 
+                            background: (loading || cooldown > 0) ? '#a5a5a5' : '#4f46e5', 
+                            color: 'white', border: 'none', borderRadius: '5px', 
+                            cursor: (loading || cooldown > 0) ? 'not-allowed' : 'pointer', 
+                            fontWeight: 'bold' 
+                        }}
                     >
-                        {loading ? 'Đang xử lý...' : 'Gửi yêu cầu'}
+                        {loading ? 'Đang xử lý...' : (cooldown > 0 ? `Vui lòng đợi ${formatTime(cooldown)}` : 'Gửi yêu cầu')}
                     </button>
                     
                     <div style={{ marginTop: '15px', textAlign: 'center' }}>
