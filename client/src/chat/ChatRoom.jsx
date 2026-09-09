@@ -50,7 +50,7 @@ export default function ChatRoom({
     getMessagesOfChatRoom, sendMessage, leaveGroupChat, revokeMessageApi,
     kickMemberApi, addMembersToGroupApi, dissolveGroupApi, transferAdminApi,
     addDeputyApi, removeDeputyApi, acceptGroupInviteApi, rejectGroupInviteApi,
-    acceptPrivateChatApi, rejectPrivateChatApi
+    acceptPrivateChatApi, rejectPrivateChatApi, blockChatRoomApi, unblockChatRoomApi
   } = useApi();
 
   const isAdmin = currentChat?.admin === currentUser._id;
@@ -65,6 +65,33 @@ export default function ChatRoom({
   const requesterMessageCount = messages.filter(m => m.sender === currentUser._id && (!m.message || !m.message.startsWith("[SYS]:"))).length;
   const remainingMessages = Math.max(0, 10 - requesterMessageCount);
 
+  // === LOGIC CHẶN NGƯỜI DÙNG ===
+  const is1on1 = currentChat && !currentChat.isGroup;
+  const blockedBy = currentChat?.blockedBy || [];
+  const iBlockedThem = is1on1 && blockedBy.includes(currentUser._id);
+  const theyBlockedMe = is1on1 && blockedBy.some(id => id !== currentUser._id);
+  const isBlocked = iBlockedThem || theyBlockedMe;
+
+  const handleBlockUser = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn chặn người dùng này?")) {
+      try {
+        const updatedRoom = await blockChatRoomApi(currentChat._id, currentUser._id);
+        setCurrentChat(updatedRoom);
+        setChatRooms(prev => prev.map(r => r._id === currentChat._id ? updatedRoom : r));
+        setShowSettings(false);
+      } catch (error) { alert("Lỗi khi chặn!"); }
+    }
+  };
+
+  const handleUnblockUser = async () => {
+    try {
+      const updatedRoom = await unblockChatRoomApi(currentChat._id, currentUser._id);
+      setCurrentChat(updatedRoom);
+      setChatRooms(prev => prev.map(r => r._id === currentChat._id ? updatedRoom : r));
+      setShowSettings(false);
+    } catch (error) { alert("Lỗi khi bỏ chặn!"); }
+  };
+
   const availableUsersToAdd = useMemo(() => {
     if (!currentChat) return [];
     return users.filter(u =>
@@ -76,6 +103,11 @@ export default function ChatRoom({
 
   const handleFormSubmit = async (message) => {
     if (!message.trim()) return;
+
+    if (isBlocked) {
+      alert("Không thể gửi tin nhắn vì trạng thái bị chặn.");
+      return;
+    }
 
     if (isRequesterOfPrivate && remainingMessages <= 0) {
       alert("Bạn đã gửi tối đa 10 tin nhắn! Vui lòng chờ đối phương xác nhận để tiếp tục chat.");
@@ -101,7 +133,7 @@ export default function ChatRoom({
   };
 
   const handleTyping = () => {
-    if (!socket || !currentChat?._id) return;
+    if (!socket || !currentChat?._id || isBlocked) return;
     socket.emit("typing", {
       chatRoomId: currentChat._id,
       senderId: currentUser._id,
@@ -110,7 +142,7 @@ export default function ChatRoom({
   };
 
   const handleStopTyping = () => {
-    if (!socket || !currentChat?._id) return;
+    if (!socket || !currentChat?._id || isBlocked) return;
     socket.emit("stopTyping", {
       chatRoomId: currentChat._id,
       senderId: currentUser._id
@@ -504,22 +536,16 @@ export default function ChatRoom({
                     const isMemberAdmin = currentChat.admin === memberId;
                     const isMemberDeputy = currentChat.deputies?.includes(memberId);
                     const isPending = currentChat.pendingMembers?.includes(memberId);
-
-                    // Thêm logic xác định đây là Thành viên bình thường
                     const isRegularMember = !isMemberAdmin && !isMemberDeputy && !isPending;
 
                     return (
                       <li key={memberId} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
                         <span className="truncate flex flex-wrap items-center gap-1">
-                          {/* Ưu tiên hiển thị tên, nếu không có tên thì hiện email */}
                           {member?.name || member?.email || "Unknown"}
-
-                          {/* Hiển thị Badge chức vụ */}
                           {isMemberAdmin && <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Trưởng nhóm</span>}
                           {isMemberDeputy && <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Phó nhóm</span>}
                           {isPending && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}
-                          {/* MỚI: Hiển thị chữ Thành viên cho những người còn lại */}
-                          {isRegularMember && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Thành viên</span>}                        </span>
+                          {isRegularMember && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Thành viên</span>}                       </span>
 
                         <div className="flex gap-2 ml-2 shrink-0">
                           {isAdmin && !isMemberAdmin && (
@@ -586,17 +612,35 @@ export default function ChatRoom({
     const displayName = otherUser ? (otherUser.name?.trim() !== "" ? otherUser.name : otherUser.email) : "Unknown User";
 
     return (
-      <div className="flex items-center gap-3">
-        <Contact chatRoom={currentChat} currentUser={currentUser} onlineUsersId={onlineUsersId} users={users} />
-        <div className="flex flex-col truncate">
-          <span className="font-semibold text-gray-900 text-[15px] truncate">{displayName}</span>
-          <span className="text-xs text-gray-500 truncate mt-0.5">
-            {isOnline ? <span className="text-green-500 font-medium">Đang hoạt động</span> : otherUser?.lastSeen ? `Hoạt động ${timeAgo(otherUser.lastSeen)}` : "Ngoại tuyến"}
-          </span>
+      <div className="flex items-center gap-3 w-full justify-between relative" ref={settingsRef}>
+        <div className="flex items-center gap-3">
+          <Contact chatRoom={currentChat} currentUser={currentUser} onlineUsersId={onlineUsersId} users={users} />
+          <div className="flex flex-col truncate">
+            <span className="font-semibold text-gray-900 text-[15px] truncate">{displayName}</span>
+            <span className="text-xs text-gray-500 truncate mt-0.5">
+              {isOnline ? <span className="text-green-500 font-medium">Đang hoạt động</span> : otherUser?.lastSeen ? `Hoạt động ${timeAgo(otherUser.lastSeen)}` : "Ngoại tuyến"}
+            </span>
+          </div>
+        </div>
+
+        {/* THÊM MENU CÀI ĐẶT 1-1 ĐỂ CHẶN */}
+        <div className="relative">
+          <button onClick={() => setShowSettings(!showSettings)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+          </button>
+          {showSettings && (
+            <div className="absolute right-0 top-full mt-1 w-40 bg-white shadow-lg border rounded p-2 z-50">
+              {iBlockedThem ? (
+                <button onClick={handleUnblockUser} className="w-full text-left text-sm px-2 py-1.5 hover:bg-gray-100 rounded font-medium">Bỏ chặn</button>
+              ) : (
+                <button onClick={handleBlockUser} className="w-full text-left text-sm text-red-500 px-2 py-1.5 hover:bg-red-50 rounded font-medium">Chặn người này</button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
-  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages, isPendingMember]);
+  }, [currentChat, users, onlineUsersId, currentUser, showSettings, isAdmin, isDeputy, messages, isPendingMember, iBlockedThem, theyBlockedMe]);
 
   const visibleMessages = messages.slice(0, visibleCount);
   const hasRegularMessages = messages.some((m) => m.message && !m.message.startsWith("[SYS]: "));
@@ -714,6 +758,19 @@ export default function ChatRoom({
         ) : (isRequesterOfPrivate && remainingMessages <= 0) ? (
           <div className="flex flex-col items-center justify-center py-5">
             <p className="text-sm text-red-500 font-medium">Đã gửi tối đa 10 tin nhắn. Vui lòng chờ đối phương đồng ý để tiếp tục.</p>
+          </div>
+        ) : isBlocked ? (
+          <div className="flex flex-col items-center justify-center py-6 bg-gray-50 border-t">
+            {iBlockedThem ? (
+              <>
+                <p className="text-sm text-gray-600 mb-3 font-medium">Bạn đã chặn người dùng này.</p>
+                <button onClick={handleUnblockUser} className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-semibold transition shadow-sm">
+                  Bỏ chặn
+                </button>
+              </>
+            ) : (
+              <p className="text-sm text-red-500 font-medium py-2">Bạn không thể gửi tin nhắn cho người dùng này.</p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col relative w-full pt-1">

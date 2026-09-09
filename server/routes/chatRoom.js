@@ -14,7 +14,9 @@ import {
   acceptInvite,
   rejectInvite,
   acceptPrivateChat,
-  rejectPrivateChat
+  rejectPrivateChat,
+  blockUser,
+  unblockUser
 } from "../controllers/chatRoom.js";
 
 const router = express.Router();
@@ -40,5 +42,8 @@ router.put("/group/reject-invite", rejectInvite);
 // Route cho Chấp nhận / Từ chối cuộc trò chuyện 1-1
 router.put("/accept-private", acceptPrivateChat);
 router.delete("/reject-private", rejectPrivateChat);
+
+router.put("/block", blockUser);
+router.put("/unblock", unblockUser);
 
 export default router;

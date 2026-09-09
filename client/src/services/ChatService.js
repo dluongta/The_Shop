@@ -223,6 +223,15 @@ export const useApi = () => {
   const res = await axios.delete(`/api/room/reject-private`, { data: { roomId } });
   return res.data;
 };
+
+ const blockChatRoomApi = async (roomId, userId) => {
+  const res = await axios.put("/api/room/block", { roomId, userId });
+  return res.data;
+};
+ const unblockChatRoomApi = async (roomId, userId) => {
+  const res = await axios.put("/api/room/unblock", { roomId, userId });
+  return res.data;
+};
   return {
     initiateSocketConnection,
     getAllUsers,
@@ -245,6 +254,8 @@ export const useApi = () => {
     acceptGroupInviteApi,
     rejectGroupInviteApi,
     acceptPrivateChatApi,
-    rejectPrivateChatApi
+    rejectPrivateChatApi,
+    blockChatRoomApi,
+    unblockChatRoomApi
   };
 };

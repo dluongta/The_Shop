@@ -25,6 +25,7 @@ const ChatRoomSchema = new mongoose.Schema(
       isRead: { type: Boolean, default: false },
       createdAt: Date,
     },
+    blockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

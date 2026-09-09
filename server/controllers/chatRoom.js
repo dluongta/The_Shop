@@ -304,3 +304,31 @@ export const rejectPrivateChat = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const blockUser = async (req, res) => {
+  const { roomId, userId } = req.body;
+  try {
+    const room = await ChatRoom.findByIdAndUpdate(
+      roomId,
+      { $addToSet: { blockedBy: userId } }, // Thêm userId vào mảng nếu chưa có
+      { new: true }
+    );
+    res.status(200).json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const unblockUser = async (req, res) => {
+  const { roomId, userId } = req.body;
+  try {
+    const room = await ChatRoom.findByIdAndUpdate(
+      roomId,
+      { $pull: { blockedBy: userId } }, // Xóa userId khỏi mảng
+      { new: true }
+    );
+    res.status(200).json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
