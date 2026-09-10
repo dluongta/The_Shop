@@ -127,7 +127,7 @@ const RegisterScreen = () => {
   };
 
   /* =========================
-     NORMAL REGISTER SUBMIT (GỬI OTP)
+      NORMAL REGISTER SUBMIT (TẠO USER, KHÔNG GỬI OTP NGAY)
   ========================= */
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -135,7 +135,6 @@ const RegisterScreen = () => {
       setOtpError('Mật khẩu xác nhận không khớp'); return;
     }
 
-    // FIX: Đang trong 3 phút đếm ngược, KHÔNG gọi API gửi mail nữa mà chỉ bật lại Modal OTP
     if (otpCooldown > 0) {
       setShowOtpModal(true);
       setOtpMessage(`Vui lòng chờ đếm ngược kết thúc để có thể gửi lại mã.`);
@@ -151,9 +150,8 @@ const RegisterScreen = () => {
       setIsRegistering(false);
       setShowOtpModal(true);
       
-      // Bắt đầu đếm ngược 3 phút khi đăng ký thành công (gửi mã lần đầu)
-      localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
-      setOtpCooldown(180);
+      // FIX: Không tự động lưu cooldown nữa. Chờ user nhấn nút "Gửi mã"
+      setOtpMessage('Đăng ký thành công! Vui lòng nhấn "Gửi mã OTP" bên dưới để nhận email xác thực.');
     } catch (error) {
       setIsRegistering(false);
       setOtpError(error.response?.data?.message || error.message);
@@ -182,9 +180,9 @@ const RegisterScreen = () => {
       setOtpError(''); setOtpMessage('');
       const config = { headers: { 'Content-Type': 'application/json' } };
       await axios.post('/api/users/resend-otp', { email }, config);
-      setOtpMessage('Mã xác nhận mới đã được gửi vào email của bạn!');
+      setOtpMessage('Mã xác nhận đã được gửi vào email của bạn!');
 
-      // Bắt đầu đếm ngược 3 phút khi gửi lại thành công
+      // Bắt đầu đếm ngược 3 phút khi gửi thành công
       localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
       setOtpCooldown(180);
     } catch (error) {
@@ -264,15 +262,16 @@ const RegisterScreen = () => {
       </Row>
 
       {/* ================= MODAL NHẬP OTP ================= */}
-      {/* Giữ nguyên backdrop={true} để cho phép bấm ra ngoài tắt bảng */}
       <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
           <Modal.Title className="w-100 text-center fw-bold">Xác thực Email</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {otpError && <Alert variant="danger">{otpError}</Alert>}
-          {otpMessage && <Alert variant="success">{otpMessage}</Alert>}
-          <p>Mã xác thực gồm 6 chữ số đã được gửi đến: <strong>{email}</strong></p>
+          {/* Sửa lại Alert thành Info để thân thiện hơn nếu là thông báo mời gửi mã */}
+          {otpMessage && <Alert variant={otpMessage.includes('Đăng ký thành công') ? 'info' : 'success'}>{otpMessage}</Alert>}
+          
+          <p>Email nhận mã xác thực: <strong>{email}</strong></p>
           <Form.Control type="text" placeholder="Nhập mã OTP (VD: 123456)" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-between">
@@ -281,7 +280,8 @@ const RegisterScreen = () => {
             onClick={handleResendOtp}
             disabled={otpCooldown > 0} 
           >
-            {otpCooldown > 0 ? `Gửi lại sau ${formatTime(otpCooldown)}` : 'Gửi lại mã'}
+            {/* Đổi chữ linh hoạt tùy trạng thái */}
+            {otpCooldown > 0 ? `Gửi lại sau ${formatTime(otpCooldown)}` : 'Gửi mã OTP'}
           </Button>
           <div className="d-flex gap-2">
             <Button variant="secondary" onClick={() => setShowOtpModal(false)}>Cancel</Button>
@@ -293,7 +293,6 @@ const RegisterScreen = () => {
       </Modal>
 
       {/* ================= MODAL NHẬP EMAIL THỦ CÔNG ================= */}
-      {/* Giữ nguyên backdrop={true} để cho phép bấm ra ngoài tắt bảng */}
       <Modal show={showManualVerifyModal} onHide={() => setShowManualVerifyModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
           <Modal.Title className="w-100 text-center fw-bold">Xác thực tài khoản bằng Email</Modal.Title>

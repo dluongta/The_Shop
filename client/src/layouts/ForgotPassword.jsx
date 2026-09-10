@@ -124,7 +124,7 @@ const ForgotPassword = () => {
                         disabled={loading || cooldown > 0}
                         style={{ 
                             width: '100%', padding: '12px', 
-                            background: (loading || cooldown > 0) ? '#a5a5a5' : '#4f46e5', 
+                            background: (loading || cooldown > 0) ? '#5248e1' : '#4f46e5', 
                             color: 'white', border: 'none', borderRadius: '5px', 
                             cursor: (loading || cooldown > 0) ? 'not-allowed' : 'pointer', 
                             fontWeight: 'bold' 
