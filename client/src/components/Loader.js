@@ -5,7 +5,7 @@ const Loader = () => {
   return (
     <button className='btn btn-primary' type='button' disabled>
       <span
-        className='spinner-grow spinner-grow-sm me-2'
+        className='spinner-grow spinner-grow-sm me-1'
         role='status'
         aria-hidden='true'
       />
