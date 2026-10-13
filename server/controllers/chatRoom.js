@@ -332,3 +332,23 @@ export const unblockUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const toggleChatPermission = async (req, res) => {
+  const { roomId, adminId, onlyAdminCanChat } = req.body;
+  try {
+    const room = await ChatRoom.findById(roomId);
+    if (!room) return res.status(404).json({ message: "Không tìm thấy nhóm" });
+    
+    // Kiểm tra xem người gửi có phải là Trưởng nhóm không
+    if (room.admin.toString() !== adminId) {
+      return res.status(403).json({ message: "Chỉ nhóm trưởng mới có quyền thay đổi thiết lập này" });
+    }
+
+    room.onlyAdminCanChat = onlyAdminCanChat;
+    await room.save();
+    
+    res.status(200).json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

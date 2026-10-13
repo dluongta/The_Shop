@@ -26,6 +26,7 @@ const ChatRoomSchema = new mongoose.Schema(
       createdAt: Date,
     },
     blockedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    onlyAdminCanChat: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -55,8 +55,8 @@ export default function ChatRoom({
 
   const isAdmin = currentChat?.admin === currentUser._id;
   const isDeputy = currentChat?.deputies?.includes(currentUser._id);
-
   const isPendingMember = currentChat?.pendingMembers?.includes(currentUser._id);
+  const isRegularMember = !isAdmin && !isDeputy && !isPendingMember;
 
   const isPendingPrivate = currentChat?.isGroup === false && currentChat?.isAccepted === false;
   const isReceiverOfPrivate = isPendingPrivate && currentChat?.requester !== currentUser._id;
@@ -334,6 +334,32 @@ export default function ChatRoom({
     }
   };
 
+  // === THÊM HÀM XỬ LÝ BẬT TẮT QUYỀN CHAT CỦA MEMBER ===
+  const handleToggleChatPermission = async (e) => {
+    const newStatus = e.target.checked;
+    if (window.confirm(`Bạn muốn ${newStatus ? 'tắt' : 'bật'} tính năng nhắn tin cho thành viên thường?`)) {
+      try {
+        const res = await axios.put('/api/room/group/toggle-chat-permission', {
+          roomId: currentChat._id,
+          adminId: currentUser._id,
+          onlyAdminCanChat: newStatus
+        });
+        
+        setCurrentChat(res.data);
+        setChatRooms(prev => prev.map(r => r._id === currentChat._id ? res.data : r));
+
+        const actorString = getUserString(currentUser);
+        await handleFormSubmit(`[SYS]: ${actorString} đã ${newStatus ? 'chỉ cho phép Trưởng/Phó nhóm nhắn tin' : 'cho phép tất cả mọi người nhắn tin'}.`);
+        
+        if (socket) {
+          socket.emit("updateRoomSettings", res.data);
+        }
+      } catch (error) {
+        alert("Lỗi khi thay đổi quyền chat!");
+      }
+    }
+  };
+
   useEffect(() => {
     if (!currentChat?._id) return;
 
@@ -371,16 +397,13 @@ export default function ChatRoom({
       });
       setVisibleCount((prev) => prev + 1);
 
-      // === FIX LỖI REFRESH BỊ CHƯA ĐỌC ===
       if (scrollRef.current && scrollRef.current.scrollTop > 50) {
-        // Thêm vào danh sách chưa đọc nếu đang ở dưới sâu
         setUnreadIds((prev) => {
           const newSet = new Set(prev);
           newSet.add(data._id);
           return newSet;
         });
       } else {
-        // Đang ở đầu (xem được ngay) -> GỌI API ĐỂ CẬP NHẬT DATABASE
         if (data.senderId !== currentUser._id) {
           axios.put(`/api/message/mark-as-read/${data.chatRoomId}`, {
             userId: currentUser._id,
@@ -406,10 +429,19 @@ export default function ChatRoom({
       setTypingUsers((prev) => prev.filter((u) => u.senderId !== data.senderId));
     };
 
+    // LẮNG NGHE SỰ KIỆN CẬP NHẬT CÀI ĐẶT NHÓM
+    const handleRoomUpdate = (updatedRoom) => {
+      if (updatedRoom._id === currentChat?._id) {
+        setCurrentChat(prev => ({ ...prev, onlyAdminCanChat: updatedRoom.onlyAdminCanChat }));
+      }
+      setChatRooms(prev => prev.map(r => r._id === updatedRoom._id ? { ...r, onlyAdminCanChat: updatedRoom.onlyAdminCanChat } : r));
+    };
+
     socket.on("getMessage", handleMessage);
     socket.on("messageRevoked", handleRevoke);
     socket.on("userTyping", onUserTyping);
     socket.on("userStopTyping", onUserStopTyping);
+    socket.on("roomSettingsUpdated", handleRoomUpdate);
 
     return () => {
       socket.emit("leaveRoom", currentChat._id);
@@ -417,10 +449,10 @@ export default function ChatRoom({
       socket.off("messageRevoked", handleRevoke);
       socket.off("userTyping", onUserTyping);
       socket.off("userStopTyping", onUserStopTyping);
+      socket.off("roomSettingsUpdated", handleRoomUpdate);
     };
-  }, [socket, currentChat, setCurrentChat, setChatRooms]);
+  }, [socket, currentChat, setCurrentChat, setChatRooms, currentUser._id]);
 
-  // === OBSERVER ĐỂ ĐÁNH DẤU TIN NHẮN ĐÃ ĐỌC KHI CUỘN LÊN ===
   useEffect(() => {
     if (!scrollRef.current || unreadIds.size === 0) return;
 
@@ -431,13 +463,11 @@ export default function ChatRoom({
 
           if (unreadIds.has(msgId)) {
             try {
-              // Gọi API đánh dấu tin nhắn này là đã đọc
               await axios.put(`/api/message/mark-as-read/${currentChat._id}`, {
                 userId: currentUser._id,
                 messageIds: [msgId]
               });
 
-              // Loại bỏ khỏi danh sách chưa đọc trên UI
               setUnreadIds((prev) => {
                 const newSet = new Set(prev);
                 newSet.delete(msgId);
@@ -451,7 +481,7 @@ export default function ChatRoom({
       });
     }, {
       root: scrollRef.current,
-      threshold: 0.1, // Nếu 10% phần tử hiển thị lên là tính đã thấy
+      threshold: 0.1,
     });
 
     const nodes = scrollRef.current.querySelectorAll('.msg-item-observe');
@@ -476,15 +506,12 @@ export default function ChatRoom({
     } catch (error) { alert("Không thể thu hồi tin nhắn."); }
   };
 
-  // === XỬ LÝ SỰ KIỆN CUỘN ===
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
 
-    // Hiện mũi tên LÊN khi cuộn xuống xa
     setShowScrollTop(scrollTop > 100);
 
-    // Xóa hết trạng thái tin mới khi đã cuộn lên tới cùng
     if (scrollTop < 50 && unreadIds.size > 0) {
       setUnreadIds(new Set());
     }
@@ -536,7 +563,7 @@ export default function ChatRoom({
                     const isMemberAdmin = currentChat.admin === memberId;
                     const isMemberDeputy = currentChat.deputies?.includes(memberId);
                     const isPending = currentChat.pendingMembers?.includes(memberId);
-                    const isRegularMember = !isMemberAdmin && !isMemberDeputy && !isPending;
+                    const isMemRegular = !isMemberAdmin && !isMemberDeputy && !isPending;
 
                     return (
                       <li key={memberId} className="flex justify-between items-center text-sm py-2 border-b last:border-0">
@@ -545,7 +572,8 @@ export default function ChatRoom({
                           {isMemberAdmin && <span className="text-[10px] bg-orange-100 text-orange-600 border border-orange-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Trưởng nhóm</span>}
                           {isMemberDeputy && <span className="text-[10px] bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Phó nhóm</span>}
                           {isPending && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Đang chờ xác nhận</span>}
-                          {isRegularMember && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Thành viên</span>}                       </span>
+                          {isMemRegular && <span className="text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded whitespace-nowrap font-bold">Thành viên</span>}
+                        </span>
 
                         <div className="flex gap-2 ml-2 shrink-0">
                           {isAdmin && !isMemberAdmin && (
@@ -575,6 +603,19 @@ export default function ChatRoom({
 
                 {isAdmin && (
                   <div className="flex flex-col gap-2 mt-3 border-t pt-3">
+                    <div className="flex items-center justify-between py-2 px-1 bg-gray-50 rounded border">
+                      <span className="text-xs font-semibold text-gray-700">Chỉ Trưởng/Phó nhóm được chat</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          className="sr-only peer" 
+                          checked={currentChat.onlyAdminCanChat || false} 
+                          onChange={handleToggleChatPermission}
+                        />
+                        <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+
                     <button onClick={handleOpenAddMemberModal} className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 rounded w-full transition-colors">+ Mời thành viên</button>
                     <button onClick={handleDissolve} className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded w-full transition-colors">Giải tán nhóm</button>
                   </div>
@@ -623,7 +664,6 @@ export default function ChatRoom({
           </div>
         </div>
 
-        {/* THÊM MENU CÀI ĐẶT 1-1 ĐỂ CHẶN */}
         <div className="relative">
           <button onClick={() => setShowSettings(!showSettings)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
@@ -661,26 +701,23 @@ export default function ChatRoom({
         <div className="flex-1 min-w-0">{headerContent}</div>
       </div>
 
-      {/* NÚT FLOAT "^" KÉP KÈM SỐ LƯỢNG TIN NHẮN MỚI */}
       <div className="absolute right-6 bottom-24 flex flex-col gap-2 z-[60]">
         {(showScrollTop || unreadIds.size > 0) && (
           <button
             onClick={() => {
               scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-              setUnreadIds(new Set()); // Bấm lên thì coi như đọc hết
+              setUnreadIds(new Set()); 
             }}
             className={`relative w-10 h-10 shadow-lg border rounded-full flex items-center justify-center transition-colors hover:border-blue-600 hover:text-blue-600 ${unreadIds.size > 0
-              ? "bg-white text-black border-gray-300" // Có tin nhắn: nền trắng, chữ đen, viền nhạt
-              : "bg-white text-gray-700 border-gray-700" // Bình thường: xám gần đen
+              ? "bg-white text-black border-gray-300" 
+              : "bg-white text-gray-700 border-gray-700" 
               }`}
             title="Cuộn lên tin nhắn mới nhất"
           >
-            {/* Icon 2 mũi tên lên */}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7M5 9l7-7 7 7" />
             </svg>
 
-            {/* Huy hiệu đỏ hiển thị số lượng tin mới */}
             {unreadIds.size > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-[20px] flex items-center justify-center rounded-full px-1 shadow-sm border-2 border-white">
                 {unreadIds.size > 99 ? "99+" : unreadIds.size}
@@ -713,7 +750,6 @@ export default function ChatRoom({
             }
 
             return (
-              // Thêm data-msg-id và class để Observer có thể theo dõi
               <div key={m._id} data-msg-id={m._id} className="msg-item-observe">
                 <Message message={m} self={currentUser._id} users={users} onRevoke={handleRevokeMessage} />
               </div>
@@ -771,6 +807,15 @@ export default function ChatRoom({
             ) : (
               <p className="text-sm text-red-500 font-medium py-2">Bạn không thể gửi tin nhắn cho người dùng này.</p>
             )}
+          </div>
+        ) : currentChat.isGroup && currentChat.onlyAdminCanChat && isRegularMember ? (
+          <div className="flex flex-col items-center justify-center py-4 bg-gray-100 border-t">
+            <p className="text-sm text-gray-500 font-medium italic flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              Chỉ Trưởng nhóm và Phó nhóm mới có thể gửi tin nhắn.
+            </p>
           </div>
         ) : (
           <div className="flex flex-col relative w-full pt-1">

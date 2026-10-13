@@ -16,7 +16,8 @@ import {
   acceptPrivateChat,
   rejectPrivateChat,
   blockUser,
-  unblockUser
+  unblockUser,
+  toggleChatPermission
 } from "../controllers/chatRoom.js";
 
 const router = express.Router();
@@ -45,5 +46,7 @@ router.delete("/reject-private", rejectPrivateChat);
 
 router.put("/block", blockUser);
 router.put("/unblock", unblockUser);
+
+router.put("/group/toggle-chat-permission", toggleChatPermission);
 
 export default router;
