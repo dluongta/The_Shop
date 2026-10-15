@@ -16,11 +16,11 @@ Create a .env file in then root and add the following
 
 ```
 NODE_ENV = 'production'
-PORT = 5000
 MONGO_URI = your mongo_database url
 JWT_SECRET = your jwt_secret
+PORT = 5000
 PAYPAL_CLIENT_ID = your paypal_client_id
-CLINET_ID = your your client_id
+CLIENT_ID = your your client_id
 CLIENT_SECRET = your client secret
 BREVO_USER= your brevo_username
 BREVO_PASS = your brevo_password
