@@ -19,6 +19,11 @@ const ResetPassword = () => {
   useEffect(() => {
     if (!isSuccess) return;
 
+    // Cập nhật thông điệp chứa số giây đếm ngược theo thời gian thực
+    setMessage(
+      `Đổi mật khẩu thành công! Đang chuyển hướng đến trang đăng nhập sau ${countdown}s...`
+    );
+
     if (countdown === 0) {
       navigate("/login");
       return;
@@ -53,9 +58,6 @@ const ResetPassword = () => {
 
       if (response.data.status === "Password Updated Succeeded") {
         setIsSuccess(true);
-        setMessage(
-          "Đổi mật khẩu thành công! Đang chuyển hướng đến trang đăng nhập..."
-        );
       } else {
         setMessage(response.data.status);
       }
@@ -80,9 +82,8 @@ const ResetPassword = () => {
           {/* Logo / Icon */}
           <div className="reset-header">
             <div
-              className={`reset-icon ${
-                isSuccess ? "reset-icon-success" : ""
-              }`}
+              className={`reset-icon ${isSuccess ? "reset-icon-success" : ""
+                }`}
             >
               {isSuccess ? (
                 <svg viewBox="0 0 24 24" fill="none">
@@ -314,10 +315,10 @@ const ResetPassword = () => {
             <div className="reset-success">
               <div className="reset-success-info">
                 <span>
-                  Chuyển đến trang đăng nhập
+                  Chuyển đến trang đăng nhập <strong>({countdown}s)</strong>
                 </span>
 
-                <strong>{countdown}s</strong>
+
               </div>
 
               {/* <div className="reset-progress">
