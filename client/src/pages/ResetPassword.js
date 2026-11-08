@@ -320,13 +320,13 @@ const ResetPassword = () => {
                 <strong>{countdown}s</strong>
               </div>
 
-              <div className="reset-progress">
+              {/* <div className="reset-progress">
                 <div
                   style={{
                     width: `${(countdown / 5) * 100}%`,
                   }}
                 ></div>
-              </div>
+              </div> */}
 
               <button
                 type="button"
