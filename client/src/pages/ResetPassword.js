@@ -19,6 +19,8 @@ const ResetPassword = () => {
   useEffect(() => {
     if (!isSuccess) return;
 
+    setMessage(`Đổi mật khẩu thành công! Đang chuyển hướng đến trang đăng nhập sau ${countdown}s...`);
+
     if (countdown === 0) {
       navigate("/login");
       return;
@@ -46,16 +48,11 @@ const ResetPassword = () => {
     try {
       const response = await axios.post(
         `/api/reset-password/${id}/${token}`,
-        {
-          password,
-        }
+        { password }
       );
 
       if (response.data.status === "Password Updated Succeeded") {
         setIsSuccess(true);
-        setMessage(
-          "Đổi mật khẩu thành công! Đang chuyển hướng đến trang đăng nhập..."
-        );
       } else {
         setMessage(response.data.status);
       }
@@ -240,38 +237,6 @@ const ResetPassword = () => {
                 </div>
               </div>
 
-              {/* Password tip */}
-              {/* <div className="reset-tip">
-                <div className="reset-tip-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    />
-                    <path
-                      d="M12 10V16"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                    />
-                    <circle
-                      cx="12"
-                      cy="7"
-                      r="1"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </div>
-
-                <p>
-                  Sử dụng mật khẩu mạnh và không sử dụng lại
-                  mật khẩu ở những tài khoản khác.
-                </p>
-              </div> */}
-
               {/* Button */}
               <button
                 type="submit"
@@ -311,21 +276,7 @@ const ResetPassword = () => {
           {/* Success */}
           {isSuccess && (
             <div className="reset-success">
-              <div className="reset-success-info">
-                <span>
-                  Chuyển đến trang đăng nhập <strong>({countdown}s)</strong>
-                </span>
-
-
-              </div>
-
-              {/* <div className="reset-progress">
-                <div
-                  style={{
-                    width: `${(countdown / 5) * 100}%`,
-                  }}
-                ></div>
-              </div> */}
+              {/* Đã xóa phần hiển thị "Chuyển đến trang đăng nhập (5s)" ở đây */}
 
               <button
                 type="button"
