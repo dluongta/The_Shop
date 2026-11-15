@@ -10,8 +10,8 @@ const users = [
     paypalClientId: 'AfW47Nj0c4k_bHHB5Kn1a0EYKCoe5nBDxG_fcraZiuEoSyxC9IRvBn7kIj6Qkcy7o3lU18TVYZzt9Nid'
   },
   {
-    name: 'Lucient Street',
-    email: 'lucient@example.com',
+    name: 'Lucy Street',
+    email: 'lucy@example.com',
     role: 'seller',
     isAdmin: false,
     isVerified: true,
