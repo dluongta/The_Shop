@@ -258,22 +258,12 @@ const createOtpEmail = ({ name, otp, resend = false }) => {
 `;
 };
 
-
-
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
-    if (!user.isVerified) {
-      res.status(401);
-
-      throw new Error(
-        'Tài khoản chưa được xác thực. Vui lòng đăng ký lại để nhận mã hoặc kiểm tra email!'
-      );
-    }
-
     res.json({
       _id: user._id,
       name: user.name,
@@ -289,7 +279,34 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
+// const authUser = asyncHandler(async (req, res) => {
+//   const { email, password } = req.body;
 
+//   const user = await User.findOne({ email });
+
+//   if (user && (await user.matchPassword(password))) {
+//     if (!user.isVerified) {
+//       res.status(401);
+
+//       throw new Error(
+//         'Tài khoản chưa được xác thực. Vui lòng đăng ký lại để nhận mã hoặc kiểm tra email!'
+//       );
+//     }
+
+//     res.json({
+//       _id: user._id,
+//       name: user.name,
+//       email: user.email,
+//       isAdmin: user.isAdmin,
+//       role: user.role,
+//       paypalClientId: user.paypalClientId,
+//       token: generateToken(user._id),
+//     });
+//   } else {
+//     res.status(401);
+//     throw new Error('Email hoặc mật khẩu không hợp lệ');
+//   }
+// });
 
 const registerUser = asyncHandler(async (req, res) => {
   const {
@@ -298,52 +315,27 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     role,
     paypalClientId,
-    isGoogleAuth,
   } = req.body;
 
   const cleanEmail = email.trim().toLowerCase();
-
 
   const userExists = await User.findOne({
     email: cleanEmail,
   });
 
   if (userExists) {
-    if (userExists.isVerified) {
-      res.status(400);
-      throw new Error('Email này đã được sử dụng!');
-    } else {
-      // Xóa tài khoản chưa xác thực cũ
-      await User.deleteOne({
-        email: cleanEmail,
-      });
-    }
+    res.status(400);
+    throw new Error('Email này đã được sử dụng!');
   }
 
-
-  const isVerified = isGoogleAuth === true;
-
-
-  const verificationCode = isVerified
-    ? undefined
-    : Math.floor(
-        100000 + Math.random() * 900000
-      ).toString();
-
-  const verificationCodeExpires = isVerified
-    ? undefined
-    : Date.now() + 10 * 60 * 1000;
-
-
+  // Mặc định cho xác thực luôn = true, không tạo OTP nữa
   const user = await User.create({
     name,
     email: cleanEmail,
     password,
     role,
     paypalClientId,
-    isVerified,
-    verificationCode,
-    verificationCodeExpires,
+    isVerified: true,
   });
 
   if (!user) {
@@ -351,58 +343,128 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Dữ liệu người dùng không hợp lệ');
   }
 
-
-  if (isVerified) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      role: user.role,
-      paypalClientId: user.paypalClientId,
-      token: generateToken(user._id),
-    });
-
-    return;
-  }
-
-
-  try {
-    await sendEmail({
-      to: cleanEmail,
-
-      subject:
-        'Mã xác thực tài khoản - The Digital Shop',
-
-      html: createOtpEmail({
-        name: user.name,
-        otp: verificationCode,
-      }),
-    });
-
-      res.status(201).json({
-      requiresVerification: true,
-      email: user.email,
-    });
-
-  } catch (error) {
-
-    console.error(
-      'BREVO SEND EMAIL ERROR:',
-      error
-    );
-
-    await User.findByIdAndDelete(user._id);
-
-    res.status(500);
-
-    throw new Error(
-      `Lỗi hệ thống gửi mail Brevo: ${error.message}`
-    );
-  }
+  // Trả về thông tin user kèm token luôn để Frontend tự đăng nhập
+  res.status(201).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    role: user.role,
+    paypalClientId: user.paypalClientId,
+    token: generateToken(user._id),
+  });
 });
 
+// const registerUser = asyncHandler(async (req, res) => {
+//   const {
+//     name,
+//     email,
+//     password,
+//     role,
+//     paypalClientId,
+//     isGoogleAuth,
+//   } = req.body;
 
+//   const cleanEmail = email.trim().toLowerCase();
+
+
+//   const userExists = await User.findOne({
+//     email: cleanEmail,
+//   });
+
+//   if (userExists) {
+//     if (userExists.isVerified) {
+//       res.status(400);
+//       throw new Error('Email này đã được sử dụng!');
+//     } else {
+//       // Xóa tài khoản chưa xác thực cũ
+//       await User.deleteOne({
+//         email: cleanEmail,
+//       });
+//     }
+//   }
+
+
+//   const isVerified = isGoogleAuth === true;
+
+
+//   const verificationCode = isVerified
+//     ? undefined
+//     : Math.floor(
+//         100000 + Math.random() * 900000
+//       ).toString();
+
+//   const verificationCodeExpires = isVerified
+//     ? undefined
+//     : Date.now() + 10 * 60 * 1000;
+
+
+//   const user = await User.create({
+//     name,
+//     email: cleanEmail,
+//     password,
+//     role,
+//     paypalClientId,
+//     isVerified,
+//     verificationCode,
+//     verificationCodeExpires,
+//   });
+
+//   if (!user) {
+//     res.status(400);
+//     throw new Error('Dữ liệu người dùng không hợp lệ');
+//   }
+
+
+//   if (isVerified) {
+//     res.status(201).json({
+//       _id: user._id,
+//       name: user.name,
+//       email: user.email,
+//       isAdmin: user.isAdmin,
+//       role: user.role,
+//       paypalClientId: user.paypalClientId,
+//       token: generateToken(user._id),
+//     });
+
+//     return;
+//   }
+
+
+//   try {
+//     await sendEmail({
+//       to: cleanEmail,
+
+//       subject:
+//         'Mã xác thực tài khoản - The Digital Shop',
+
+//       html: createOtpEmail({
+//         name: user.name,
+//         otp: verificationCode,
+//       }),
+//     });
+
+//       res.status(201).json({
+//       requiresVerification: true,
+//       email: user.email,
+//     });
+
+//   } catch (error) {
+
+//     console.error(
+//       'BREVO SEND EMAIL ERROR:',
+//       error
+//     );
+
+//     await User.findByIdAndDelete(user._id);
+
+//     res.status(500);
+
+//     throw new Error(
+//       `Lỗi hệ thống gửi mail Brevo: ${error.message}`
+//     );
+//   }
+// });
 
 const verifyOTP = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;

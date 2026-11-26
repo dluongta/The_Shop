@@ -10,8 +10,8 @@ const userSchema = mongoose.Schema(
     role: { type: String, required: true, enum: ['buyer', 'seller'], default: 'buyer' },
     paypalClientId: { type: String, required: false },
     lastSeen: { type: Date, default: Date.now },
-    // CÁC TRƯỜNG CHO XÁC THỰC OTP
     isVerified: { type: Boolean, default: false },
+    //isVerified: { type: Boolean, default: true },
     verificationCode: { type: String },
     verificationCodeExpires: { type: Date },
   },
