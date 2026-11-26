@@ -396,7 +396,6 @@ const RegisterScreen = () => {
   const [googleRole, setGoogleRole] = useState('buyer');
   const [googlePaypalClientId, setGooglePaypalClientId] = useState('');
 
-  // STATE OTP (Dùng cho luồng xác thực thủ công)
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
@@ -404,13 +403,11 @@ const RegisterScreen = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // STATE CHO TÍNH NĂNG NHẬP EMAIL ĐỂ VERIFY THỦ CÔNG
   const [showManualVerifyModal, setShowManualVerifyModal] = useState(false);
   const [manualEmail, setManualEmail] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
   const [manualError, setManualError] = useState('');
 
-  // STATE ĐẾM NGƯỢC GỬI EMAIL (3 PHÚT)
   const [otpCooldown, setOtpCooldown] = useState(0);
 
   const dispatch = useDispatch();
@@ -425,7 +422,6 @@ const RegisterScreen = () => {
     if (userInfo) navigate(redirect);
   }, [userInfo, navigate, redirect]);
 
-  // Xử lý đếm ngược OTP với localStorage
   useEffect(() => {
     const checkCooldown = () => {
         const storedTime = localStorage.getItem("otp_cooldown");
@@ -496,9 +492,6 @@ const RegisterScreen = () => {
     }
   };
 
-  /* =========================
-      NORMAL REGISTER SUBMIT -> CHUYỂN SANG LOGIN
-  ========================= */
   const submitHandler = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -510,16 +503,16 @@ const RegisterScreen = () => {
     try {
       setIsRegistering(true);
       const config = { headers: { 'Content-Type': 'application/json' } };
-      await axios.post('/api/users', { name, email, password, role, paypalClientId }, config);
+      const { data } = await axios.post('/api/users', { name, email, password, role, paypalClientId }, config);
       
       setIsRegistering(false);
-      
-      // Chuyển thẳng sang trang đăng nhập và truyền kèm thông báo (tùy chọn hiển thị bên LoginScreen)
-      navigate('/login', { 
-        state: { 
-          successMessage: 'Đăng ký thành công! Vui lòng đăng nhập (hoặc xác thực email nếu được yêu cầu).' 
-        } 
-      });
+
+      if (data && data.token) {
+        dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
+        localStorage.setItem('userInfo', JSON.stringify(data));
+      } else {
+        dispatch(login(email, password));
+      }
     } catch (error) {
       setIsRegistering(false);
       setRegisterError(error.response?.data?.message || error.message);
