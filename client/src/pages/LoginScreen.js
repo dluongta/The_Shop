@@ -29,11 +29,11 @@ const LoginScreen = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // const successMessage = location.state?.successMessage
+
   const redirect = location.search
     ? location.search.split('=')[1]
     : '/'
-
-  // const successMessage = location.state?.successMessage;
 
   const userLogin = useSelector((state) => state.userLogin)
   const { loading, error, userInfo } = userLogin
@@ -91,7 +91,7 @@ const LoginScreen = () => {
         passwordModal,
         role,
         paypalClientId,
-        true // <--- Thêm cờ true để xác nhận đây là đăng ký qua Google
+        true
       )
     )
 
