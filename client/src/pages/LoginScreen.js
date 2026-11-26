@@ -33,6 +33,8 @@ const LoginScreen = () => {
     ? location.search.split('=')[1]
     : '/'
 
+  // const successMessage = location.state?.successMessage;
+
   const userLogin = useSelector((state) => state.userLogin)
   const { loading, error, userInfo } = userLogin
 
@@ -118,6 +120,7 @@ const LoginScreen = () => {
     <FormContainer>
       <h1>Sign In</h1>
 
+      {/* {successMessage && <Message variant="success">{successMessage}</Message>}*/}
       {error && <Message variant="danger">{error}</Message>}
       {loading && <Loader />}
 

@@ -500,6 +500,24 @@ const RegisterScreen = () => {
     }
 
     setRegisterError('');
+
+    // try {
+    //   setIsRegistering(true);
+    //   const config = { headers: { 'Content-Type': 'application/json' } };
+    //   await axios.post('/api/users', { name, email, password, role, paypalClientId }, config);
+      
+    //   setIsRegistering(false);
+      
+    //   navigate('/login', { 
+    //     state: { 
+    //       successMessage: 'Đăng ký thành công!' 
+    //     } 
+    //   });
+    // } catch (error) {
+    //   setIsRegistering(false);
+    //   setRegisterError(error.response?.data?.message || error.message);
+    // }
+
     try {
       setIsRegistering(true);
       const config = { headers: { 'Content-Type': 'application/json' } };
