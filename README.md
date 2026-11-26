@@ -1,4 +1,4 @@
-# The Shop
+# THE SHOP
 
 ## Features
 
