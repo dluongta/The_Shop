@@ -18,6 +18,7 @@ const RegisterScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('buyer');
   const [paypalClientId, setPaypalClientId] = useState(''); 
+  const [registerError, setRegisterError] = useState('');
   
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [passwordModal, setPasswordModal] = useState('');
@@ -26,7 +27,7 @@ const RegisterScreen = () => {
   const [googleRole, setGoogleRole] = useState('buyer');
   const [googlePaypalClientId, setGooglePaypalClientId] = useState('');
 
-  // STATE OTP
+  // STATE OTP (Dùng cho luồng xác thực thủ công)
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
@@ -127,34 +128,32 @@ const RegisterScreen = () => {
   };
 
   /* =========================
-      NORMAL REGISTER SUBMIT (TẠO USER, KHÔNG GỬI OTP NGAY)
+      NORMAL REGISTER SUBMIT -> CHUYỂN SANG LOGIN
   ========================= */
   const submitHandler = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setOtpError('Mật khẩu xác nhận không khớp'); return;
-    }
-
-    if (otpCooldown > 0) {
-      setShowOtpModal(true);
-      setOtpMessage(`Vui lòng chờ đếm ngược kết thúc để có thể gửi lại mã.`);
+      setRegisterError('Mật khẩu xác nhận không khớp');
       return;
     }
 
-    setOtpError('');
+    setRegisterError('');
     try {
       setIsRegistering(true);
       const config = { headers: { 'Content-Type': 'application/json' } };
       await axios.post('/api/users', { name, email, password, role, paypalClientId }, config);
       
       setIsRegistering(false);
-      setShowOtpModal(true);
       
-      // FIX: Không tự động lưu cooldown nữa. Chờ user nhấn nút "Gửi mã"
-      setOtpMessage('Đăng ký thành công! Vui lòng nhấn "Gửi mã OTP" bên dưới để nhận email xác thực.');
+      // Chuyển thẳng sang trang đăng nhập và truyền kèm thông báo (tùy chọn hiển thị bên LoginScreen)
+      navigate('/login', { 
+        state: { 
+          successMessage: 'Đăng ký thành công! Vui lòng đăng nhập (hoặc xác thực email nếu được yêu cầu).' 
+        } 
+      });
     } catch (error) {
       setIsRegistering(false);
-      setOtpError(error.response?.data?.message || error.message);
+      setRegisterError(error.response?.data?.message || error.message);
     }
   };
 
@@ -175,14 +174,13 @@ const RegisterScreen = () => {
   };
 
   const handleResendOtp = async () => {
-    if (otpCooldown > 0) return; // Chặn click nếu đang đếm ngược
+    if (otpCooldown > 0) return;
     try {
       setOtpError(''); setOtpMessage('');
       const config = { headers: { 'Content-Type': 'application/json' } };
       await axios.post('/api/users/resend-otp', { email }, config);
       setOtpMessage('Mã xác nhận đã được gửi vào email của bạn!');
 
-      // Bắt đầu đếm ngược 3 phút khi gửi thành công
       localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
       setOtpCooldown(180);
     } catch (error) {
@@ -204,7 +202,6 @@ const RegisterScreen = () => {
       setShowOtpModal(true);
       setOtpMessage(`Mã xác thực mới đã được gửi tới ${manualEmail}!`);
 
-      // Bắt đầu đếm ngược 3 phút
       localStorage.setItem("otp_cooldown", Date.now() + 180 * 1000);
       setOtpCooldown(180);
     } catch (error) {
@@ -216,7 +213,7 @@ const RegisterScreen = () => {
   return (
     <FormContainer>
       <h1>Đăng Ký</h1>
-      {otpError && !showOtpModal && <Message variant="danger">{otpError}</Message>}
+      {registerError && <Message variant="danger">{registerError}</Message>}
 
       <div className="mb-3 text-center">
         <GoogleLogin onSuccess={handleGoogleLoginSuccess} onError={() => console.log('Google Login Failed')} />
@@ -237,7 +234,6 @@ const RegisterScreen = () => {
 
         <Form.Control className="mb-3" type="text" placeholder="PayPal Client ID (Tùy chọn)" value={paypalClientId} onChange={(e) => setPaypalClientId(e.target.value)} />
         
-        {/* Nút đăng ký */}
         <Button type="submit" disabled={isRegistering}>
           {isRegistering ? <><Spinner as="span" animation="border" size="sm" /> Đang xử lý...</> : 'Đăng ký'}
         </Button>
@@ -261,15 +257,14 @@ const RegisterScreen = () => {
         </Col>
       </Row>
 
-      {/* ================= MODAL NHẬP OTP ================= */}
+      {/* ================= MODAL NHẬP OTP (Cho luồng xác thực thủ công) ================= */}
       <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} backdrop={true} keyboard={true} centered>
         <Modal.Header>
           <Modal.Title className="w-100 text-center fw-bold">Xác thực Email</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {otpError && <Alert variant="danger">{otpError}</Alert>}
-          {/* Sửa lại Alert thành Info để thân thiện hơn nếu là thông báo mời gửi mã */}
-          {otpMessage && <Alert variant={otpMessage.includes('Đăng ký thành công') ? 'info' : 'success'}>{otpMessage}</Alert>}
+          {otpMessage && <Alert variant="success">{otpMessage}</Alert>}
           
           <p>Email nhận mã xác thực: <strong>{email}</strong></p>
           <Form.Control type="text" placeholder="Nhập mã OTP (VD: 123456)" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
@@ -280,7 +275,6 @@ const RegisterScreen = () => {
             onClick={handleResendOtp}
             disabled={otpCooldown > 0} 
           >
-            {/* Đổi chữ linh hoạt tùy trạng thái */}
             {otpCooldown > 0 ? `Gửi lại sau ${formatTime(otpCooldown)}` : 'Gửi mã OTP'}
           </Button>
           <div className="d-flex gap-2">
